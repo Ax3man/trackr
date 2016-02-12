@@ -11,6 +11,8 @@ Description: This package contains functions to perform analysis on and
     and idTracker can be imported into a trackr object. The package aims to
     seperate the data analysis from the tracking software and establish common
     easily available analysis routines across tracking technologies.
+URL: https://github.com/Ax3man/trackr
+BugReports: https://github.com/Ax3man/trackr/issues
 License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.0.1),
