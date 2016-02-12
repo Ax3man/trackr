@@ -1,0 +1,31 @@
+Package: trackr
+Type: Package
+Title: Analyze and Visualize Tracking Data
+Version: 0.0.0.9000
+Authors@R: person("Wouter", "van der Bijl",
+                  email = "wouter.van.der.bijl@zoologi.su.se",
+                  role = c("aut", "cre"))
+Description: This package contains functions to perform analysis on and
+    visualization of tracking data. It is designed for use with video tracking
+    data, usually of animals. Data from common tracking software, such as ctrax
+    and idTracker can be imported into a trackr object. The package aims to
+    seperate the data analysis from the tracking software and establish common
+    easily available analysis routines across tracking technologies.
+License: GPL-3
+LazyData: TRUE
+Depends: R (>= 3.0.1),
+Imports:
+    dplyr (>= 0.4.3),
+    ggplot2 (>= 2.0.0),
+    lazyeval (>= 0.1.10),
+    lubridate (>= 1.5.0),
+    multidplyr (>= 0.0.0.9000),
+    pbapply,
+    readr (>= 0.2.2),
+    R.matlab (>= 3.3.0),
+    tidyr (>= 0.3.1)
+Suggests:
+    geometry,
+    knitr
+SystemRequirements: This package typically uses a lot of memory.
+RoxygenNote: 5.0.1
