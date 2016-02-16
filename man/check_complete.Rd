@@ -4,8 +4,7 @@
 \alias{check_complete}
 \title{Report track completeness per trial}
 \usage{
-check_complete(tracks, vars = c("X", "Y"), lower_limit = 95,
-  parallel = TRUE)
+check_complete(tracks, vars = c("X", "Y"), lower_limit = 95)
 }
 \arguments{
 \item{tracks}{A tracks object}

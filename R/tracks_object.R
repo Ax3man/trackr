@@ -1,5 +1,3 @@
-if (getRversion() >= "2.15.1")  utils::globalVariables(c("."))
-
 #' Create a tracks object from a data.frame.
 #'
 #' @param tr Data.frame with tracking data (from read in functions).
@@ -50,6 +48,14 @@ if (getRversion() >= "2.15.1")  utils::globalVariables(c("."))
 #'
 #'  Methods for common generics may be available.
 #'
+#' @section Parallel computing:
+#'
+#' Trackr utilizes parallel computing as implemented by the multidplyr package.
+#' This means both the $tr and $pairs tables are always split by trial, and kept
+#' on seperate nodes as so called 'party_df's'. The other tables are typically
+#' small enough not to warrant the use of a cluster. If necessary, the tables
+#' that are split can be combined again using \code{dplyr::collect()}.
+#'
 #' @seealso \code{\link{read_idTracker}}
 #' @export
 as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
@@ -61,6 +67,7 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
     stop('frame_rate has to be a numeric vector of length 1.', call. = FALSE)
 
   res <- as.character(resolution)
+  Source <- attributes(tr)$source
 
   # Define bounds (default) #---------------------------------------------------
   if (res %in% c('480', '720', '1080')) {
@@ -95,6 +102,9 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
     }
   }
 
+  # Parallel -------------------------------------------------------------------
+  tr <- multidplyr::partition(tr, trial)
+
   # Build object and return ----------------------------------------------------
   tracks <- list(tr = tr,
                  meta_data = meta_data,
@@ -102,7 +112,7 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
                                resolution = res,
                                bounds = bounds,
                                px_per_cm = px_per_cm,
-                               source = attributes(tr)$source))
+                               source = Source))
   tracks$params <- tracks$params[!sapply(tracks$params, is.null)]
 
   if (minimal) {
@@ -143,33 +153,33 @@ expand_tracks <- function(tracks,
   Group <- Pairs <- Animal <- Trial <- NULL
   # Build group object ---------------------------------------------------------
   if (group & is.null(tracks$group)) {
-    Group <- dplyr::group_by_(tracks$tr, ~trial, ~frame)
+    Group <- dplyr::group_by_(tracks$tr, ~frame)
     Group <- dplyr::summarize(Group)
-    Group <- dplyr::ungroup(Group)
+    Group <- dplyr::collect(Group)
   }
 
   # Build pairs object (becomes very large with many animals) ------------------
   if (pairs & is.null(tracks$pairs)) {
     # Might have to look for a faster way (without groups and using nesting)
     Pairs <- dplyr::mutate_(tracks$tr, .dots = list(animal2 = ~animal))
-    Pairs <- dplyr::group_by_(Pairs, ~trial)
+    Pairs <- dplyr::collect(Pairs)
     Pairs <- tidyr::expand_(Pairs, dots = list(~frame, ~animal, ~animal2))
-    Pairs <- dplyr::filter_(Pairs, ~animal != animal2)
     Pairs <- dplyr::rename_(Pairs, .dots = list(animal1 = ~animal))
-    Pairs <- dplyr::ungroup(Pairs)
+    Pairs <- multidplyr::partition(Pairs, trial, cluster = tracks$tr$cluster)
+    Pairs <- dplyr::filter_(Pairs, ~animal1 != animal2)
   }
 
   #Build animal object ---------------------------------------------------------
   if (animal & is.null(tracks$animal)) {
-    Animal <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
+    Animal <- dplyr::group_by_(tracks$tr, ~animal)
     Animal <- dplyr::summarize(Animal)
-    Animal <- dplyr::ungroup(Animal)
+    Animal <- dplyr::collect(Animal)
   }
 
   #Build trial object ----------------------------------------------------------
   if (trial & is.null(tracks$trial)) {
-    Trial <- dplyr::group_by_(tracks$tr, ~trial)
-    Trial <- dplyr::summarize(Trial)
+    Trial <- dplyr::summarize(tracks$tr)
+    Trial <- dplyr::collect(Trial)
   }
 
   # Build object and return ----------------------------------------------------
@@ -215,20 +225,10 @@ is.tracks <- function(x) {
 #'
 #' @return Prints a table, silently returns the table too.
 #' @export
-check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95,
-                           parallel = TRUE) {
-  check_parallel(parallel)
-  # Write a much faster solution perhaps. This is slow, but flexible.
+check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95) {
   tr <- tracks$tr
   tr <- do.call(dplyr::select_,c(list(tr), c('trial', 'frame', 'animal', vars)))
-  if (parallel) {
-    cl <- multidplyr::create_cluster(min(parallel::detectCores(),
-                                         length(levels(tr$trial))) - 1)
-    multidplyr::cluster_assign_value(cl, 'vars', vars)
-    tr <- multidplyr::partition(tr, trial, cluster = cl)
-  } else {
-    tr <- dplyr::group_by_(tr, ~trial)
-  }
+  multidplyr::cluster_assign_value(tr$cluster, 'vars', vars)
   # We left_join a data.frame with the complete range of frames for every animal
   tr <- dplyr::do(tr,
                   dplyr::left_join(
@@ -241,21 +241,16 @@ check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95,
   # Count the NA's in vars
   tab <- dplyr::do(tr,
                    complete = nrow(.[complete.cases(.), vars]) / nrow(.))
-  if (parallel) {
-    tab <- dplyr::collect(tab)
-    tab <- dplyr::arrange(tab, trial)
-    tr <- dplyr::collect(tr)
-    tr <- multidplyr::partition(tr, trial, frame)
-  } else {
-    tr <- dplyr::group_by_(tr, ~trial, ~frame)
-  }
+  tab <- dplyr::collect(tab)
+  tab <- dplyr::arrange(tab, trial)
+  tr <- dplyr::group_by_(tr, ~frame)
+
   f <- function(dat, var) {
     dots <- setNames(list(lazyeval::interp(~anyNA(v), v = as.name(var))), 'na')
     dplyr::summarize_(dat, .dots = dots)
   }
   l <- lapply(vars, f, dat = tr)
-  if (parallel)
-    l <- lapply(l, dplyr::collect)
+  l <- lapply(l, dplyr::collect)
   l <- dplyr::bind_cols(l[[1]][, c('trial', 'frame')],
                         dplyr::bind_cols(lapply(l, '[', , 'na')))
   names(l) <- 1:ncol(l)
@@ -279,4 +274,56 @@ check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95,
   else
     print(tab4)
   return(invisible(tab2))
+}
+
+#' Save tracks object
+#'
+#' This function allows for the writing of a tracks object to disk. The base
+#' version of \code{save } cannot be used, since the tr and pairs tables need to
+#' be pulled of the cluster.
+#'
+#' Name will
+#'
+#' @param tracks A tracks object
+#' @param file File name.
+#'
+#' @return invisible(NULL)
+#' @seealso load_tracks
+#' @export
+save_tracks <- function(tracks, file) {
+  tracks$tr <- dplyr::collect(tracks$tr)
+  if (!is.null(tracks$pairs)) {
+    tracks$pairs <- dplyr::collect(tracks$pairs)
+  }
+  save(tracks, file = file)
+  return(invisible(NULL))
+}
+
+#' Load tracks object
+#'
+#' This function allows for the reading of a tracks object from disk. The base
+#' version of \code{load } cannot be used, since the tr and pairs tables need to
+#' be reloaded onto a cluster.
+#'
+#' In contrast to regular \code{load} in \code{base}, you should assign the
+#' result.
+#'
+#' @param tracks A tracks object
+#' @param file File name.
+#'
+#' @return A tracks object.
+#' @seealso save_tracks
+#' @export
+load_tracks <- function(file) {
+  tmp_env <- new.env()
+  load(file, tmp_env)
+  tracks <- get(ls(tmp_env), envir = tmp_env)
+  rm(tmp_env)
+
+  tracks$tr <- multidplyr::partition(tracks$tr, trial)
+  if (!is.null(tracks$pairs)) {
+    tracks$pairs <- multidplyr::partition(tracks$pairs, trial,
+                                          cluster = tracks$tr$cluster)
+  }
+  return(tracks)
 }

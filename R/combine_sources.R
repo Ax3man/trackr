@@ -1,16 +1,3 @@
-check_parallel <- function(parallel) {
-  if (parallel) {
-    if (!requireNamespace('multidplyr', quietly = TRUE)) {
-      message('Can only use parallel if the multidplyr package is installed.
-Reverting to non-parallel processing.
-trackr currently uses a fork of multidplyr by fugufisch.
-Install using devtools::install_github(\'fugufisch/multidplyr\')')
-      parallel <- FALSE
-    }
-  }
-  return(invisible(NULL))
-}
-
 #' Integrate data from multiple tracking sources
 #'
 #' This function will attempt to combine data from trials that have been tracked
@@ -32,39 +19,44 @@ Install using devtools::install_github(\'fugufisch/multidplyr\')')
 #'
 #' Animal names _will_ be lost.
 #'
+#' @section: Note on parallel performance:
+#'   Some of the current implementation limitations fo multidplyr force us to
+#'   start and close several clusters during combining.
+#'
 #' @param tracks1 Tracks object to be combined.
 #' @param tracks2 The other tracks object to be combined.
 #' @param err_cutoff Hard limit for error (squared distance), that is deemed
 #'   unreliable as a match. The default is 25 ^ 2, which means the centroids
 #'   estimated are allowed to be 25 pixels apart.
-#' @param report Whether a small report should be printed.
+#' @param report Whether a small report should be printed to the console.
 #'
 #' @return A tracks object.
 #' @export
 combine_sources <- function(tracks1, tracks2, err_cutoff = 25 ^ 2,
-                            report = TRUE, parallel = TRUE) {
-  check_parallel(parallel)
+                            report = TRUE) {
   # Check compatibility
-  if (tracks1$params$frame_rate != tracks2$params$frame_rate)
+  if (tracks1$params$frame_rate != tracks2$params$frame_rate) {
     stop('Frame rates do not match.', call. = FALSE)
-  else
+  } else {
     frame_rate <- tracks1$params$frame_rate
+  }
 
-  if (any(tracks1$params$resolution != tracks2$params$resolution))
+  if (any(tracks1$params$resolution != tracks2$params$resolution)) {
     stop('Resolutions do not match.', call. = FALSE)
-  else
+  } else {
     resolution <- tracks1$params$resolution
+  }
 
-  if (any(tracks1$params$bounds != tracks2$params$bounds))
+  if (any(tracks1$params$bounds != tracks2$params$bounds)) {
     stop('Bounds do not match.', call. = FALSE)
-  else
+  } else {
     bounds <- tracks1$params$bounds
+  }
 
   # Find correct combine.
   sources <- c(tracks1$params$source, tracks2$params$source)
   if (any(sources == 'Ctrax') & any(sources == 'idTracker'))
-    tr <- combine_Ctrax_idTracker(tracks1, tracks2, err_cutoff, report,
-                                  parallel)
+    tr <- combine_Ctrax_idTracker(tracks1, tracks2, err_cutoff, report)
   else
     stop('Can currently only combine Ctrax and idTracker sources.',
          call. = FALSE)
@@ -76,8 +68,7 @@ combine_sources <- function(tracks1, tracks2, err_cutoff = 25 ^ 2,
   return(tracks)
 }
 
-combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report,
-                                    parallel) {
+combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
   # This second version will assume that ctrax is golden, it's just the id's
   # that are off.
 
@@ -93,26 +84,27 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report,
 
   # Before we do anything, we make sure we only use _reliable_ idtracker id's
   id <- dplyr::filter_(id, ~prob_id == 1)
+  # We'll also need to pull id of it's cluster
+  id <- dplyr::collect(id)
 
-  if (parallel) {
-    res <- multidplyr::partition(ct, trial, animal)
-    # In order to do efficient parallelisation, we should be careful to only
-    # assign the needed parts of the idtracker data to each node
-    cl <- res$cluster
-    reg_trials <- lapply(multidplyr::cluster_get(cl, res$name),
-                         function(x) names(table(x$trial)[table(x$trial) > 0]))
-    id_cl <- lapply(reg_trials, function(trs) dplyr::filter(id, trial %in% trs))
-    multidplyr::cluster_assign_each(cl, 'id', id_cl)
-    multidplyr::cluster_assign_value(cl, 'err_cutoff', err_cutoff)
-    multidplyr::cluster_assign_value(cl, 'match_ids', match_ids)
-  } else {
-    res <- dplyr::group_by_(ct, ~trial, ~animal)
-  }
+  res <- dplyr::group_by_(ct, ~animal)
+  # In order to do efficient parallelisation, we should be careful to only
+  # assign the needed parts of the idtracker data to each node
+  cl <- res$cluster
+  reg_trials <- lapply(multidplyr::cluster_get(cl, res$name),
+                       function(x) names(table(x$trial)[table(x$trial) > 0]))
+  id_cl <- lapply(reg_trials, function(trs) dplyr::filter(id, trial %in% trs))
+  multidplyr::cluster_assign_each(cl, 'id', id_cl)               # tbl_df's
+  multidplyr::cluster_assign_value(cl, 'err_cutoff', err_cutoff) # var
+  multidplyr::cluster_assign_value(cl, 'match_ids', match_ids)   # fun
+
   cat('Matching id\'s...\n')
-  res <- dplyr::do(res, match_ids(.))
-  if (parallel)
-    res <- dplyr::collect(res)
-  res <- dplyr::ungroup(res)
+  # I have to do some weird stuff here, because NULL's aren't ignored by do
+  res <- dplyr::do(res, temp = match_ids(., id))
+  res <- dplyr::filter_(res, ~length(temp) > 1)
+  res <- dplyr::collect(res)
+  res <- dplyr::bind_rows(res$temp)
+
   res <- dplyr::select_(res, ~trial, ~animal.y, ~frame, ~X.x, ~Y.x,
                         ~major_axis, ~minor_axis, ~orientation, ~combine_err)
   names(res)[c(2, 4:5)] <- c('animal', 'X', 'Y')
@@ -121,11 +113,8 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report,
 
   res <- dplyr::group_by_(res, ~trial, ~animal, ~frame)
   if (attributes(res)$biggest_group_size > 1) {
-    if (parallel) {
-      res <- multidplyr::partition(res, trial, animal, frame)
-      multidplyr::cluster_assign_value(multidplyr::get_default_cluster(),
-                                       'err_cutoff', err_cutoff)
-    }
+    res <- multidplyr::partition(res, trial, animal, frame)
+    multidplyr::cluster_assign_value(res$cluster, 'err_cutoff', err_cutoff)
     cat('Finding duplicates...\n')
     res_ok <- dplyr::filter(res, n() == 1)
     res_dups <- dplyr::filter(res, n() > 1)
@@ -141,22 +130,17 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report,
                         orientation =
                           ~trackr:::mean_direction(
                             orientation[combine_err < err_cutoff]),
-                        combine_error =
+                        combine_err =
                           ~mean(combine_err[combine_err < err_cutoff]))
-    if (parallel) {
-      res_ok <- dplyr::collect(res_ok)
-      res_dups <- dplyr::collect(res_dups)
-      dplyr::stop_cluster()
-    } else {
-      res <- dplyr::ungroup(res)
-    }
+    res_ok <- dplyr::collect(res_ok)
+    res_dups <- dplyr::collect(res_dups)
     res <- dplyr::bind_rows(res_ok, res_dups)
   }
   res <- dplyr::arrange_(res, ~trial, ~animal, ~frame)
   return(res)
 }
 
-match_ids <- function(Ct) {
+match_ids <- function(Ct, id) {
   d <- dplyr::left_join(Ct, id, by = c('trial', 'frame'))
   d$combine_err <- with(d, abs(X.x - X.y) ^ 2 + abs(Y.x - Y.y) ^ 2)
   # Quickly detect spurious ctrax detections
@@ -190,10 +174,12 @@ match_ids <- function(Ct) {
 
     if (length(prev_id) + length(next_id) == 1) {
       if (length(prev_id) == 0)
-        d[i, 'animal.y'] <- next_id
+        d$animal.y[d$frame %in% frames] <- next_id
       if (length(next_id) == 0)
-        d[i, 'animal.y'] <- prev_id
+        d$animal.y[d$frame %in% frames] <- prev_id
     } else {
+      if (length(prev_id) + length(next_id) == 0)
+        next
       if (prev_id == next_id)
         d$animal.y[d$frame %in% frames] <- next_id
     }

@@ -4,8 +4,7 @@
 \alias{combine_sources}
 \title{Integrate data from multiple tracking sources}
 \usage{
-combine_sources(tracks1, tracks2, err_cutoff = 25^2, report = TRUE,
-  parallel = TRUE)
+combine_sources(tracks1, tracks2, err_cutoff = 25^2, report = TRUE)
 }
 \arguments{
 \item{tracks1}{Tracks object to be combined.}
@@ -16,7 +15,7 @@ combine_sources(tracks1, tracks2, err_cutoff = 25^2, report = TRUE,
 unreliable as a match. The default is 25 ^ 2, which means the centroids
 estimated are allowed to be 25 pixels apart.}
 
-\item{report}{Whether a small report should be printed.}
+\item{report}{Whether a small report should be printed to the console.}
 }
 \value{
 A tracks object.
@@ -41,5 +40,10 @@ The methods tend to be designed for reasonable speeeds, and may use a lot
 of memory.
 
 Animal names _will_ be lost.
+}
+\section{}{
+ Note on parallel performance:
+  Some of the current implementation limitations fo multidplyr force us to
+  start and close several clusters during combining.
 }
 

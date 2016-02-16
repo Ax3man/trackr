@@ -41,14 +41,14 @@ add_speed <- function(tracks) {
     return(tracks)
   frame_rate <- tracks$params$frame_rate
   scale <- ifelse(is.null(tracks$params$scale), 1, tracks$params$scale)
-  tracks$tr <- tracks$tr %>%
-    dplyr::group_by_(~trial, ~animal) %>%
-    dplyr::arrange_(~frame) %>%
-    dplyr::mutate_(
-      'speed' = ~ifelse(
-        frame - lag(frame) == 1,
-        sqrt((X - lag(X)) ^ 2 + (Y - lag(Y)) ^ 2) / frame_rate * scale,
-        NA))
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
+  tracks$tr <- dplyr::mutate_(
+    tracks$tr,
+    'speed' = ~ifelse(
+      frame - lag(frame, order_by = frame) == 1,
+      sqrt((X - lag(X, order_by = frame)) ^ 2 +
+             (Y - lag(Y, order_by = frame)) ^ 2) / frame_rate * scale,
+      NA)) # we use order_by since arrange doesnt work on party_df
   return(tracks)
 }
 
@@ -84,25 +84,28 @@ add_acceleration <- function(tracks) {
 add_turn <- function(tracks) {
   if (!is.null(tracks$tr$turn))
     return(tracks)
-  tracks$tr <- tracks$tr %>%
-    dplyr::group_by_(~trial, ~animal) %>%
-    dplyr::arrange_(~frame) %>%
-    dplyr::mutate_(
-      'turn' = ~ifelse(
-        frame - lag(frame) == 1,
-        angle_diff(angle(lag(X), lag(Y), X, Y), angle(X, Y, lead(X), lead(Y))),
-        NA))
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'angle_diff', angle_diff)
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'angle', angle)
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
+  tracks$tr <- dplyr::mutate_(
+    tracks$tr,
+    'turn' = ~ifelse(
+      frame - lag(frame) == 1,
+      angle_diff(angle(lag(X, order_by = frame),
+                       lag(Y, order_by = frame), X, Y),
+                 angle(X, Y, lead(X, order_by = frame),
+                       lead(Y, order_by = frame))),
+      NA))
   return(tracks)
 }
 
 
 add_diff_to_track <- function(tracks, var, name) {
-  tracks$tr <- tracks$tr %>%
-    dplyr::group_by_(~trial, ~animal) %>%
-    dplyr::arrange_(~frame) %>%
-    dplyr::mutate_(.dots =
-                     setNames(list(
-                       lazyeval::interp(~lag(x) - x, x = as.name(var))), name))
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
+  tracks$tr <- dplyr::mutate_(
+    tracks$tr,
+    .dots = setNames(list(lazyeval::interp(~lag(x, order_by = frame) - x,
+                                           x = as.name(var))), name))
   return(tracks)
 }
 

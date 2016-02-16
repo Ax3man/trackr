@@ -76,6 +76,16 @@ The tracks object is a \code{list} with the following tables:
 
  Methods for common generics may be available.
 }
+
+\section{Parallel computing}{
+
+
+Trackr utilizes parallel computing as implemented by the multidplyr package.
+This means both the $tr and $pairs tables are always split by trial, and kept
+on seperate nodes as so called 'party_df's'. The other tables are typically
+small enough not to warrant the use of a cluster. If necessary, the tables
+that are split can be combined again using \code{dplyr::collect()}.
+}
 \seealso{
 \code{\link{read_idTracker}}
 }
