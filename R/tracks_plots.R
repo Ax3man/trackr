@@ -116,13 +116,29 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
     p
 }
 
-plot_tracks_sparklines <- function(tracks, trial, frame, vars = NULL) {
+#' Plot sparklines for several track variables.
+#'
+#' @param tracks A tracks object.
+#' @param trial A character vector indicating from which trial to plot.
+#' @param frames A numeric vector indicating which frames to plot.
+#' @param vars A character vector indicating which variables get a sparkline.
+#'   They will be looked for in the $tr and $pairs tables. Optional. When not
+#'   given, will plot all variables available.
+#' @param point_events An optional numerical vector of point events to highlight
+#'   with vertical dotted lines.
+#'
+#' @return A ggplot object.
+#' @export
+plot_tracks_sparklines <- function(tracks, trial, frames, vars = NULL,
+                                   point_events = NULL) {
   if (is.null(vars)) {
     vars <- c(tracks$pr$tr, tracks$pr$pairs)
   }
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'sel', list(trial, frame))
-  tracks <- filter_(tracks, ~trial %in% sel[[1]], ~frame %in% sel[[1]],
+  sel <- list(trial, frames)
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'sel', sel)
+  tracks <- filter_(tracks, ~trial %in% sel[[1]], ~frame %in% sel[[2]],
                     drop = TRUE)
+
   tr <- dplyr::collect(tracks$tr)
   tr <- dplyr::ungroup(tr)
   tr <- dplyr::select_(tr,
@@ -131,15 +147,13 @@ plot_tracks_sparklines <- function(tracks, trial, frame, vars = NULL) {
                        names(tr)[!(names(tr) %in% c('animal', 'frame'))])
   tr$animal <- as.character(tr$animal)
 
-  pairs <- filter(tracks$pairs, ~trial %in% Trial, ~frame %in% Frame)
-  pairs <- dplyr::collect(pairs)
+  pairs <- dplyr::collect(tracks$pairs)
   pairs <- dplyr::ungroup(pairs)
-  pairs <- dplyr::mutate_(pairs, animal = ~animal1:animal2)
+  pairs <- dplyr::mutate_(pairs, animal = ~paste(animal1, animal2, sep ='-'))
   pairs <- dplyr::select_(pairs, .dots = c('animal', 'frame',
                                            vars[vars %in% names(pairs)]))
   pairs <- tidyr::gather_(pairs, 'var', 'value',
-                       names(pairs)[!(names(pairs) %in% c('animal', 'frame'))])
-  pairs$animal <- as.character(pairs$animal)
+                          names(pairs)[!(names(pairs) %in% c('animal', 'frame'))])
 
   pdat <- dplyr::bind_rows(tr, pairs)
   pdat <- dplyr::group_by_(pdat, ~animal, ~var)
@@ -157,8 +171,8 @@ plot_tracks_sparklines <- function(tracks, trial, frame, vars = NULL) {
   quarts <- dplyr::group_by_(quarts, ~var, ~animal)
   quarts <- dplyr::slice_(quarts, ~c(which.min(frame), which.max(frame)))
 
-  ggplot2::ggplot(pdat, ggplot2::aes_(x = ~frame, y = ~value, color = ~animal,
-                                      label = ~signif(value, 3))) +
+  p <- ggplot2::ggplot(pdat, ggplot2::aes_(x = ~frame, y = ~value, color = ~animal,
+                                           label = ~signif(value, 3))) +
     ggplot2::facet_grid(var ~ ., scales = "free_y", switch = 'y') +
     ggplot2::geom_ribbon(data = quarts,
                          ggplot2::aes_(ymin = ~quart1, max = ~quart2),
@@ -178,4 +192,9 @@ plot_tracks_sparklines <- function(tracks, trial, frame, vars = NULL) {
                    panel.border = ggplot2::element_blank(),
                    strip.background = ggplot2::element_blank(),
                    legend.position = 'top')
+  if (!is.null(point_events)) {
+    p <- p + ggplot2::geom_vline(data = data.frame(v = point_events),
+                                 ggplot2::aes_(xintercept = ~v), lty = 2)
+  }
+  return(p)
 }

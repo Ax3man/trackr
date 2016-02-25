@@ -81,10 +81,10 @@ add_pair_dist_acceleration <- function(tracks) {
 }
 
 add_diff_to_pairs <- function(tracks, var, name) {
-  tracks$pairs <- dplyr::group_by_(tracks$pairs, ~trial, ~animal1, ~animal2)
-  tracks$pairs <- dplyr::mutate_(tracks$pairs, .dots =
-                                   setNames(list(
-                                     lazyeval::interp(~x - lag(x, order_by = frame),
-                                                      x = as.name(var))), name))
+  tracks$pairs <- dplyr::group_by_(tracks$pairs, ~animal1, ~animal2)
+  tracks$pairs <- dplyr::mutate_(
+    tracks$pairs,
+    .dots = setNames(list(lazyeval::interp(~x - dplyr::lag(x, order_by = frame),
+                                           x = as.name(var))), name))
   return(tracks)
 }
