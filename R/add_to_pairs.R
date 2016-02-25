@@ -8,18 +8,31 @@
 #' @return A tracks object
 #' @export
 add_pair_dist <- function(tracks) {
-  if (!is.null(tracks$pairs$dist))
+  if ('dist' %in% tracks$pr$pairs) {
     return(tracks)
-  tr <- tracks$tr[, c('trial', 'animal', 'frame', 'X', 'Y')]
-  pairs <- dplyr::left_join(tracks$pairs, tr,
-                            by = c('trial', 'frame', 'animal1' = 'animal'))
-  names(pairs)[c(ncol(pairs) - 1, ncol(pairs))] <- c('X1', 'Y1')
-  pairs <- dplyr::left_join(pairs, tr,
-                            by = c('trial', 'frame', 'animal2' = 'animal'))
-  names(pairs)[c(ncol(pairs) - 1, ncol(pairs))] <- c('X2', 'Y2')
-  pairs$dist <- with(pairs, sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2))
-  tracks$pairs <- pairs[, -which(names(pairs) %in% c('X1', 'Y1', 'X2', 'Y2'))]
+  }
+  tr <- dplyr::select_(tracks$tr, ~trial, ~animal, ~frame, ~X, ~Y)
+  tr <- dplyr::collect(tr)
 
+  cl <- tracks$pairs$cluster
+  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$pairs$name),
+                       function(x) names(table(x$trial)[table(x$trial) > 0]))
+  tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
+  multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
+
+  tracks$pairs <- dplyr::do_(tracks$pairs,
+                             ~dplyr::left_join(
+                               ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
+  tracks$pairs <- dplyr::rename(tracks$pairs, X1 = X, Y1 = Y)
+  tracks$pairs <- dplyr::do_(tracks$pairs,
+                             ~dplyr::left_join(
+                               ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
+  tracks$pairs <- dplyr::rename_(tracks$pairs, X2 = ~X, Y2 = ~Y)
+  tracks$pairs <- dplyr::mutate_(tracks$pairs,
+                                 dist = ~sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2))
+  tracks$pairs <- dplyr::select_(tracks$pairs, ~-X1, ~-Y1, ~-X2, ~-Y2)
+
+  tracks$pr$pairs <- c(tracks$pr$pairs, 'dist')
   return(tracks)
 }
 
@@ -34,12 +47,14 @@ add_pair_dist <- function(tracks) {
 #' @return A tracks object.
 #' @export
 add_pair_dist_velocity <- function(tracks) {
-  if (!is.null(tracks$pairs$dist_velocity))
+  if ('dist_velocity' %in% tracks$pr$pairs) {
     return(tracks)
-  if (is.null(tracks$pairs$dist)) {
+  }
+  if (!('dist' %in% tracks$pr$pairs)) {
     message('Adding distance to pairs table first.')
     tracks <- add_pair_dist(tracks)
   }
+  tracks$pr$pairs <- c(tracks$pr$pairs, 'dist_velocity')
   add_diff_to_pairs(tracks, 'dist', 'dist_velocity')
 }
 
@@ -54,20 +69,22 @@ add_pair_dist_velocity <- function(tracks) {
 #' @return A tracks object.
 #' @export
 add_pair_dist_acceleration <- function(tracks) {
-  if (!is.null(tracks$pairs$dist_acceleration))
+  if ('dist_acceleration' %in% tracks$pr$pairs) {
     return(tracks)
-  if (is.null(tracks$pairs$dist_velocity)) {
-    message('Adding distance to pairs table first.')
+  }
+  if (!('dist_velocity' %in% tracks$pr$pairs)) {
+    message('Adding distance velocity to pairs table first.')
     tracks <- add_pair_dist_velocity(tracks)
   }
+  tracks$pr$pairs <- c(tracks$pr$pairs, 'dist_acceleration')
   add_diff_to_pairs(tracks, 'dist_velocity', 'dist_acceleration')
 }
 
 add_diff_to_pairs <- function(tracks, var, name) {
   tracks$pairs <- dplyr::group_by_(tracks$pairs, ~trial, ~animal1, ~animal2)
-  tracks$pairs <- dplyr::arrange_(tracks$pairs, ~frame)
   tracks$pairs <- dplyr::mutate_(tracks$pairs, .dots =
-                     setNames(list(
-                       lazyeval::interp(~lag(x) - x, x = as.name(var))), name))
+                                   setNames(list(
+                                     lazyeval::interp(~x - lag(x, order_by = frame),
+                                                      x = as.name(var))), name))
   return(tracks)
 }

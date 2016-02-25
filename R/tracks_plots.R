@@ -27,12 +27,12 @@ plot.tracks <- function(x, color = ~animal, facet = ~trial,  nrow = NULL,
 
   # We need to add a grouping factor in order to create gaps when there are
   # non-subsequent frames.
-  tracks$tr <- dplyr::mutate(tracks$tr,
-                             gap = ifelse(frame == 1 + lag(frame), 0, 1),
-                             .GROUP = c(0, cumsum(gap[-1])))
+  tracks$tr <- dplyr::mutate_(tracks$tr,
+                              gap = ~ifelse(frame == 1 + dplyr::lag(frame), 0, 1),
+                              .GROUP = ~c(0, cumsum(gap[-1])))
 
-  ggplot2::ggplot(tracks$tr, ggplot2::aes_(~X, ~Y, color = color,
-                                           group = ~.GROUP)) +
+  ggplot2::ggplot(dplyr::collect(tracks$tr),
+                  ggplot2::aes_(~X, ~Y, color = color, group = ~.GROUP)) +
     ggplot2::geom_path() +
     ggplot2::coord_equal(xlim = tracks$params$bounds[1, c(1, 3)],
                          ylim = tracks$params$bounds[2, c(1, 3)],
@@ -56,6 +56,8 @@ plot.tracks <- function(x, color = ~animal, facet = ~trial,  nrow = NULL,
 #'   facet_grid.
 #' @param nrow Override the number of rows that should be used in facetting.
 #'   Only used if mode is dual.
+#' @param scales Optional setting to facets. See ?ggplot2::facet_grid and
+#'   ?ggplot2::facet_wrap.
 #' @param facet Optional facetting, should probably include time_bin. Only used
 #'   if mode is set to manual.
 #' @param coord_boundary Whether to fix the plot limits to the boundary. Will
@@ -65,12 +67,12 @@ plot.tracks <- function(x, color = ~animal, facet = ~trial,  nrow = NULL,
 #' @export
 #'
 #' @examples
-#'   time_facet_plot(filter(guppies, trial == 'd1t3b'))
-#'   time_facet_plot(guppies, mode = 'manual')
-time_facet_plot <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
-                            color = ~animal, mode = 'dual', nrow = NULL,
-                            scales = 'free_x', facet = trial ~ time_bin,
-                            coord_boundary = NULL) {
+#'   plot_time_facets(filter(guppies, trial == 'd1t3b'))
+#'   plot_time_facets(guppies, mode = 'manual')
+plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
+                             color = ~animal, mode = 'dual', nrow = NULL,
+                             scales = 'free_x', facet = trial ~ time_bin,
+                             coord_boundary = NULL) {
   # We need to add a grouping factor in order to create gaps when there are
   # non-subsequent frames.
   tracks$tr <- dplyr::mutate(tracks$tr,
@@ -85,22 +87,21 @@ time_facet_plot <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
     else
       coord_boundary <- FALSE
   }
-  # Add time_bins
-  bins <- seq(min(tracks$tr$frame, na.rm = TRUE),
-              max(tracks$tr$frame, na.rm = TRUE),
+  pdat <- dplyr::collect(tracks$tr)
+  bins <- seq(min(pdat$frame, na.rm = TRUE),
+              max(pdat$frame, na.rm = TRUE),
               length.out = time_bins + 1)
-  # Make some nice labels
+
   labels <- lubridate::seconds_to_period(bins / tracks$params$frame_rate)
   labels <- gsub("\\s*\\w*$", "", round(labels))
   labels <- tolower(gsub(" ", "", labels, fixed = TRUE))
   labels <- paste(head(labels, -1), 'till', labels[-1])
 
-  tracks$tr$time_bin <- findInterval(tracks$tr$frame, bins, all.inside = TRUE)
-  tracks$tr$time_bin <- factor(tracks$tr$time_bin, labels = labels)
+  pdat$time_bin <- findInterval(pdat$frame, bins, all.inside = TRUE)
+  pdat$time_bin <- factor(pdat$time_bin, labels = labels)
 
-
-  p <- ggplot2::ggplot(tracks$tr, ggplot2::aes_(x, y, color = color,
-                                                group = ~.GROUP)) +
+  p <- ggplot2::ggplot(pdat, ggplot2::aes_(x, y, color = color,
+                                           group = ~.GROUP)) +
     ggplot2::geom_path() +
     facet +
     ggplot2::theme_bw() +
@@ -113,4 +114,68 @@ time_facet_plot <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
                              expand = FALSE)
   else
     p
+}
+
+plot_tracks_sparklines <- function(tracks, trial, frame, vars = NULL) {
+  if (is.null(vars)) {
+    vars <- c(tracks$pr$tr, tracks$pr$pairs)
+  }
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'sel', list(trial, frame))
+  tracks <- filter_(tracks, ~trial %in% sel[[1]], ~frame %in% sel[[1]],
+                    drop = TRUE)
+  tr <- dplyr::collect(tracks$tr)
+  tr <- dplyr::ungroup(tr)
+  tr <- dplyr::select_(tr,
+                       .dots = c('animal', 'frame', vars[vars %in% names(tr)]))
+  tr <- tidyr::gather_(tr, 'var', 'value',
+                       names(tr)[!(names(tr) %in% c('animal', 'frame'))])
+  tr$animal <- as.character(tr$animal)
+
+  pairs <- filter(tracks$pairs, ~trial %in% Trial, ~frame %in% Frame)
+  pairs <- dplyr::collect(pairs)
+  pairs <- dplyr::ungroup(pairs)
+  pairs <- dplyr::mutate_(pairs, animal = ~animal1:animal2)
+  pairs <- dplyr::select_(pairs, .dots = c('animal', 'frame',
+                                           vars[vars %in% names(pairs)]))
+  pairs <- tidyr::gather_(pairs, 'var', 'value',
+                       names(pairs)[!(names(pairs) %in% c('animal', 'frame'))])
+  pairs$animal <- as.character(pairs$animal)
+
+  pdat <- dplyr::bind_rows(tr, pairs)
+  pdat <- dplyr::group_by_(pdat, ~animal, ~var)
+  pdat$animal <- factor(pdat$animal, unique(pdat$animal))
+  pdat$var <- factor(pdat$var, vars)
+
+  mins <- dplyr::slice(pdat, which.min(value))
+  maxs <- dplyr::slice(pdat, which.max(value))
+
+  quarts <- dplyr::group_by_(pdat, ~var)
+  quarts <- dplyr::summarise_(quarts,
+                              quart1 = ~quantile(value, 0.25, na.rm = TRUE),
+                              quart2 = ~quantile(value, 0.75, na.rm = TRUE))
+  quarts <- dplyr::right_join(quarts, pdat, by = 'var')
+  quarts <- dplyr::group_by_(quarts, ~var, ~animal)
+  quarts <- dplyr::slice_(quarts, ~c(which.min(frame), which.max(frame)))
+
+  ggplot2::ggplot(pdat, ggplot2::aes_(x = ~frame, y = ~value, color = ~animal,
+                                      label = ~signif(value, 3))) +
+    ggplot2::facet_grid(var ~ ., scales = "free_y", switch = 'y') +
+    ggplot2::geom_ribbon(data = quarts,
+                         ggplot2::aes_(ymin = ~quart1, max = ~quart2),
+                         fill = 'grey90', col = NA) +
+    ggplot2::geom_line(size = 0.2) +
+    ggplot2::geom_point(data = mins, size = 2) +
+    ggplot2::geom_point(data = maxs, size = 2) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(plot.background = ggplot2::element_blank(),
+                   axis.line = ggplot2::element_blank(),
+                   panel.grid = ggplot2::element_blank(),
+                   axis.title.x = ggplot2::element_blank(),
+                   axis.title.y = ggplot2::element_blank(),
+                   legend.background = ggplot2::element_blank(),
+                   legend.key = ggplot2::element_blank(),
+                   panel.background = ggplot2::element_blank(),
+                   panel.border = ggplot2::element_blank(),
+                   strip.background = ggplot2::element_blank(),
+                   legend.position = 'top')
 }

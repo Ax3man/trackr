@@ -37,18 +37,26 @@ add_to_tr <- function(tracks, .calc, ...) {
 #'
 #' @examples add_speed(guppies)
 add_speed <- function(tracks) {
-  if (!is.null(tracks$tr$speed))
+  if ('speed' %in% tracks$pr$tr) {
     return(tracks)
+  }
   frame_rate <- tracks$params$frame_rate
   scale <- ifelse(is.null(tracks$params$scale), 1, tracks$params$scale)
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'frame_rate', frame_rate)
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'scale', scale)
+
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~animal)
+  tracks$tr <- dplyr::mutate_(tracks$tr,
+                              prev_X = ~dplyr::lag(X, order_by = frame),
+                              prev_Y = ~dplyr::lag(Y, order_by = frame),
+                              prev_frame = ~dplyr::lag(frame, order_by = frame))
   tracks$tr <- dplyr::mutate_(
     tracks$tr,
-    'speed' = ~ifelse(
-      frame - lag(frame, order_by = frame) == 1,
-      sqrt((X - lag(X, order_by = frame)) ^ 2 +
-             (Y - lag(Y, order_by = frame)) ^ 2) / frame_rate * scale,
-      NA)) # we use order_by since arrange doesnt work on party_df
+    speed = ~ifelse(frame - prev_frame == 1,
+                    sqrt((X - prev_X) ^ 2 + (Y - prev_Y) ^ 2) / frame_rate * scale,
+                    NA)) # we use order_by since arrange doesnt work on party_df
+  tracks$tr <- dplyr::select_(tracks$tr, ~-prev_X, ~-prev_Y, ~-prev_frame)
+  tracks$pr$tr <- c(tracks$pr$tr, 'speed')
   return(tracks)
 }
 
@@ -61,13 +69,16 @@ add_speed <- function(tracks) {
 #'
 #' @examples add_acceleration(guppies)
 add_acceleration <- function(tracks) {
-  if (!is.null(tracks$tr$acceleration))
+  if ('acceleration' %in% tracks$pr$tr) {
     return(tracks)
-  if (is.null(tracks$tr$speed)) {
+  }
+  if (!('speed' %in% tracks$pr$tr)) {
     message('Adding speed to tracks object first.')
     tracks <- add_speed(tracks)
   }
-  add_diff_to_track(tracks, 'speed', 'acceleration')
+  tracks <- add_diff_to_track(tracks, 'speed', 'acceleration')
+  tracks$pr$tr <- c(tracks$pr$tr, 'acceleration')
+  return(tracks)
 }
 
 #' Add turning angle to tracks object
@@ -82,7 +93,7 @@ add_acceleration <- function(tracks) {
 #'
 #' @examples add_turn(guppies)
 add_turn <- function(tracks) {
-  if (!is.null(tracks$tr$turn))
+  if ('turn' %in% tracks$pr$tr)
     return(tracks)
   multidplyr::cluster_assign_value(tracks$tr$cluster, 'angle_diff', angle_diff)
   multidplyr::cluster_assign_value(tracks$tr$cluster, 'angle', angle)
@@ -90,21 +101,21 @@ add_turn <- function(tracks) {
   tracks$tr <- dplyr::mutate_(
     tracks$tr,
     'turn' = ~ifelse(
-      frame - lag(frame) == 1,
-      angle_diff(angle(lag(X, order_by = frame),
-                       lag(Y, order_by = frame), X, Y),
-                 angle(X, Y, lead(X, order_by = frame),
-                       lead(Y, order_by = frame))),
+      frame - dplyr::lag(frame, order_by = frame) == 1,
+      angle_diff(angle(dplyr::lag(X, order_by = frame),
+                       dplyr::lag(Y, order_by = frame), X, Y),
+                 angle(X, Y, dplyr::lead(X, order_by = frame),
+                       dplyr::lead(Y, order_by = frame))),
       NA))
+  tracks$pr$tr <- c(tracks$pr$tr, 'turn')
   return(tracks)
 }
-
 
 add_diff_to_track <- function(tracks, var, name) {
   tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
   tracks$tr <- dplyr::mutate_(
     tracks$tr,
-    .dots = setNames(list(lazyeval::interp(~lag(x, order_by = frame) - x,
+    .dots = setNames(list(lazyeval::interp(~x - dplyr::lag(x, order_by = frame),
                                            x = as.name(var))), name))
   return(tracks)
 }

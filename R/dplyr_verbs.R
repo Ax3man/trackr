@@ -53,6 +53,7 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
   rm(.data)
   # collect conditions
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  conds
   # check if drop happens to be in the .dots (coming from filter dispatching to
   # filter_), if so then extract it out
   if (any(names(conds) == 'drop')) {
@@ -62,12 +63,13 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
   # extract which things those conditions apply to
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
   if (any(!(vars %in% c('frame', 'trial', 'animal', 'time'))))
-    stop("You can only filter on frame, trial or animal.", call. = FALSE)
+    warning("Compatability is only checked when filtering on frame, trial or animal.",
+            call. = FALSE)
   if (length(vars) > length(unique(vars)))
     stop("Combine different conditions for the same variable with '&', instead
          of using seperate ... arguments.")
   # Find which components of the tracks object are currently present
-  present <- names(tracks)[names(tracks) != 'params']
+  present <- names(tracks)[!(names(tracks) %in% c('params', 'pr'))]
 
   # check for compatibility issues ---------------------------------------------
   if (any(vars == 'frame') & any(present %in% c('location', 'trial'))) {
@@ -93,12 +95,21 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
            call. = FALSE)
     }
   }
-  # Apply filter ---------------------------------------------------------------
+  # Update which components of the tracks object are currently present
+  present <- names(tracks)[!(names(tracks) %in% c('params', 'pr'))]
+
+  # Apply filter to all tables -------------------------------------------------
   tracks[present] <- lapply(tracks[present], function(d, conds, vars) {
-    conds2 <- conds[which(vars %in% names(d))]
-    if (length(conds2) > 0)
-      d <- dplyr::filter_(d, .dots = conds2) %>%
-        droplevels()
+    var_d <- switch(class(d)[1],
+                    'party_df' = get_party_df_names(d),
+                    'tbl_df' = names(d),
+                    return(d))
+
+    conds2 <- conds[which(vars %in% var_d)]
+    if (length(conds2) > 0) {
+      d <- dplyr::filter_(d, .dots = conds2)
+      #d <- droplevels(d)
+    }
     d
   }, conds = conds, vars = vars)
 
@@ -247,11 +258,14 @@ select_.tracks <- function(.data, ..., .dots) {
 #' @param tracks Tracks object.
 #' @param n Thinning interval, every n frames is dropped.
 #' @param new_frame_rate New frame rate.
+#' @param drop When FALSE, an error will produced if data is found that was
+#'   aggregated over frames. If TRUE, that data will be dropped.
 #'
 #' @return Tracks object.
 #' @export
 #' @examples thin_frame_rate(guppies, 2) #compare object size
-thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL) {
+thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
+                            drop = FALSE) {
   # Input checking -------------------------------------------------------------
   if ((is.null(n) & is.null(new_frame_rate)) |
       (!is.null(n) & !is.null(new_frame_rate)))
@@ -268,9 +282,12 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL) {
     stop('new_frame_rate should be a factor of the old one, and n should be and
          integer number.')
   # Select new frames ----------------------------------------------------------
-  range. <- range(tracks$tr$frame)
+  range. <- dplyr::summarise_(tracks$tr, min = ~min(frame), max = ~max(frame))
+  range. <- dplyr::collect(range.)
+  range. <- c(min(range.$min), max(range.$max))
   frames <- seq.int(range.[1] + n - 1, range.[2], n)
-  tracks <- filter(tracks, frame %in% frames)
+  tracks <- filter_(tracks, drop = ~drop,
+                    .dots = lazyeval::interp(~frame %in% x, x = frames))
   # Recalculate frame nrs ------------------------------------------------------
   tracks$tr$frame <- tracks$tr$frame / n
   if (!is.null(tracks$group))

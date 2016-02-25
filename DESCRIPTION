@@ -10,7 +10,8 @@ Description: This package contains functions to perform analysis on and
     data, usually of animals. Data from common tracking software, such as ctrax
     and idTracker can be imported into a trackr object. The package aims to
     seperate the data analysis from the tracking software and establish common
-    easily available analysis routines across tracking technologies.
+    easily available analysis routines across tracking technologies, using the
+    dominant language amongst biologists: R.
 URL: https://github.com/Ax3man/trackr
 BugReports: https://github.com/Ax3man/trackr/issues
 License: GPL-3
@@ -22,7 +23,6 @@ Imports:
     lazyeval (>= 0.1.10),
     lubridate (>= 1.5.0),
     multidplyr,
-    pbapply (>= 1.1-3),
     readr (>= 0.2.2),
     R.matlab (>= 3.3.0),
     tidyr (>= 0.3.1)

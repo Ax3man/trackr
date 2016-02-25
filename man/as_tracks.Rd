@@ -47,32 +47,34 @@ Create a tracks object from a data.frame.
 
 The tracks object is a \code{list} with the following tables:
 \describe{
-  \item{\code{tr}}{\code{data.frame} organized by trial, animal, frame.
+  \item{\code{tr}}{\code{party_df} organized by trial, animal, frame.
   Useful for storing individual variables such as location, speed,
   orientation, distance to object etc.}
-  \item{\code{group}}{\code{data.frame} organized by trial, frame. Useful for
+  \item{\code{group}}{\code{tbl_df} organized by trial, frame. Useful for
   storing group level variables, such as polarization, centrality, group
   size, mean neighbour distance etc.}
-  \item{\code{pairs}}{\code{data.frame} organized by trial, pair of animals,
+  \item{\code{pairs}}{\code{party_df} organized by trial, pair of animals,
   frame. Useful for storing social variables, such as distance, relative
   orientation, vector correlation etc.}
-  \item{\code{location}}{\code{data.frame} organized by trial, xbin, ybin.
+  \item{\code{location}}{\code{tbl_df} organized by trial, xbin, ybin.
   Useful for aggregate data for spatial heatmaps etc.}
-  \item{\code{meta_data}}{\code{data.frame} organized by trial. Contains
+  \item{\code{meta_data}}{\code{tbl_df} organized by trial. Contains
   information about the trial, such as group origin, treatment, time of
   testing etc.}
-  \item{\code{animal}}{\code{data.frame} organized by trial and animal,
+  \item{\code{animal}}{\code{tbl_df} organized by trial and animal,
   containing animal level measurements (nested in trial), such as average
   speed.}
-  \item{\code{trial}}{\code{data.frame} organized by trial, containing trial
+  \item{\code{trial}}{\code{tbl_df} organized by trial, containing trial
   level measurements, such as average speed.}
   \item{\code{params}}{A \code{list} with general experiment parameters, such
   as frame_rate, scale, resolution etc.}
+  \item{\code{pr}}{A \code{list} with vectors indicating what calculated
+  variables are present in the parallelized tables, for internal purposes.}
 }
- \code{tracks}, \code{meta_data} and \code{params} are always present, others
- may not be. This is to preserve memory space. Order is not garantueed, refer
- by name if you need to access them. By definiton, this function create a
- tracks objects with the tracks, meta.data and params, but no other entries.
+ \code{tracks}, \code{meta_data}, \code{params} and \code{pr} are always
+ present, others may not be. This is to preserve memory space when they are
+ not needed. Order is not garantueed, refer by name if you need to access
+ them.
 
  Methods for common generics may be available.
 }
@@ -87,6 +89,6 @@ small enough not to warrant the use of a cluster. If necessary, the tables
 that are split can be combined again using \code{dplyr::collect()}.
 }
 \seealso{
-\code{\link{read_idTracker}}
+\code{\link{read_idTracker}}, \code{\link{read_Ctrax}}
 }
 
