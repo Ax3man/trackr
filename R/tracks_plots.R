@@ -127,14 +127,25 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #' @param point_events An optional numerical vector of point events to highlight
 #'   with vertical dotted lines.
 #'
+#'  If frames is left NULL, but point_events and window are provided then a
+#'  window around the point_events.
+#'
 #' @return A ggplot object.
 #' @export
-plot_tracks_sparklines <- function(tracks, trial, frames, vars = NULL,
-                                   point_events = NULL,
+plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
+                                   point_events = NULL, window = 600,
                                    quantiles = c(0.025, 0.975)) {
+  if (is.null(frames)) {
+    if (is.null(point_events) | is.null(window)) {
+      stop('Provide either frames, or point_events and window.', call. = FALSE)
+    }
+    frames <- (min(point_events) - window):(max(point_events) + window)
+  }
+
   if (is.null(vars)) {
     vars <- c(tracks$pr$tr, tracks$pr$pairs)
   }
+
   sel <- list(trial, frames)
   multidplyr::cluster_assign_value(tracks$tr$cluster, 'sel', sel)
   tracks <- filter_(tracks, ~trial %in% sel[[1]], drop = TRUE)
