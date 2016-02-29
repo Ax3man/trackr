@@ -13,7 +13,7 @@ add_pair_dist(tracks)
 A tracks object
 }
 \description{
-Add the distance between the pair of animals for each entry in the $pairs
-table.
+Add the distance between centroids for the pair of animals for each entry in
+the $pairs table.
 }
 

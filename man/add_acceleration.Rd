@@ -15,7 +15,4 @@ tracks object
 \description{
 Add acceleration to tracks object
 }
-\examples{
-add_acceleration(guppies)
-}
 

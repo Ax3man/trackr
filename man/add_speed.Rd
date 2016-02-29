@@ -15,7 +15,4 @@ tracks object
 \description{
 Add speed to tracks object
 }
-\examples{
-add_speed(guppies)
-}
 

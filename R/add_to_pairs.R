@@ -1,7 +1,7 @@
 #' Add pairwise distance
 #'
-#' Add the distance between the pair of animals for each entry in the $pairs
-#' table.
+#' Add the distance between centroids for the pair of animals for each entry in
+#' the $pairs table.
 #'
 #' @param tracks A tracks object.
 #'
@@ -79,6 +79,77 @@ add_pair_dist_acceleration <- function(tracks) {
   tracks$pr$pairs <- c(tracks$pr$pairs, 'dist_acceleration')
   add_diff_to_pairs(tracks, 'dist_velocity', 'dist_acceleration')
 }
+
+#' Add pairwise distance based on tip to ellipse
+#'
+#' Add the distance between the pair of animals for each entry in the $pairs
+#' table. This distance is from the mouth of fish 1 (tip of the ellipse) to
+#' an approximately closest point on the ellipse for fish 2.
+#'
+#' It does not get the closest point at the moment, as this calculation is quite
+#' complicated, but does a numerical approximation based on n points along the
+#' ellipse.
+#'
+#' @param tracks A tracks object.
+#' @param n How many
+#'
+#' @return A tracks object
+#' @export
+add_pair_nip_dist <- function(tracks, n = 20) {
+  if ('nip_dist' %in% tracks$pr$pairs) {
+    return(tracks)
+  }
+  tr <- dplyr::select_(tracks$tr, ~trial, ~animal, ~frame, ~X, ~Y, ~orientation,
+                       ~minor_axis, ~major_axis)
+  # tr <- dplyr::mutate_(tr, minor_axis = ~minor_axis / 2,
+  #                      major_axis = ~major_axis / 2)
+  tr <- dplyr::collect(tr)
+
+  cl <- tracks$pairs$cluster
+  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$pairs$name),
+                       function(x) names(table(x$trial)[table(x$trial) > 0]))
+  tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
+  multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
+  multidplyr::cluster_assign_value(cl, 'find_closest_point_on_ellipse',
+                                   find_closest_point_on_ellipse)
+  multidplyr::cluster_assign_value(cl, 'n', n)
+
+  tracks$pairs <- dplyr::do_(tracks$pairs,
+                             ~dplyr::left_join(
+                               ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
+  tracks$pairs <- dplyr::rename_(tracks$pairs, X1 = ~X, Y1 = ~Y,
+                                 orientation1 = ~orientation,
+                                 minor_axis1 = ~minor_axis,
+                                 major_axis1 = ~major_axis)
+  tracks$pairs <- dplyr::do_(tracks$pairs,
+                             ~dplyr::left_join(
+                               ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
+  tracks$pairs <- dplyr::rename_(tracks$pairs, X2 = ~X, Y2 = ~Y,
+                                 orientation2 = ~orientation,
+                                 minor_axis2 = ~minor_axis,
+                                 major_axis2 = ~major_axis)
+  tracks$pairs <- dplyr::mutate_(
+    tracks$pairs,
+    head_X = ~major_axis1 * cos(orientation1) + X1,
+    head_Y = ~major_axis1 * sin(orientation1) + Y1,
+    closest_X = ~find_closest_point_on_ellipse(head_X, head_Y, X2, Y2,
+                                               major_axis2, minor_axis2,
+                                               orientation2, n = n, ret = 'x'),
+    closest_Y = ~find_closest_point_on_ellipse(head_X, head_Y, X2, Y2,
+                                               major_axis2, minor_axis2,
+                                               orientation2, n = n, ret = 'y'),
+    nip_dist = ~sqrt((head_X - closest_X) ^ 2 + (head_Y - closest_Y) ^ 2))
+  tracks$pairs <- dplyr::select_(tracks$pairs, ~-X1, ~-Y1, ~-orientation1,
+                                 ~-minor_axis1, ~-major_axis1, ~-X2, ~-Y2,
+                                 ~-orientation2,  ~-minor_axis2, ~-major_axis2,
+                                 ~-head_X, ~-head_Y, ~-closest_X, ~-closest_Y)
+
+  multidplyr::cluster_rm(cl, c('tr', 'find_closest_point_on_ellipse', 'n'))
+
+  tracks$pr$pairs <- c(tracks$pr$pairs, 'nipt_dist')
+  return(tracks)
+}
+
 
 add_diff_to_pairs <- function(tracks, var, name) {
   tracks$pairs <- dplyr::group_by_(tracks$pairs, ~animal1, ~animal2)
