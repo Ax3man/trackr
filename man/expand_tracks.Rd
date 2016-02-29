@@ -33,7 +33,4 @@ Note that this function is similar to running \code{as_tracks(tracks$tr, ...)
 
 If group, pairs and trial are all false, it will return tracks.
 }
-\examples{
-expand_tracks(guppies)
-}
 

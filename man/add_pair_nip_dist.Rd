@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_pairs.R
 \name{add_pair_nip_dist}
 \alias{add_pair_nip_dist}
-\title{Add pairwise distance based on tip to ellipse}
+\title{Add pairwise distance based on tip to ellipse.}
 \usage{
 add_pair_nip_dist(tracks, n = 20)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_pairs.R
 \name{add_pair_dist_velocity}
 \alias{add_pair_dist_velocity}
-\title{Add change in distance between pairs}
+\title{Add change in distance between pairs.}
 \usage{
 add_pair_dist_velocity(tracks)
 }

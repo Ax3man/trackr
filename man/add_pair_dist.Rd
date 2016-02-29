@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_pairs.R
 \name{add_pair_dist}
 \alias{add_pair_dist}
-\title{Add pairwise distance}
+\title{Add pairwise distance.}
 \usage{
 add_pair_dist(tracks)
 }

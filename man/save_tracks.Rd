@@ -2,7 +2,7 @@
 % Please edit documentation in R/tracks_object.R
 \name{save_tracks}
 \alias{save_tracks}
-\title{Save tracks object}
+\title{Save tracks object.}
 \usage{
 save_tracks(tracks, file)
 }

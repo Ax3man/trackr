@@ -153,9 +153,6 @@ NULL
 #' @return A tracks object.
 #' @export
 #'
-#' @examples
-#'   tr <- add_speed(guppies)
-#'   summarize(guppies, speed, .tables = 'trial')
 #' @inheritParams dplyr::summarise
 #' @seealso dplyr::summarise
 #' @importFrom dplyr '%>%'
@@ -227,17 +224,12 @@ NULL
 #' starts_with().
 #'
 #' @param .data A tracks object
-#' @param ... Comma seperated list of tables to select. Use -table to drop a
-#'   table.
+#' @param ... Comma seperated list of tables to select. Use \code{-table} to
+#'   drop a table.
 #' @inheritParams dplyr::select
 #'
 #' @return A tracks object.
 #' @export
-#' @examples
-#'   (guppies_large <- expand_tracks(guppies))
-#'   select(guppies_large, pairs)
-#'   select(guppies_large, -pairs, -animal)
-#'   select(guppies_large, ends_with('l'))
 select_.tracks <- function(.data, ..., .dots) {
   dots <- lazyeval::all_dots(.dots, ...)
   vars <- dplyr::select_vars_(names(.data), dots,
@@ -263,7 +255,6 @@ select_.tracks <- function(.data, ..., .dots) {
 #'
 #' @return Tracks object.
 #' @export
-#' @examples thin_frame_rate(guppies, 2) #compare object size
 thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
                             drop = FALSE) {
   # Input checking -------------------------------------------------------------

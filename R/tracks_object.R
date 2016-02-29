@@ -147,8 +147,6 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
 #'
 #' @return A tracks object.
 #' @export
-#'
-#' @examples expand_tracks(guppies)
 expand_tracks <- function(tracks,
                           group = TRUE,
                           pairs = TRUE,
@@ -205,7 +203,7 @@ is.tracks <- function(x) {
   is(x, 'tracks')
 }
 
-#' Report track completeness per trial
+#' Report track completeness per trial.
 #'
 #' The report gives two statistics:
 #' - complete: which is simply the percentage of frame by animal by trial
@@ -281,7 +279,7 @@ check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95) {
   return(invisible(tab2))
 }
 
-#' Save tracks object
+#' Save tracks object.
 #'
 #' This function allows for the writing of a tracks object to disk. The base
 #' version of \code{save } cannot be used, since the tr and pairs tables need to
@@ -304,7 +302,7 @@ save_tracks <- function(tracks, file) {
   return(invisible(NULL))
 }
 
-#' Load tracks object
+#' Load tracks object.
 #'
 #' This function allows for the reading of a tracks object from disk. The base
 #' version of \code{load } cannot be used, since the tr and pairs tables need to
@@ -313,7 +311,6 @@ save_tracks <- function(tracks, file) {
 #' In contrast to regular \code{load} in \code{base}, you should assign the
 #' result.
 #'
-#' @param tracks A tracks object
 #' @param file File name.
 #'
 #' @return A tracks object.

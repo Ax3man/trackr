@@ -25,7 +25,4 @@ recoding the frame variable in $tr, $pairs and $group and adjusts the
 frame_rate parameter. Useful for reducing the size of a tracks object. Supply
 either n or new_frame_rate.
 }
-\examples{
-thin_frame_rate(guppies, 2) #compare object size
-}
 

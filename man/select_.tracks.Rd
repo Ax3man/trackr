@@ -11,8 +11,8 @@
 \arguments{
 \item{.data}{A tracks object}
 
-\item{...}{Comma seperated list of tables to select. Use -table to drop a
-table.}
+\item{...}{Comma seperated list of tables to select. Use \code{-table} to
+drop a table.}
 
 \item{.dots}{Use \code{select_()} to do standard evaluation. See
 \code{vignette("nse")} for details}
@@ -28,11 +28,5 @@ retain the tr and meta_data tables, as well as the list of parameters.
 \details{
 You can use dplyr's special functions inside of select calls, such as
 starts_with().
-}
-\examples{
-  (guppies_large <- expand_tracks(guppies))
-  select(guppies_large, pairs)
-  select(guppies_large, -pairs, -animal)
-  select(guppies_large, ends_with('l'))
 }
 

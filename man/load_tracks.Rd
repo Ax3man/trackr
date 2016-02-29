@@ -2,14 +2,12 @@
 % Please edit documentation in R/tracks_object.R
 \name{load_tracks}
 \alias{load_tracks}
-\title{Load tracks object}
+\title{Load tracks object.}
 \usage{
 load_tracks(file)
 }
 \arguments{
 \item{file}{File name.}
-
-\item{tracks}{A tracks object}
 }
 \value{
 A tracks object.

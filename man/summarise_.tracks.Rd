@@ -32,10 +32,6 @@ A tracks object.
 \description{
 Summarize a tracks variable into higher tables
 }
-\examples{
-  tr <- add_speed(guppies)
-  summarize(guppies, speed, .tables = 'trial')
-}
 \seealso{
 dplyr::summarise
 }

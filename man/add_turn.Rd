@@ -16,7 +16,4 @@ tracks object
 This adds the turning angle of the path, that is, based on coordinates, not
 orientation.
 }
-\examples{
-add_turn(guppies)
-}
 

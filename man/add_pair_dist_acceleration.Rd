@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_pairs.R
 \name{add_pair_dist_acceleration}
 \alias{add_pair_dist_acceleration}
-\title{Add acceleration in distance between pairs}
+\title{Add acceleration in distance between pairs.}
 \usage{
 add_pair_dist_acceleration(tracks)
 }

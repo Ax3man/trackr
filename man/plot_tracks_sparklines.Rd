@@ -19,7 +19,12 @@ They will be looked for in the $tr and $pairs tables. Optional. When not
 given, will plot all variables available.}
 
 \item{point_events}{An optional numerical vector of point events to highlight
-  with vertical dotted lines.
+with vertical dotted lines.}
+
+\item{window}{The number of frames that should be plotted around the events.}
+
+\item{quantiles}{A vector of length two with the probabilities to be used for
+  the shade grey quantile boxes.
 
  If frames is left NULL, but point_events and window are provided then a
  window around the point_events.}

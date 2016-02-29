@@ -1,3 +1,5 @@
+# Functions that add variables to the $pairs table of a tracks object.
+
 #' Add pairwise distance.
 #'
 #' Add the distance between centroids for the pair of animals for each entry in

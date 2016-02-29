@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_pairs.R
 \name{add_pair_nip_dist_velocity}
 \alias{add_pair_nip_dist_velocity}
-\title{Title}
+\title{Add change in pairwise distance based on tip to ellipse.}
 \usage{
 add_pair_nip_dist_velocity(tracks)
 }
@@ -10,12 +10,12 @@ add_pair_nip_dist_velocity(tracks)
 \item{tracks}{A tracks object.}
 }
 \value{
-A tracks objec
+A tracks object.
 }
 \description{
-Title
+Add change in pairwise distance based on tip to ellipse.
 }
 \seealso{
-add_pair_nip_dist
+add_pair_nip_dist, add_pair_dist_velocity
 }
 

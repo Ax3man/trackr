@@ -75,9 +75,9 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
                              coord_boundary = NULL) {
   # We need to add a grouping factor in order to create gaps when there are
   # non-subsequent frames.
-  tracks$tr <- dplyr::mutate(tracks$tr,
-                             gap = ifelse(frame == 1 + lag(frame), 0, 1),
-                             .GROUP = c(0, cumsum(gap[-1])))
+  tracks$tr <- dplyr::mutate_(tracks$tr,
+                              gap = ~ifelse(frame == 1 + lag(frame), 0, 1),
+                              .GROUP = ~c(0, cumsum(gap[-1])))
   facet <- switch(mode,
                   manual = ggplot2::facet_grid(facet, scales = scales),
                   dual = ggplot2::facet_wrap(~time_bin, nrow, scales = scales))
@@ -126,6 +126,9 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #'   given, will plot all variables available.
 #' @param point_events An optional numerical vector of point events to highlight
 #'   with vertical dotted lines.
+#' @param window The number of frames that should be plotted around the events.
+#' @param quantiles A vector of length two with the probabilities to be used for
+#'   the shade grey quantile boxes.
 #'
 #'  If frames is left NULL, but point_events and window are provided then a
 #'  window around the point_events.
@@ -183,8 +186,8 @@ plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
   quants <- dplyr::group_by_(quants, ~var, ~animal)
   quants <- dplyr::filter_(quants, ~frame %in% range(pdat$frame))
 
-  mins <- dplyr::slice(pdat, which.min(value))
-  maxs <- dplyr::slice(pdat, which.max(value))
+  mins <- dplyr::slice_(pdat, ~which.min(value))
+  maxs <- dplyr::slice_(pdat, ~which.max(value))
 
   p <- ggplot2::ggplot(pdat,
                        ggplot2::aes_(x = ~frame, y = ~value, color = ~animal,

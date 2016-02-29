@@ -100,7 +100,7 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
 
   cat('Matching id\'s...\n')
   # I have to do some weird stuff here, because NULL's aren't ignored by do
-  res <- dplyr::do(res, temp = match_ids(., id))
+  res <- dplyr::do(res, temp = match_ids(., id, err_cutoff))
   res <- dplyr::filter_(res, ~length(temp) > 1)
   res <- dplyr::collect(res)
   res <- dplyr::bind_rows(res$temp)
@@ -128,7 +128,7 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
                         minor_axis =
                           ~mean(minor_axis[combine_err < err_cutoff]),
                         orientation =
-                          ~trackr:::mean_direction(
+                          ~mean_direction(
                             orientation[combine_err < err_cutoff]),
                         combine_err =
                           ~mean(combine_err[combine_err < err_cutoff]))
@@ -140,7 +140,7 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
   return(res)
 }
 
-match_ids <- function(Ct, id) {
+match_ids <- function(Ct, id, err_cutoff) {
   d <- dplyr::left_join(Ct, id, by = c('trial', 'frame'))
   d$combine_err <- with(d, abs(X.x - X.y) ^ 2 + abs(Y.x - Y.y) ^ 2)
   # Quickly detect spurious ctrax detections
@@ -156,8 +156,6 @@ match_ids <- function(Ct, id) {
   d <- dplyr::ungroup(d)
   # When no match found, check if next and previous id are equal, if so assign
   # that id, if not keep NA's. We do this per consecutive run of NA frames.
-  min_frame <- min(d$frame, na.rm = TRUE)
-  max_frame <- max(d$frame, na.rm = TRUE)
   na_frames <- d$frame[which(is.na(d$animal.y))]
   Breaks <- c(0, which(diff(na_frames) != 1), length(na_frames))
   runs <- lapply(seq(length(Breaks) - 1),

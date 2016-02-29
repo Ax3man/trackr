@@ -2,7 +2,7 @@
 % Please edit documentation in R/tracks_object.R
 \name{check_complete}
 \alias{check_complete}
-\title{Report track completeness per trial}
+\title{Report track completeness per trial.}
 \usage{
 check_complete(tracks, vars = c("X", "Y"), lower_limit = 95)
 }
