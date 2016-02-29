@@ -4,8 +4,8 @@
 \alias{plot_tracks_sparklines}
 \title{Plot sparklines for several track variables.}
 \usage{
-plot_tracks_sparklines(tracks, trial, frames, vars = NULL,
-  point_events = NULL, quantiles = c(0.025, 0.975))
+plot_tracks_sparklines(tracks, trial, frames = NULL, vars = NULL,
+  point_events = NULL, window = 600, quantiles = c(0.025, 0.975))
 }
 \arguments{
 \item{tracks}{A tracks object.}
@@ -19,7 +19,10 @@ They will be looked for in the $tr and $pairs tables. Optional. When not
 given, will plot all variables available.}
 
 \item{point_events}{An optional numerical vector of point events to highlight
-with vertical dotted lines.}
+  with vertical dotted lines.
+
+ If frames is left NULL, but point_events and window are provided then a
+ window around the point_events.}
 }
 \value{
 A ggplot object.

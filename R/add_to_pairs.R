@@ -1,4 +1,4 @@
-#' Add pairwise distance
+#' Add pairwise distance.
 #'
 #' Add the distance between centroids for the pair of animals for each entry in
 #' the $pairs table.
@@ -36,7 +36,7 @@ add_pair_dist <- function(tracks) {
   return(tracks)
 }
 
-#' Add change in distance between pairs
+#' Add change in distance between pairs.
 #'
 #' Add the change in distance between the pair of animals for each entry in the
 #' $pairs table. Negative values mean the animals are moving closer to each
@@ -58,7 +58,7 @@ add_pair_dist_velocity <- function(tracks) {
   add_diff_to_pairs(tracks, 'dist', 'dist_velocity')
 }
 
-#' Add acceleration in distance between pairs
+#' Add acceleration in distance between pairs.
 #'
 #' Add the change in the change in distance between the pair of animals for each
 #' entry in the $pairs table. Positive values mean the animals are increasing
@@ -80,7 +80,7 @@ add_pair_dist_acceleration <- function(tracks) {
   add_diff_to_pairs(tracks, 'dist_velocity', 'dist_acceleration')
 }
 
-#' Add pairwise distance based on tip to ellipse
+#' Add pairwise distance based on tip to ellipse.
 #'
 #' Add the distance between the pair of animals for each entry in the $pairs
 #' table. This distance is from the mouth of fish 1 (tip of the ellipse) to
@@ -150,14 +150,14 @@ add_pair_nip_dist <- function(tracks, n = 20) {
   return(tracks)
 }
 
-#' Title
+#' Add change in pairwise distance based on tip to ellipse.
 #'
 #' @param tracks A tracks object.
 #'
-#' @return A tracks objec
+#' @return A tracks object.
 #' @export
 #'
-#' @seealso add_pair_nip_dist
+#' @seealso add_pair_nip_dist, add_pair_dist_velocity
 add_pair_nip_dist_velocity <- function(tracks) {
   if ('nip_dist_velocity' %in% tracks$pr$pairs) {
     return(tracks)
