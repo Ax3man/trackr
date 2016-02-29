@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_tr.R
 \name{add_speed}
 \alias{add_speed}
-\title{Add speed to tracks object}
+\title{Add speed to tracks object.}
 \usage{
 add_speed(tracks)
 }
@@ -13,6 +13,6 @@ add_speed(tracks)
 tracks object
 }
 \description{
-Add speed to tracks object
+Add speed to tracks object.
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_tr.R
 \name{add_acceleration}
 \alias{add_acceleration}
-\title{Add acceleration to tracks object}
+\title{Add acceleration to tracks object.}
 \usage{
 add_acceleration(tracks)
 }
@@ -13,6 +13,6 @@ add_acceleration(tracks)
 tracks object
 }
 \description{
-Add acceleration to tracks object
+Add acceleration to tracks object.
 }
 

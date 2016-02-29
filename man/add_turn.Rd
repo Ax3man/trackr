@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_to_tr.R
 \name{add_turn}
 \alias{add_turn}
-\title{Add turning angle to tracks object}
+\title{Add turning angle to tracks object.}
 \usage{
 add_turn(tracks)
 }

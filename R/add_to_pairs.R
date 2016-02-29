@@ -148,7 +148,7 @@ add_pair_nip_dist <- function(tracks, n = 20) {
 
   multidplyr::cluster_rm(cl, c('tr', 'find_closest_point_on_ellipse', 'n'))
 
-  tracks$pr$pairs <- c(tracks$pr$pairs, 'nipt_dist')
+  tracks$pr$pairs <- c(tracks$pr$pairs, 'nip_dist')
   return(tracks)
 }
 
