@@ -23,9 +23,11 @@ Imports:
     lazyeval (>= 0.1.10),
     lubridate (>= 1.5.0),
     multidplyr,
+    RcppRoll (>= 0.2.2),
     readr (>= 0.2.2),
     R.matlab (>= 3.3.0),
-    tidyr (>= 0.3.1)
+    tidyr (>= 0.3.1),
+    zoo (>= 1.7-12)
 Suggests:
     geometry,
     knitr
