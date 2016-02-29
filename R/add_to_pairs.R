@@ -150,6 +150,25 @@ add_pair_nip_dist <- function(tracks, n = 20) {
   return(tracks)
 }
 
+#' Title
+#'
+#' @param tracks A tracks object.
+#'
+#' @return A tracks objec
+#' @export
+#'
+#' @seealso add_pair_nip_dist
+add_pair_nip_dist_velocity <- function(tracks) {
+  if ('nip_dist_velocity' %in% tracks$pr$pairs) {
+    return(tracks)
+  }
+  if (!('nip_dist' %in% tracks$pr$pairs)) {
+    message('Adding nip distance to pairs table first.')
+    tracks <- add_pair_dist(tracks)
+  }
+  tracks$pr$pairs <- c(tracks$pr$pairs, 'nip_dist_velocity')
+  add_diff_to_pairs(tracks, 'nip_dist', 'nip_dist_velocity')
+}
 
 add_diff_to_pairs <- function(tracks, var, name) {
   tracks$pairs <- dplyr::group_by_(tracks$pairs, ~animal1, ~animal2)
