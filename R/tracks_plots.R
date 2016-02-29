@@ -130,14 +130,14 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #' @return A ggplot object.
 #' @export
 plot_tracks_sparklines <- function(tracks, trial, frames, vars = NULL,
-                                   point_events = NULL) {
+                                   point_events = NULL,
+                                   quantiles = c(0.025, 0.975)) {
   if (is.null(vars)) {
     vars <- c(tracks$pr$tr, tracks$pr$pairs)
   }
   sel <- list(trial, frames)
   multidplyr::cluster_assign_value(tracks$tr$cluster, 'sel', sel)
-  tracks <- filter_(tracks, ~trial %in% sel[[1]], ~frame %in% sel[[2]],
-                    drop = TRUE)
+  tracks <- filter_(tracks, ~trial %in% sel[[1]], drop = TRUE)
 
   tr <- dplyr::collect(tracks$tr)
   tr <- dplyr::ungroup(tr)
@@ -149,7 +149,7 @@ plot_tracks_sparklines <- function(tracks, trial, frames, vars = NULL,
 
   pairs <- dplyr::collect(tracks$pairs)
   pairs <- dplyr::ungroup(pairs)
-  pairs <- dplyr::mutate_(pairs, animal = ~paste(animal1, animal2, sep ='-'))
+  pairs <- dplyr::mutate_(pairs, animal = ~paste(animal1, animal2, sep = '-'))
   pairs <- dplyr::select_(pairs, .dots = c('animal', 'frame',
                                            vars[vars %in% names(pairs)]))
   pairs <- tidyr::gather_(pairs, 'var', 'value',
@@ -160,22 +160,27 @@ plot_tracks_sparklines <- function(tracks, trial, frames, vars = NULL,
   pdat$animal <- factor(pdat$animal, unique(pdat$animal))
   pdat$var <- factor(pdat$var, vars)
 
+  quants <- dplyr::group_by_(pdat, ~var)
+  quants <- dplyr::summarise_(quants,
+                              quant1 = ~quantile(value, quantiles[1],
+                                                 na.rm = TRUE),
+                              quant2 = ~quantile(value, quantiles[2],
+                                                 na.rm = TRUE))
+  quants <- dplyr::right_join(quants, pdat, by = 'var')
+
+  pdat <- dplyr::filter_(pdat, ~frame %in% sel[[2]])
+  quants <- dplyr::group_by_(quants, ~var, ~animal)
+  quants <- dplyr::filter_(quants, ~frame %in% range(pdat$frame))
+
   mins <- dplyr::slice(pdat, which.min(value))
   maxs <- dplyr::slice(pdat, which.max(value))
 
-  quarts <- dplyr::group_by_(pdat, ~var)
-  quarts <- dplyr::summarise_(quarts,
-                              quart1 = ~quantile(value, 0.25, na.rm = TRUE),
-                              quart2 = ~quantile(value, 0.75, na.rm = TRUE))
-  quarts <- dplyr::right_join(quarts, pdat, by = 'var')
-  quarts <- dplyr::group_by_(quarts, ~var, ~animal)
-  quarts <- dplyr::slice_(quarts, ~c(which.min(frame), which.max(frame)))
-
-  p <- ggplot2::ggplot(pdat, ggplot2::aes_(x = ~frame, y = ~value, color = ~animal,
-                                           label = ~signif(value, 3))) +
+  p <- ggplot2::ggplot(pdat,
+                       ggplot2::aes_(x = ~frame, y = ~value, color = ~animal,
+                                     label = ~signif(value, 3))) +
     ggplot2::facet_grid(var ~ ., scales = "free_y", switch = 'y') +
-    ggplot2::geom_ribbon(data = quarts,
-                         ggplot2::aes_(ymin = ~quart1, max = ~quart2),
+    ggplot2::geom_ribbon(data = quants,
+                         ggplot2::aes_(ymin = ~quant1, max = ~quant2),
                          fill = 'grey90', col = NA) +
     ggplot2::geom_line(size = 0.2) +
     ggplot2::geom_point(data = mins, size = 2) +

@@ -5,7 +5,7 @@
 \title{Plot sparklines for several track variables.}
 \usage{
 plot_tracks_sparklines(tracks, trial, frames, vars = NULL,
-  point_events = NULL)
+  point_events = NULL, quantiles = c(0.025, 0.975))
 }
 \arguments{
 \item{tracks}{A tracks object.}
