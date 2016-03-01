@@ -5,6 +5,9 @@
 #' For the common operations of mean, median, min, max, sum, prod, sd and var,
 #' fast implementations from the \code{RcppRoll} package are used.
 #'
+#' By default a normal kernel is applied. Note that \code{weights} takes
+#' priority over \code{window}.
+#'
 #' @param tracks A tracks object.
 #' @param table Which table to look up the variable.
 #' @param var Which variable to roll over.
@@ -17,7 +20,7 @@
 #' @return A tracks object.
 #' @export
 roll <- function(tracks, table = 'tr', var, fun = mean, window = 5,
-                 weights = NULL) {
+                 weights = dnorm(seq(-3, 3, length.out = 20))) {
   fun <- match.fun(fun)
 
   m <- NULL # have to a loop here as sapply doesn't work??
@@ -31,6 +34,7 @@ roll <- function(tracks, table = 'tr', var, fun = mean, window = 5,
 }
 
 roll_fast <- function(tracks, table, var, fun, window, weights, hit) {
+  loadNamespace("RcppRoll")
   fun <- getAnywhere(paste0('roll_',
                             c('mean', 'median', 'min', 'max', 'sum', 'prod',
                               'sd', 'var')[hit]))$objs[[1]]
