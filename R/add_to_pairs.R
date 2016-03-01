@@ -103,8 +103,6 @@ add_pair_nip_dist <- function(tracks, n = 20) {
   }
   tr <- dplyr::select_(tracks$tr, ~trial, ~animal, ~frame, ~X, ~Y, ~orientation,
                        ~minor_axis, ~major_axis)
-  # tr <- dplyr::mutate_(tr, minor_axis = ~minor_axis / 2,
-  #                      major_axis = ~major_axis / 2)
   tr <- dplyr::collect(tr)
 
   cl <- tracks$pairs$cluster
