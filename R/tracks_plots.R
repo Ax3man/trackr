@@ -196,6 +196,7 @@ plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
     ggplot2::geom_ribbon(data = quants,
                          ggplot2::aes_(ymin = ~quant1, max = ~quant2),
                          fill = 'grey90', col = NA) +
+    ggplot2::geom_hline(yintercept = 0) +
     ggplot2::geom_line(size = 0.2) +
     ggplot2::geom_point(data = mins, size = 2) +
     ggplot2::geom_point(data = maxs, size = 2) +
