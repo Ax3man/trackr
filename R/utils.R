@@ -32,3 +32,10 @@ join_tr_to_pairs <- function(tracks, select) {
 
   return(tracks)
 }
+
+find_max_cross_corr <- function(v1, v2, range) {
+  cross_corr <- ccf(v1, v2, range, na.action = na.pass, plot = FALSE)
+  res <- data.frame(cor = cross_corr$acf[, , 1], lag = cross_corr$lag[, 1, 1])
+  res = res[which.max(res$cor), ]
+  return(res)
+}

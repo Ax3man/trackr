@@ -150,21 +150,3 @@ add_pair_nip_dist_velocity <- function(tracks) {
   tracks$pr$pairs <- c(tracks$pr$pairs, 'nip_dist_velocity')
   add_diff_to_pairs(tracks, 'nip_dist', 'nip_dist_velocity')
 }
-
-add_pair_vector_corr <- function(tracks) {
-  if ('vector_corr' %in% tracks$pr$pairs) {
-    return(tracks)
-  }
-
-  tracks$pr$pairs <- c(tracks$pr$pairs, 'vector_corr')
-  return(tracks)
-}
-
-add_diff_to_pairs <- function(tracks, var, name) {
-  tracks$pairs <- dplyr::group_by_(tracks$pairs, ~animal1, ~animal2)
-  tracks$pairs <- dplyr::mutate_(
-    tracks$pairs,
-    .dots = setNames(list(lazyeval::interp(~x - dplyr::lag(x, order_by = frame),
-                                           x = as.name(var))), name))
-  return(tracks)
-}
