@@ -4,7 +4,8 @@
 \alias{roll}
 \title{Roll a function over a tracks variable.}
 \usage{
-roll(tracks, table = "tr", var, fun = mean, window = 5, weights = NULL)
+roll(tracks, table = "tr", var, fun = mean, window = 5,
+  weights = dnorm(seq(-3, 3, length.out = 20)))
 }
 \arguments{
 \item{tracks}{A tracks object.}
@@ -30,5 +31,8 @@ This is mainly useful for smoothing a variable over time.
 \details{
 For the common operations of mean, median, min, max, sum, prod, sd and var,
 fast implementations from the \code{RcppRoll} package are used.
+
+By default a normal kernel is applied. Note that \code{weights} takes
+priority over \code{window}.
 }
 
