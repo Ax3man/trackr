@@ -101,33 +101,14 @@ add_pair_nip_dist <- function(tracks, n = 20) {
   if ('nip_dist' %in% tracks$pr$pairs) {
     return(tracks)
   }
-  tr <- dplyr::select_(tracks$tr, ~trial, ~animal, ~frame, ~X, ~Y, ~orientation,
-                       ~minor_axis, ~major_axis)
-  tr <- dplyr::collect(tr)
+  tracks <- join_tr_to_pairs(tracks, list(~X, ~Y, ~orientation, ~minor_axis,
+                                          ~major_axis))
 
   cl <- tracks$pairs$cluster
-  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$pairs$name),
-                       function(x) names(table(x$trial)[table(x$trial) > 0]))
-  tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
-  multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
   multidplyr::cluster_assign_value(cl, 'find_closest_point_on_ellipse',
                                    find_closest_point_on_ellipse)
   multidplyr::cluster_assign_value(cl, 'n', n)
 
-  tracks$pairs <- dplyr::do_(tracks$pairs,
-                             ~dplyr::left_join(
-                               ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
-  tracks$pairs <- dplyr::rename_(tracks$pairs, X1 = ~X, Y1 = ~Y,
-                                 orientation1 = ~orientation,
-                                 minor_axis1 = ~minor_axis,
-                                 major_axis1 = ~major_axis)
-  tracks$pairs <- dplyr::do_(tracks$pairs,
-                             ~dplyr::left_join(
-                               ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
-  tracks$pairs <- dplyr::rename_(tracks$pairs, X2 = ~X, Y2 = ~Y,
-                                 orientation2 = ~orientation,
-                                 minor_axis2 = ~minor_axis,
-                                 major_axis2 = ~major_axis)
   tracks$pairs <- dplyr::mutate_(
     tracks$pairs,
     head_X = ~major_axis1 * cos(orientation1) + X1,
