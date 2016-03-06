@@ -29,7 +29,7 @@ calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
   tracks <- join_tr_to_pairs(tracks, list(~turn, ~orientation, ~speed))
 
   if (is.null(time_bin)) {
-    dplyr::mutate_(tracks$pairs, time_bin = ~1)
+    tracks$pairs <- dplyr::mutate_(tracks$pairs, time_bin = ~1)
   } else {
     f <- dplyr::collect(dplyr::do(tracks$pairs, data.frame(a = range(.$frame))))
     br <- seq(min(f$a), max(f$a), by = time_bin)
