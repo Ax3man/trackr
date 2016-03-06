@@ -13,6 +13,8 @@ plot_tracks(tracks, color = ~animal, facet = ~trial, nrow = NULL,
 \arguments{
 \item{x}{A tracks object.}
 
+\item{...}{Pass arguments to \code{plot_tracks}.}
+
 \item{tracks}{A tracks object.}
 
 \item{color}{Color specification of the path as a formula (e.g. ~animal).}

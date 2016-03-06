@@ -34,7 +34,8 @@ roll <- function(tracks, table = 'tr', var, fun = mean, window = 5,
 }
 
 roll_fast <- function(tracks, table, var, fun, window, weights, hit) {
-  loadNamespace("RcppRoll")
+  # This line is to load the namespace of RcppRoll without upsetting R CMD check.
+  dump <- RcppRoll::roll_mean
   fun <- getAnywhere(paste0('roll_',
                             c('mean', 'median', 'min', 'max', 'sum', 'prod',
                               'sd', 'var')[hit]))$objs[[1]]

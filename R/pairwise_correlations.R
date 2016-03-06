@@ -11,6 +11,9 @@
 #' @param tracks A tracks object.
 #' @param range The range of frames for which lags should be calculated, e.g.
 #'   100 means from lags from -100 to +100 are evaluated.
+#' @param time_bin Size of time bins in frames (optional). If supplied, for each
+#'   of these time bins, a seperate lag correlation will be calculated, allowing
+#'   you to see if the relationships change over the course of the trials.
 #'
 #' @return A data.frame.
 #' @export
