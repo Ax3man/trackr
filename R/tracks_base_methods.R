@@ -79,3 +79,9 @@ print.tracks <- function(x, ...) {
     cat('The size of this tracks object is ')
     print(tracks_size, units = "auto")
 }
+
+#' @export
+#' @rdname plot_tracks
+plot.tracks <- function(x, ...) {
+  plot_tracks(x, ...)
+}

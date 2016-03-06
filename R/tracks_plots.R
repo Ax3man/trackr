@@ -2,13 +2,14 @@
 #'
 #' Only plots a path between subsequent frames.
 #'
-#' @param x A tracks object
+#' @param x A tracks object.
+#' @param tracks A tracks object.
 #' @param color Color specification of the path as a formula (e.g. ~animal).
 #' @param facet Facet specification as a formula (e.g. ~trial), passed to
 #'   facet_wrap.
 #' @param nrow Control number of rows for the facets.
 #' @param ncol Control number of columns for the facets.
-#' @param ... Ignored.
+#' @param ... Pass arguments to \code{plot_tracks}.
 #'
 #' @return A ggplot object
 #' @export
@@ -18,10 +19,8 @@
 #' plot(guppies, NULL) # No animal coloring
 #' plot(guppies, facet = ~1) # No facets
 #' plot(guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
-plot.tracks <- function(x, color = ~animal, facet = ~trial,  nrow = NULL,
-                        ncol = NULL, ...) {
-  tracks <- x
-  rm(x)
+plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
+                        ncol = NULL) {
   if ((facet == ~trial) & length(levels(tracks$tr$trial)) == 1)
     facet <- ~1
 
