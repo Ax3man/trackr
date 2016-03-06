@@ -26,7 +26,7 @@ calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
   multidplyr::cluster_assign_value(tracks$pairs$cluster, 'range', range)
   multidplyr::cluster_assign_value(tracks$pairs$cluster, 'find_max_cross_corr',
                                    find_max_cross_corr)
-  tracks <- join_tr_to_pairs(tracks, list(~turn, ~orientation, ~speed))
+  tracks <- join_tr_to_pairs(tracks, list(~speed))
 
   if (is.null(time_bin)) {
     tracks$pairs <- dplyr::mutate_(tracks$pairs, time_bin = ~1)
@@ -41,6 +41,9 @@ calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
 
   res <- dplyr::do_(tracks$pairs, ~find_max_cross_corr(.$speed1, .$speed2, range))
   res <- dplyr::collect(res)
+  if (is.null(time_bin)) {
+    res <- dplyr::select_(res, ~-time_bin)
+  }
   return(res)
 }
 
