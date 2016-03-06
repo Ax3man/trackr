@@ -1,13 +1,13 @@
-##' @importFrom dplyr filter
-##' @name filter
-##' @rdname filter_.tracks
-##' @export
+#' @importFrom dplyr filter
+#' @name filter
+#' @rdname filter_.tracks
+#' @export
 NULL
 
-##' @importFrom dplyr filter_
-##' @name filter_
-##' @rdname filter_.tracks
-##' @export
+#' @importFrom dplyr filter_
+#' @name filter_
+#' @rdname filter_.tracks
+#' @export
 NULL
 
 #' Return a subset of a tracks object with matching conditions.
@@ -53,7 +53,6 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
   rm(.data)
   # collect conditions
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
-  conds
   # check if drop happens to be in the .dots (coming from filter dispatching to
   # filter_), if so then extract it out
   if (any(names(conds) == 'drop')) {
@@ -116,28 +115,28 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
   return(tracks)
   }
 
-##' @importFrom dplyr summarise
-##' @name summarise
-##' @rdname summarise_.tracks
-##' @export
+#' @importFrom dplyr summarise
+#' @name summarise
+#' @rdname summarise_.tracks
+#' @export
 NULL
 
-##' @importFrom dplyr summarise_
-##' @name summarise_
-##' @rdname summarise_.tracks
-##' @export
+#' @importFrom dplyr summarise_
+#' @name summarise_
+#' @rdname summarise_.tracks
+#' @export
 NULL
 
-##' @importFrom dplyr summarize
-##' @name summarize
-##' @rdname summarise_.tracks
-##' @export
+#' @importFrom dplyr summarize
+#' @name summarize
+#' @rdname summarise_.tracks
+#' @export
 NULL
 
-##' @importFrom dplyr summarize_
-##' @name summarize_
-##' @rdname summarise_.tracks
-##' @export
+#' @importFrom dplyr summarize_
+#' @name summarize_
+#' @rdname summarise_.tracks
+#' @export
 NULL
 
 #' Summarize a tracks variable into higher tables
@@ -202,16 +201,16 @@ summarise_.tracks <- function(.data,
   return(tracks)
 }
 
-##' @importFrom dplyr select
-##' @name select
-##' @rdname select_.tracks
-##' @export
+#' @importFrom dplyr select
+#' @name select
+#' @rdname select_.tracks
+#' @export
 NULL
 
-##' @importFrom dplyr select_
-##' @name select_
-##' @rdname select_.tracks
-##' @export
+#' @importFrom dplyr select_
+#' @name select_
+#' @rdname select_.tracks
+#' @export
 NULL
 
 #' Select tables from a tracks object
