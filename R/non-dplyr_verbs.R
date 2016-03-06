@@ -47,3 +47,94 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 
   return(tracks)
 }
+
+#' Retrieve the timestamps for track section based on conditions.
+#'
+#' Similar to \code{filter}, but returns a table of sequences grouped by trial,
+#' with a \code{start}, \code{stop} and \code{length} column. It supports a
+#' tolerance level which allows for combining sequences that are close together
+#' (the default of 1 is zero tolerance).
+#'
+#' Any variables used as conditions will be looked up in the \code{tr},
+#' \code{pairs} and \code{group} tables and applied when present. Non-existing
+#' variables will not produce an error.
+#'
+#' Seperate conditions on different variables with a \code{,}, not \code{&}.
+#' Combine several conditions on the same variable with \code{&}.
+#'
+#' Example use case: If one wants to select all sequences of frames where
+#' animals are chasing each other (to plot them, for example), one could filter
+#' for a high mean speed of the pair, and a small pairwise distance.
+#'
+#' @param tracks
+#' @param ...
+#' @param tol Combine sequences that are \code{tol} frames apart.
+#'
+#' @return A tbl_df.
+#' @export
+#'
+#' @examples
+find_track_sections <- function(tracks, ..., tol = 0) {
+  find_track_sections_(tracks, tol = tol, .dots = lazyeval::lazy_dots(...))
+}
+
+#' @rdname summarise_.tracks
+#' @export
+find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
+  conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  vars <- sapply(strsplit(names(conds), ' '), '[', 1)
+  present <- names(tracks)[(names(tracks) %in% c('tr', 'pairs', 'group'))]
+
+  if (length(vars) > length(unique(vars)))
+    stop("Combine different conditions for the same variable with '&', instead
+         of using seperate ... arguments.")
+
+  # Apply filter to all tables -------------------------------------------------
+  frames <- lapply(tracks[present], function(d, conds, vars) {
+    var_d <- switch(class(d)[1],
+                    'party_df' = get_party_df_names(d),
+                    'tbl_df' = names(d),
+                    return(d))
+
+    conds2 <- conds[which(vars %in% var_d)]
+    if (length(conds2) > 0) {
+      d <- dplyr::filter_(d, .dots = conds2)
+    }
+    if ('party_df' %in% class(d)) {
+      d <- dplyr::collect(d)
+    }
+    dplyr::select_(d, ~trial, ~frame)
+  }, conds = conds, vars = vars)
+
+  # Find common frames ---------------------------------------------------------
+  if (length(present) == 1) {
+    frames <- unlist(frames)
+  } else {
+    if (length(present == 2)) {
+      frames <- dplyr::full_join(frames[[1]], frames[[2]],
+                                 by = c('trial', 'frame'))
+    } else {
+      frames <- dplyr::full_join(
+        dplyr::full_join(frames[[1]], frames[[2]],by = c('trial', 'frame')),
+        frames[[3]],
+        by = c('trial', 'frame'))
+    }
+  }
+  frames <- dplyr::ungroup(frames)
+  frames <- dplyr::distinct(frames)
+  frames <- dplyr::group_by_(frames, ~trial)
+
+  frames <- dplyr::mutate_(frames,
+                           dif = ~frame - dplyr::lag(frame, 1),
+                           gap = ~ifelse(dif > tol, TRUE, FALSE))
+  frames <- dplyr::filter_(frames, ~!is.na(gap))
+  frames <- dplyr::mutate_(frames, seq = ~as.factor(cumsum(gap) + 1))
+  frames <- dplyr::select_(frames, ~trial, ~frame, ~seq)
+  frames <- dplyr::group_by_(frames, ~trial, ~seq)
+  frames <- dplyr::summarize_(frames,
+                              start = ~min(frame),
+                              end = ~max(frame),
+                              length = ~end - start)
+
+  return(frames)
+}
