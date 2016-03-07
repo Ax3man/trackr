@@ -25,7 +25,7 @@ Support for other trackers can be added. Please file an [issue](https://github.c
 
 ### Performance
 
-`R` is not typically known for lightning fast performance. However, `trackr` makes use of several packages in the *Hadleyverse* that greatly speed things up. Specifically, it uses `readr` to read in large data files and `dplyr` for data manipulation. On top of that, the two largest tables in the tracks object (see `?as_tracks`) are kept on worker nodes so all calculations are in parallel. Data copying in minimized.
+`R` is not typically known for lightning fast performance. However, `trackr` makes use of several packages in the *Hadleyverse* that greatly speed things up. Specifically, it uses `readr` to read in large data files and `dplyr` for data manipulation. On top of that, the two largest tables in the tracks object (see `?as_tracks`) are kept on worker nodes so all calculations are in parallel. Keeping the tables on the workers minimizes data copying (eliminating the added cost of parallel computations).
 
 ### Example code
 As a quick example, let's read in some data of male guppy pairs.
