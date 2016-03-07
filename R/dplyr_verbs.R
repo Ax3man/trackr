@@ -180,6 +180,7 @@ summarise_.tracks <- function(.data,
     tracks$group <- tracks$tr %>%
       dplyr::group_by_(~trial, ~frame) %>%
       dplyr::summarize_(.dots = conds) %>%
+      dplyr::collect(.) %>%
       dplyr::full_join(tracks$group, c('trial', 'frame')) %>%
       dplyr::ungroup(.)
   }
@@ -188,6 +189,7 @@ summarise_.tracks <- function(.data,
     tracks$animal <- tracks$tr %>%
       dplyr::group_by_(~trial, ~animal) %>%
       dplyr::summarize_(.dots = conds) %>%
+      dplyr::collect(.) %>%
       dplyr::full_join(tracks$animal, c('trial', 'animal')) %>%
       dplyr::ungroup(.)
   }
@@ -196,6 +198,7 @@ summarise_.tracks <- function(.data,
     tracks$trial <- tracks$tr %>%
       dplyr::group_by_(~trial) %>%
       dplyr::summarize_(.dots = conds) %>%
+      dplyr::collect(.) %>%
       dplyr::full_join(tracks$trial, 'trial')
   }
   return(tracks)
