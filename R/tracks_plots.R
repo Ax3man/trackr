@@ -226,7 +226,8 @@ plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
 #' show pair 1,2 (and not 2,1).
 #'
 #' The y-axis shows time bins (top to bottom), the x-axis shows the lag in
-#' frames and the size (area) of the dots denotes strength of the correlation.
+#' frames and the size (area) of the dots denotes strength of the correlation
+#' (*r*).
 #'
 #' @param data The result from a lag correlation function (e.g.
 #'   \code{calc_speed_lag}).

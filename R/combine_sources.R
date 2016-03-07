@@ -69,7 +69,7 @@ combine_sources <- function(tracks1, tracks2, err_cutoff = 25 ^ 2,
 }
 
 combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
-  # This second version will assume that ctrax is golden, it's just the id's
+  # This version will assume that ctrax is golden, it's just the id's
   # that are off.
 
   # Input handling -------------------------------------------------------------
@@ -84,7 +84,7 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
 
   # Before we do anything, we make sure we only use _reliable_ idtracker id's
   id <- dplyr::filter_(id, ~prob_id == 1)
-  # We'll also need to pull id of it's cluster
+  # We'll also need to pull id of the workers
   id <- dplyr::collect(id)
 
   res <- dplyr::group_by_(ct, ~animal)
@@ -111,10 +111,13 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
   # All that is left is to filter out frames above cut-off and duplicate matches
   res <- dplyr::filter_(res, ~!is.na(animal))
 
+
   res <- dplyr::group_by_(res, ~trial, ~animal, ~frame)
   if (attributes(res)$biggest_group_size > 1) {
     res <- multidplyr::partition(res, trial, animal, frame)
     multidplyr::cluster_assign_value(res$cluster, 'err_cutoff', err_cutoff)
+    multidplyr::cluster_assign_value(res$cluster, 'mean_direction',
+                                     mean_direction)
     cat('Finding duplicates...\n')
     res_ok <- dplyr::filter(res, n() == 1)
     res_dups <- dplyr::filter(res, n() > 1)
