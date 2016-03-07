@@ -35,11 +35,12 @@ calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
     br <- seq(min(f$a), max(f$a), by = time_bin)
     multidplyr::cluster_assign_value(tracks$pairs$cluster, 'br', br)
     tracks$pairs <- dplyr::mutate_(tracks$pairs, time_bin = ~cut(frame, br))
-    tracks$pairs <- dplyr::filter_(tracks$pairs, !is.na(time_bin))
   }
   tracks$pairs <- dplyr::group_by_(tracks$pairs, ~animal1, ~animal2, ~time_bin)
 
   res <- dplyr::do_(tracks$pairs, ~find_max_cross_corr(.$speed1, .$speed2, range))
+  tracks$pairs <- dplyr::filter_(tracks$pairs, !is.na(time_bin))
+
   res <- dplyr::collect(res)
   if (is.null(time_bin)) {
     res <- dplyr::select_(res, ~-time_bin)
