@@ -83,9 +83,10 @@ find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
   present <- names(tracks)[(names(tracks) %in% c('tr', 'pairs', 'group'))]
 
-  if (length(vars) > length(unique(vars)))
+  if (length(vars) > length(unique(vars))) {
     stop("Combine different conditions for the same variable with '&', instead
          of using seperate ... arguments.")
+  }
 
   # Apply filter to all tables -------------------------------------------------
   frames <- lapply(tracks[present], function(d, conds, vars) {
@@ -108,7 +109,7 @@ find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
   if (length(present) == 1) {
     frames <- unlist(frames)
   } else {
-    if (length(present == 2)) {
+    if (length(present) == 2) {
       frames <- dplyr::full_join(frames[[1]], frames[[2]],
                                  by = c('trial', 'frame'))
     } else {
