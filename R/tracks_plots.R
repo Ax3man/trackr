@@ -11,7 +11,7 @@
 #' @param ncol Control number of columns for the facets.
 #' @param ... Pass arguments to \code{plot_tracks}.
 #'
-#' @return A ggplot object
+#' @return A \code{ggplot} object.
 #' @export
 #'
 #' @examples
@@ -62,7 +62,7 @@ plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
 #' @param coord_boundary Whether to fix the plot limits to the boundary. Will
 #'   attempt to autodetect whether plotting ~X and ~Y.
 #'
-#' @return A ggplot object.
+#' @return A \code{ggplot} object.
 #' @export
 #'
 #' @examples
@@ -132,7 +132,7 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #'  If frames is left NULL, but point_events and window are provided then a
 #'  window around the point_events.
 #'
-#' @return A ggplot object.
+#' @return A \code{ggplot} object.
 #' @export
 plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
                                    point_events = NULL, window = 600,
@@ -216,4 +216,49 @@ plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
                                  ggplot2::aes_(xintercept = ~v), lty = 2)
   }
   return(p)
+}
+
+#' Plot lag correlations
+#'
+#' This function produces a \code{ggplot} that shows how the lag correlations
+#' changes over time for each trial. Tries to do clever facetting. Will show
+#' all pairs in the data, but if all trials contain only one pair, will only
+#' show pair 1,2 (and not 2,1).
+#'
+#' The y-axis shows time bins (top to bottom), the x-axis shows the lag in
+#' frames and the size (area) of the dots denotes strength of the correlation.
+#'
+#' @param data The result from a lag correlation function (e.g.
+#'   \code{calc_speed_lag}).
+#'
+#' @return A \code{ggplot} object.
+#' @export
+plot_lag_cor <- function(data) {
+  if (length(levels(data$time_bin)) == 1) {
+    stop('This plot only makes sense with multiple time bins.', call. = FALSE)
+  }
+
+  data$time_bin <- factor(data$time_bin, rev(levels(data$time_bin)))
+
+  if (length(levels(data$animal1)) == 2) {
+    data <- dplyr::filter_(data, ~animal1 == 1)
+    if (length(levels(data$trial)) > 1) {
+      facet <- ggplot2::facet_wrap(~trial)
+    } else {
+      facet <- ggplot2::facet_null()
+    }
+  } else {
+    if (length(levels(data$trial)) > 1) {
+      facet <- ggplot2::facet_grid(interaction(animal1, animal2) ~ trial)
+    } else {
+      facet <- ggplot2::facet_null()
+    }
+  }
+
+  ggplot2::ggplot(data, ggplot2::aes(x = lag, y = time_bin)) +
+    ggplot2::geom_point(aes(size = cor)) +
+    ggplot2::geom_path(aes(group = 1)) +
+    ggplot2::geom_vline(xintercept = 0) +
+    ggplot2::theme_bw() +
+    facet
 }
