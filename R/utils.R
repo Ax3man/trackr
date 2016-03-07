@@ -44,7 +44,6 @@ remove_empty_shards <- function(tracks) {
                                                        as.name(tracks$pairs$name))
                               == 0)
   }
-
   if (empty_shards_tr | empty_shards_pairs) {
     tracks$tr <- dplyr::collect(tracks$tr)
     if (!is.null(tracks$pairs)) {
