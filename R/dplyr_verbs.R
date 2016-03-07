@@ -112,6 +112,8 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
     d
   }, conds = conds, vars = vars)
 
+  tracks <- remove_empty_shards(tracks)
+
   return(tracks)
   }
 
