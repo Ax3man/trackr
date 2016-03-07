@@ -66,14 +66,12 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #' animals are chasing each other (to plot them, for example), one could filter
 #' for a high mean speed of the pair, and a small pairwise distance.
 #'
-#' @param tracks
-#' @param ...
+#' @param tracks A tracks object.
+#' @param ... Conditions.
 #' @param tol Combine sequences that are \code{tol} frames apart.
 #'
 #' @return A tbl_df.
 #' @export
-#'
-#' @examples
 find_track_sections <- function(tracks, ..., tol = 0) {
   find_track_sections_(tracks, tol = tol, .dots = lazyeval::lazy_dots(...))
 }

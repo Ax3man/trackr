@@ -30,7 +30,7 @@ with vertical dotted lines.}
  window around the point_events.}
 }
 \value{
-A ggplot object.
+A \code{ggplot} object.
 }
 \description{
 Plot sparklines for several track variables.

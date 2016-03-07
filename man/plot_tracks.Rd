@@ -27,7 +27,7 @@ facet_wrap.}
 \item{ncol}{Control number of columns for the facets.}
 }
 \value{
-A ggplot object
+A \code{ggplot} object.
 }
 \description{
 Only plots a path between subsequent frames.

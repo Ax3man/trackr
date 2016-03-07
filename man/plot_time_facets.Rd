@@ -36,7 +36,7 @@ if mode is set to manual.}
 attempt to autodetect whether plotting ~X and ~Y.}
 }
 \value{
-A ggplot object.
+A \code{ggplot} object.
 }
 \description{
 Facet paths using time bins.
