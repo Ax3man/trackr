@@ -141,7 +141,7 @@ plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
     if (is.null(point_events) | is.null(window)) {
       stop('Provide either frames, or point_events and window.', call. = FALSE)
     }
-    frames <- (min(point_events) - window):(max(point_events) + window)
+    frames <- (min(point_events) - window / 2):(max(point_events) + window / 2)
   }
 
   if (is.null(vars)) {
