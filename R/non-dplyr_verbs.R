@@ -110,11 +110,11 @@ find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
     frames <- unlist(frames)
   } else {
     if (length(present) == 2) {
-      frames <- dplyr::full_join(frames[[1]], frames[[2]],
+      frames <- dplyr::inner_join(frames[[1]], frames[[2]],
                                  by = c('trial', 'frame'))
     } else {
-      frames <- dplyr::full_join(
-        dplyr::full_join(frames[[1]], frames[[2]],by = c('trial', 'frame')),
+      frames <- dplyr::inner_join(
+        dplyr::inner_join(frames[[1]], frames[[2]],by = c('trial', 'frame')),
         frames[[3]],
         by = c('trial', 'frame'))
     }
