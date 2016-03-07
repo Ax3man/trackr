@@ -33,6 +33,33 @@ join_tr_to_pairs <- function(tracks, select) {
   return(tracks)
 }
 
+remove_empty_shards <- function(tracks) {
+  fun <- function(x) nrow(eval(x))
+  empty_shards_tr <- any(multidplyr::cluster_call(tracks$tr$cluster, fun,
+                                                  as.name(tracks$tr$name))
+                         == 0)
+
+  if (!is.null(tracks$pairs)) {
+    empty_shards_pairs <- any(multidplyr::cluster_call(tracks$pairs$cluster, fun,
+                                                       as.name(tracks$pairs$name))
+                              == 0)
+  }
+
+  if (empty_shards_tr | empty_shards_pairs) {
+    tracks$tr <- dplyr::collect(tracks$tr)
+    if (!is.null(tracks$pairs)) {
+      tracks$pairs <- dplyr::collect(tracks$pairs)
+    }
+
+    tracks$tr <- multidplyr::partition(tracks$tr, trial)
+    if (!is.null(tracks$pairs)) {
+      tracks$pairs <- multidplyr::partition(tracks$pairs, trial,
+                                            cluster = tracks$tr$cluster)
+    }
+  }
+  return(tracks)
+}
+
 find_max_cross_corr <- function(v1, v2, range) {
   cross_corr <- ccf(v1, v2, range, na.action = na.pass, plot = FALSE)
   res <- data.frame(cor = cross_corr$acf[, , 1], lag = cross_corr$lag[, 1, 1])

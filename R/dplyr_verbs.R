@@ -112,8 +112,8 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
     d
   }, conds = conds, vars = vars)
 
-  return(tracks)
-  }
+  remove_empty_shards(tracks)
+}
 
 #' @importFrom dplyr summarise
 #' @name summarise
