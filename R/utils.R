@@ -43,7 +43,10 @@ remove_empty_shards <- function(tracks) {
     empty_shards_pairs <- any(multidplyr::cluster_call(tracks$pairs$cluster, fun,
                                                        as.name(tracks$pairs$name))
                               == 0)
+  } else {
+    empty_shards_pairs <- FALSE
   }
+
   if (empty_shards_tr | empty_shards_pairs) {
     tracks$tr <- dplyr::collect(tracks$tr)
     if (!is.null(tracks$pairs)) {
