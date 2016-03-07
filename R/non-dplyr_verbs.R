@@ -85,7 +85,7 @@ find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
 
   if (length(vars) > length(unique(vars))) {
     stop("Combine different conditions for the same variable with '&', instead
-         of using seperate ... arguments.")
+       of using seperate ... arguments.")
   }
 
   # Apply filter to all tables -------------------------------------------------
@@ -111,29 +111,31 @@ find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
   } else {
     if (length(present) == 2) {
       frames <- dplyr::inner_join(frames[[1]], frames[[2]],
-                                 by = c('trial', 'frame'))
+                                  by = c('trial', 'frame'))
     } else {
       frames <- dplyr::inner_join(
-        dplyr::inner_join(frames[[1]], frames[[2]],by = c('trial', 'frame')),
+        dplyr::inner_join(frames[[1]], frames[[2]], by = c('trial', 'frame')),
         frames[[3]],
         by = c('trial', 'frame'))
     }
   }
   frames <- dplyr::ungroup(frames)
+  frames <- dplyr::select_(frames, ~trial, ~frame)
   frames <- dplyr::distinct(frames)
+  frames <- dplyr::arrange_(frames, ~trial, ~frame)
   frames <- dplyr::group_by_(frames, ~trial)
 
   frames <- dplyr::mutate_(frames,
-                           dif = ~frame - dplyr::lag(frame, 1),
+                           dif = ~ifelse(row_number() == 1,
+                                         Inf,
+                                         frame - dplyr::lag(frame, 1)),
                            gap = ~ifelse(dif > tol, TRUE, FALSE))
   frames <- dplyr::filter_(frames, ~!is.na(gap))
-  frames <- dplyr::mutate_(frames, seq = ~as.factor(cumsum(gap) + 1))
+  frames <- dplyr::mutate_(frames, seq = ~cumsum(gap))
   frames <- dplyr::select_(frames, ~trial, ~frame, ~seq)
   frames <- dplyr::group_by_(frames, ~trial, ~seq)
   frames <- dplyr::summarize_(frames,
                               start = ~min(frame),
                               end = ~max(frame),
-                              length = ~end - start)
-
-  return(frames)
+                              length = ~end - start + 1)
 }
