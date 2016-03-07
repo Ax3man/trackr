@@ -2,9 +2,12 @@
 % Please edit documentation in R/non-dplyr_verbs.R
 \name{find_track_sections}
 \alias{find_track_sections}
+\alias{find_track_sections_}
 \title{Retrieve the timestamps for track section based on conditions.}
 \usage{
 find_track_sections(tracks, ..., tol = 0)
+
+find_track_sections_(tracks, ..., tol = 1, .dots)
 }
 \arguments{
 \item{tracks}{A tracks object.}

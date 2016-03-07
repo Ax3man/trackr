@@ -76,7 +76,7 @@ find_track_sections <- function(tracks, ..., tol = 0) {
   find_track_sections_(tracks, tol = tol, .dots = lazyeval::lazy_dots(...))
 }
 
-#' @rdname summarise_.tracks
+#' @rdname find_track_sections
 #' @export
 find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
