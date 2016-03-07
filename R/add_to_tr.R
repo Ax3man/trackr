@@ -26,6 +26,7 @@ add_speed <- function(tracks) {
                     sqrt((X - prev_X) ^ 2 + (Y - prev_Y) ^ 2) / frame_rate * scale,
                     NA)) # we use order_by since arrange doesnt work on party_df
   tracks$tr <- dplyr::select_(tracks$tr, ~-prev_X, ~-prev_Y, ~-prev_frame)
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial)
 
   multidplyr::cluster_rm(tracks$tr$cluster, c('frame_rate', 'scale'))
 
@@ -76,7 +77,7 @@ add_turn <- function(tracks) {
                  angle(X, Y, dplyr::lead(X, order_by = frame),
                        dplyr::lead(Y, order_by = frame))),
       NA))
-
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial)
   multidplyr::cluster_rm(tracks$tr$cluster, c('angle_diff', 'angle'))
 
   tracks$pr$tr <- c(tracks$pr$tr, 'turn')
@@ -89,6 +90,7 @@ add_diff_to_track <- function(tracks, var, name) {
     tracks$tr,
     .dots = setNames(list(lazyeval::interp(~x - dplyr::lag(x, order_by = frame),
                                            x = as.name(var))), name))
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial)
   return(tracks)
 }
 
