@@ -13,28 +13,13 @@ add_pair_dist <- function(tracks) {
   if ('dist' %in% tracks$pr$soc) {
     return(tracks)
   }
-  tr <- dplyr::select_(tracks$tr, ~trial, ~animal, ~frame, ~X, ~Y)
-  tr <- dplyr::collect(tr)
+  tracks <- join_tr_to_soc(tracks, list(~X, ~Y))
 
-  cl <- tracks$soc$cluster
-  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$soc$name),
-                       function(x) names(table(x$trial)[table(x$trial) > 0]))
-  tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
-  multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
-
-  tracks$soc <- dplyr::do_(tracks$soc,
-                           ~dplyr::left_join(
-                             ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
-  tracks$soc <- dplyr::rename(tracks$soc, X1 = X, Y1 = Y)
-  tracks$soc <- dplyr::do_(tracks$soc,
-                           ~dplyr::left_join(
-                             ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
-  tracks$soc <- dplyr::rename_(tracks$soc, X2 = ~X, Y2 = ~Y)
   tracks$soc <- dplyr::mutate_(tracks$soc,
-                               dist = ~sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2))
+                               pair_dist = ~sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2))
   tracks$soc <- dplyr::select_(tracks$soc, ~-X1, ~-Y1, ~-X2, ~-Y2)
 
-  tracks$pr$soc <- c(tracks$pr$soc, 'dist')
+  tracks$pr$soc <- c(tracks$pr$soc, 'pair_dist')
   return(tracks)
 }
 
@@ -49,15 +34,15 @@ add_pair_dist <- function(tracks) {
 #' @return A tracks object.
 #' @export
 add_pair_dist_velocity <- function(tracks) {
-  if ('dist_velocity' %in% tracks$pr$soc) {
+  if ('pair_dist_velocity' %in% tracks$pr$soc) {
     return(tracks)
   }
-  if (!('dist' %in% tracks$pr$soc)) {
+  if (!('pair_dist' %in% tracks$pr$soc)) {
     message('Adding distance to soc table first.')
     tracks <- add_pair_dist(tracks)
   }
-  tracks$pr$soc <- c(tracks$pr$soc, 'dist_velocity')
-  add_diff_to_pairs(tracks, 'dist', 'dist_velocity')
+  tracks$pr$soc <- c(tracks$pr$soc, 'pair_dist_velocity')
+  add_diff_to_pairs(tracks, 'pair_dist', 'pair_dist_velocity')
 }
 
 #' Add acceleration in distance between pairs
@@ -71,15 +56,15 @@ add_pair_dist_velocity <- function(tracks) {
 #' @return A tracks object.
 #' @export
 add_pair_dist_acceleration <- function(tracks) {
-  if ('dist_acceleration' %in% tracks$pr$soc) {
+  if ('pair_dist_acceleration' %in% tracks$pr$soc) {
     return(tracks)
   }
-  if (!('dist_velocity' %in% tracks$pr$soc)) {
+  if (!('pair_dist_velocity' %in% tracks$pr$soc)) {
     message('Adding distance velocity to soc table first.')
     tracks <- add_pair_dist_velocity(tracks)
   }
-  tracks$pr$soc <- c(tracks$pr$soc, 'dist_acceleration')
-  add_diff_to_pairs(tracks, 'dist_velocity', 'dist_acceleration')
+  tracks$pr$soc <- c(tracks$pr$soc, 'pair_dist_acceleration')
+  add_diff_to_pairs(tracks, 'pair_dist_velocity', 'pair_dist_acceleration')
 }
 
 #' Add pairwise distance based on tip to ellipse.
