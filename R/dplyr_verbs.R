@@ -31,6 +31,9 @@ NULL
 #'   contains data that was aggregated over a variable that is now being used to
 #'   filter, drop must be TRUE or an error will be raised. Have to opt in, since
 #'   aggregation may have been expensive.
+#' @param .check_shards If TRUE, will check if filtering has caused any worker
+#'   nodes to be empty, and if so will collect and reassign the \code{tr} and
+#'   \code{soc} tables.
 #' @inheritParams dplyr::filter
 #'
 #' @return The subsetted tracks object
@@ -48,7 +51,8 @@ NULL
 #'
 #' @export
 #' @seealso \link[dplyr]{filter}
-filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
+filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
+                           .check_shards = TRUE) {
   # rename the .data argument (we need it for dplyr consistency).
   tracks <- .data
   rm(.data)
@@ -62,7 +66,7 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
   }
   # extract which things those conditions apply to
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
-  if (any(!(vars %in% c('frame', 'trial', 'animal', 'time'))))
+  if (any(!(vars %in% c('frame', 'trial', 'animal', 'time'))) & !drop)
     warning("Compatability is only checked when filtering on frame, trial or animal.",
             call. = FALSE)
   if (length(vars) > length(unique(vars)))
@@ -113,7 +117,10 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
     d
   }, conds = conds, vars = vars)
 
-  remove_empty_shards(tracks)
+  if (.check_shards) {
+    remove_empty_shards(tracks)
+  }
+  return(tracks)
 }
 
 #' @importFrom dplyr summarise
