@@ -48,7 +48,7 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
   return(tracks)
 }
 
-#' Retrieve the timestamps for track section based on conditions.
+#' Retrieve the timestamps for track sections based on conditions.
 #'
 #' Similar to \code{filter}, but returns a table of sequences grouped by trial,
 #' with a \code{start}, \code{stop} and \code{length} column. It supports a
@@ -69,16 +69,19 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #' @param tracks A tracks object.
 #' @param ... Conditions.
 #' @param tol Combine sequences that are \code{tol} frames apart.
+#' @param .dots Used to work around non-standard evaluation. See vignette("nse")
+#'   for details.
 #'
 #' @return A tbl_df.
 #' @export
-find_track_sections <- function(tracks, ..., tol = 0) {
+find_sections <- function(tracks, ..., tol = 0) {
   find_track_sections_(tracks, tol = tol, .dots = lazyeval::lazy_dots(...))
 }
 
-#' @rdname find_track_sections
+#' @describeIn summarize_sections Retrieve the timestamps for track section
+#'   based on conditions.
 #' @export
-find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
+find_sections_ <- function(tracks, ..., tol = 1, .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
   present <- names(tracks)[(names(tracks) %in% c('tr', 'pairs', 'group'))]
@@ -139,3 +142,45 @@ find_track_sections_ <- function(tracks, ..., tol = 1, .dots) {
                               end = ~max(frame),
                               length = ~end - start + 1)
 }
+
+#' Summarize track sections.
+#'
+#' Similar to \code{filter}, but returns a table of sequences grouped by trial,
+#' with a \code{start}, \code{stop} and \code{length} column. It supports a
+#' tolerance level which allows for combining sequences that are close together
+#' (the default of 1 is zero tolerance).
+#'
+#' Any variables used as conditions will be looked up in the \code{tr},
+#' \code{pairs} and \code{group} tables and applied when present. Non-existing
+#' variables will not produce an error.
+#'
+#' Seperate conditions on different variables with a \code{,}, not \code{&}.
+#' Combine several conditions on the same variable with \code{&}.
+#'
+#' Example use case: If one has selected all sequences of frames where animals
+#' are chasing each other, one can calculate the mean speed for each of the
+#' chase sequences.
+#'
+#' @param tracks A table with track sections (output from
+#'   \code{find_track_sections}).
+#' @param tracks A tracks object.
+#' @param ... Summary statements.
+#' @param .dots Used to work around non-standard evaluation. See vignette("nse")
+#'   for details.
+#'
+#' @return A tbl_df.
+#' @export
+summarize_sections <- function(sections, tracks, ...) {
+  summarize_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...))
+}
+
+#' @describeIn summarize_sections Retrieve the timestamps for track section
+#'   based on conditions.
+#' @export
+summarize_sections_ <- function(sections, tracks, ..., .dots) {
+  conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  vars <- sapply(strsplit(names(conds), ' '), '[', 1)
+  present <- names(tracks)[(names(tracks) %in% c('tr', 'pairs', 'group'))]
+}
+
+
