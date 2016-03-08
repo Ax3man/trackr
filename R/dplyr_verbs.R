@@ -41,9 +41,10 @@ NULL
 #'   object. It will also attempt to check for any dependency problems. This is
 #'   crucial in order to maintain internal consistency in the tracks object. For
 #'   example, if you select a sequence of frames, any data that was aggregated
-#'   over time will now no longer match. If conflicts are found, by default, an
-#'   error will be raised. By setting \code{drop = TRUE}, you can allow for any
-#'   conflicting data to be deleted from the tracks object.
+#'   over time (such as in the \code{trial} table) will now no longer match. If
+#'   conflicts are found, by default, an error will be raised. By setting
+#'   \code{drop = TRUE}, you can allow for any conflicting data to be deleted
+#'   from the tracks object.
 #'
 #' @export
 #' @seealso \link[dplyr]{filter}
@@ -81,11 +82,11 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots) {
     }
   }
   if (any(vars == 'animal') &
-      any(present %in% c('group', 'pairs', 'location', 'trial'))) {
+      any(present %in% c('group', 'soc', 'location', 'trial'))) {
     if (drop) {
       message("Dropping incompatible data.")
       tracks$group <- NULL
-      tracks$pairs <- NULL
+      tracks$soc <- NULL
       tracks$location <- NULL
       tracks$trial <- NULL
     } else {

@@ -11,10 +11,10 @@ print.tracks <- function(x, ...) {
   tr_size <- multidplyr::cluster_eval(x$tr$cluster,
                                       object.size(eval(as.name(.name))))
   tr_size <- sum(unlist(tr_size))
-  if (!is.null(x$pairs)) {
-    multidplyr::cluster_assign_value(x$pairs$cluster, name = '.name',
-                                     x$pairs$name)
-    pairs_size <- multidplyr::cluster_eval(x$pairs$cluster,
+  if (!is.null(x$soc)) {
+    multidplyr::cluster_assign_value(x$soc$cluster, name = '.name',
+                                     x$soc$name)
+    pairs_size <- multidplyr::cluster_eval(x$soc$cluster,
                                            object.size(eval(as.name(.name))))
     pairs_size <- sum(unlist(pairs_size))
   } else {
@@ -25,21 +25,27 @@ print.tracks <- function(x, ...) {
 
   # var names
   tr_names <- names(multidplyr::cluster_get(x$tr$cluster, x$tr$name)[[1]])
-  if(!is.null(x$pairs))
-    pairs_names <- names(multidplyr::cluster_get(x$pairs$cluster,
-                                                 x$pairs$name)[[1]])
+  if (!is.null(x$soc))
+    soc_names <- names(multidplyr::cluster_get(x$soc$cluster,
+                                               x$soc$name)[[1]])
 
     # Printing of info  ----------------------------------------------------------
     cat('Tracks object conaining the following elements:\n\n')
 
     cat('Tracks:\n')
     cat('  Containing data from:\n')
-    if (!is.null(x$tr$trial))
-      cat('    Trials:', levels(x$tr$trial), '\n')
+    # if (!is.null(x$tr$trial))
+    #   cat('    Trials:', levels(x$tr$trial), '\n')
     cat('    Frames:', frame_range$min, 'to',
         frame_range$max, '\n')
     cat('  With these variables stored:\n')
     cat('    ', tr_names, '\n\n')
+
+    if (!is.null(x$soc)) {
+      cat('Social:\n')
+      cat('  Has these variables stored:\n')
+      cat('  ', soc_names, '\n\n')
+    }
 
     if (!is.null(x$group)) {
       cat('Group:\n')
@@ -47,10 +53,10 @@ print.tracks <- function(x, ...) {
       cat('  ', names(x$group), '\n\n')
     }
 
-    if (!is.null(x$pairs)) {
-      cat('Pairs:\n')
+    if (!is.null(x$pair)) {
+      cat('Pair:\n')
       cat('  Has these variables stored:\n')
-      cat('  ', pairs_names, '\n\n')
+      cat('  ', names(x$pair), '\n\n')
     }
 
     if (!is.null(x$animal)) {

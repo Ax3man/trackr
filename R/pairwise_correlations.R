@@ -23,23 +23,23 @@ calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
     tracks <- add_speed(tracks)
   }
 
-  multidplyr::cluster_assign_value(tracks$pairs$cluster, 'range', range)
-  multidplyr::cluster_assign_value(tracks$pairs$cluster, 'find_max_cross_corr',
+  multidplyr::cluster_assign_value(tracks$soc$cluster, 'range', range)
+  multidplyr::cluster_assign_value(tracks$soc$cluster, 'find_max_cross_corr',
                                    find_max_cross_corr)
-  tracks <- join_tr_to_pairs(tracks, list(~speed))
+  tracks <- join_tr_to_soc(tracks, list(~speed))
 
   if (is.null(time_bin)) {
-    tracks$pairs <- dplyr::mutate_(tracks$pairs, time_bin = ~1)
+    tracks$soc <- dplyr::mutate_(tracks$soc, time_bin = ~1)
   } else {
-    f <- dplyr::collect(dplyr::do(tracks$pairs, data.frame(a = range(.$frame))))
+    f <- dplyr::collect(dplyr::do(tracks$soc, data.frame(a = range(.$frame))))
     br <- seq(min(f$a), max(f$a), by = time_bin)
-    multidplyr::cluster_assign_value(tracks$pairs$cluster, 'br', br)
-    tracks$pairs <- dplyr::mutate_(tracks$pairs, time_bin = ~cut(frame, br))
+    multidplyr::cluster_assign_value(tracks$soc$cluster, 'br', br)
+    tracks$soc <- dplyr::mutate_(tracks$soc, time_bin = ~cut(frame, br))
   }
-  tracks$pairs <- dplyr::group_by_(tracks$pairs, ~animal1, ~animal2, ~time_bin)
+  tracks$soc <- dplyr::group_by_(tracks$soc, ~animal1, ~animal2, ~time_bin)
 
-  res <- dplyr::do_(tracks$pairs, ~find_max_cross_corr(.$speed1, .$speed2, range))
-  tracks$pairs <- dplyr::filter_(tracks$pairs, !is.na(time_bin))
+  res <- dplyr::do_(tracks$soc, ~find_max_cross_corr(.$speed1, .$speed2, range))
+  res <- dplyr::filter_(res, !is.na(time_bin))
 
   res <- dplyr::collect(res)
   if (is.null(time_bin)) {

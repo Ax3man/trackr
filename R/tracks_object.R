@@ -22,12 +22,12 @@
 #'   \item{\code{tr}}{\code{party_df} organized by trial, animal, frame.
 #'   Useful for storing individual variables such as location, speed,
 #'   orientation, distance to object etc.}
+#'   \item{\code{soc}}{\code{party_df} organized by trial, pair of animals,
+#'   frame. Useful for storing social variables, such as distance, relative
+#'   orientation etc.}
 #'   \item{\code{group}}{\code{tbl_df} organized by trial, frame. Useful for
 #'   storing group level variables, such as polarization, centrality, group
 #'   size, mean neighbour distance etc.}
-#'   \item{\code{pairs}}{\code{party_df} organized by trial, pair of animals,
-#'   frame. Useful for storing social variables, such as distance, relative
-#'   orientation, vector correlation etc.}
 #'   \item{\code{location}}{\code{tbl_df} organized by trial, xbin, ybin.
 #'   Useful for aggregate data for spatial heatmaps etc.}
 #'   \item{\code{meta_data}}{\code{tbl_df} organized by trial. Contains
@@ -36,6 +36,8 @@
 #'   \item{\code{animal}}{\code{tbl_df} organized by trial and animal,
 #'   containing animal level measurements (nested in trial), such as average
 #'   speed.}
+#'   \item{\code{pair}}{\code{tbl_df} organized by trial and pair, containing
+#'   pair level measurements (nested in trial), such as average distance.}
 #'   \item{\code{trial}}{\code{tbl_df} organized by trial, containing trial
 #'   level measurements, such as average speed.}
 #'   \item{\code{params}}{A \code{list} with general experiment parameters, such
@@ -53,10 +55,11 @@
 #' @section Parallel computing:
 #'
 #' Trackr utilizes parallel computing as implemented by the multidplyr package.
-#' This means both the $tr and $pairs tables are always split by trial, and kept
-#' on seperate nodes as so called 'party_df's'. The other tables are typically
-#' small enough not to warrant the use of a cluster. If necessary, the tables
-#' that are split can be combined again using \code{dplyr::collect()}.
+#' This means both the \code{$tr} and \code{$soc} tables are always split by
+#' trial, and kept on seperate worker nodes as so called 'party_df's'. The other
+#' tables are typically small enough not to warrant the use of a cluster. If
+#' necessary, the tables that are split can be combined again using
+#' \code{dplyr::collect()}.
 #'
 #' @seealso \code{\link{read_idTracker}}, \code{\link{read_Ctrax}}
 #' @export
@@ -148,11 +151,24 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
 #' @return A tracks object.
 #' @export
 expand_tracks <- function(tracks,
+                          soc = TRUE,
                           group = TRUE,
-                          pairs = TRUE,
+                          trial = TRUE,
                           animal = TRUE,
-                          trial = TRUE) {
+                          pair = TRUE) {
   Group <- Pairs <- Animal <- Trial <- NULL
+  # Build pairs object (becomes very large with many animals) ------------------
+  if (soc & is.null(tracks$soc)) {
+    # Might have to look for a faster way (without groups and using nesting)
+    Soc <- dplyr::mutate_(tracks$tr, .dots = list(animal2 = ~animal))
+    Soc <- dplyr::collect(Soc)
+    Soc <- tidyr::expand_(Soc, dots = list(~frame, ~animal, ~animal2))
+    Soc <- dplyr::rename_(Soc, .dots = list(animal1 = ~animal))
+    tracks$pr$soc <- names(Soc)
+    Soc <- multidplyr::partition(Soc, trial, cluster = tracks$tr$cluster)
+    Soc <- dplyr::filter_(Soc, ~animal1 != animal2)
+  }
+
   # Build group object ---------------------------------------------------------
   if (group & is.null(tracks$group)) {
     Group <- dplyr::group_by_(tracks$tr, ~frame)
@@ -160,16 +176,10 @@ expand_tracks <- function(tracks,
     Group <- dplyr::collect(Group)
   }
 
-  # Build pairs object (becomes very large with many animals) ------------------
-  if (pairs & is.null(tracks$pairs)) {
-    # Might have to look for a faster way (without groups and using nesting)
-    Pairs <- dplyr::mutate_(tracks$tr, .dots = list(animal2 = ~animal))
-    Pairs <- dplyr::collect(Pairs)
-    Pairs <- tidyr::expand_(Pairs, dots = list(~frame, ~animal, ~animal2))
-    Pairs <- dplyr::rename_(Pairs, .dots = list(animal1 = ~animal))
-    tracks$pr$pairs <- names(Pairs)
-    Pairs <- multidplyr::partition(Pairs, trial, cluster = tracks$tr$cluster)
-    Pairs <- dplyr::filter_(Pairs, ~animal1 != animal2)
+  #Build trial object ----------------------------------------------------------
+  if (trial & is.null(tracks$trial)) {
+    Trial <- dplyr::summarize(tracks$tr)
+    Trial <- dplyr::collect(Trial)
   }
 
   #Build animal object ---------------------------------------------------------
@@ -179,18 +189,20 @@ expand_tracks <- function(tracks,
     Animal <- dplyr::collect(Animal)
   }
 
-  #Build trial object ----------------------------------------------------------
-  if (trial & is.null(tracks$trial)) {
-    Trial <- dplyr::summarize(tracks$tr)
-    Trial <- dplyr::collect(Trial)
+  #Build animal object ---------------------------------------------------------
+  if (animal & !is.null(Soc) & is.null(tracks$pair)) {
+    Pair <- dplyr::group_by_(tracks$soc, ~animal1, ~animal2)
+    Pair <- dplyr::summarize(Pair)
+    Pair <- dplyr::collect(Pair)
   }
 
   # Build object and return ----------------------------------------------------
   tracks <- c(tracks,
+              list(soc = Soc),
               list(group = Group),
-              list(pairs = Pairs),
+              list(trial = Trial),
               list(animal = Animal),
-              list(trial = Trial))
+              list(pair = Pair))
   attributes(tracks)$class <- 'tracks'
 
   return(tracks)
@@ -295,8 +307,8 @@ check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95) {
 #' @export
 save_tracks <- function(tracks, file) {
   tracks$tr <- dplyr::collect(tracks$tr)
-  if (!is.null(tracks$pairs)) {
-    tracks$pairs <- dplyr::collect(tracks$pairs)
+  if (!is.null(tracks$soc)) {
+    tracks$soc <- dplyr::collect(tracks$soc)
   }
   save(tracks, file = file)
   return(invisible(NULL))
@@ -305,7 +317,7 @@ save_tracks <- function(tracks, file) {
 #' Load tracks object.
 #'
 #' This function allows for the reading of a tracks object from disk. The base
-#' version of \code{load } cannot be used, since the tr and pairs tables need to
+#' version of \code{load } cannot be used, since the tr and soc tables need to
 #' be reloaded onto a cluster.
 #'
 #' In contrast to regular \code{load} in \code{base}, you should assign the
@@ -323,9 +335,9 @@ load_tracks <- function(file) {
   rm(tmp_env)
 
   tracks$tr <- multidplyr::partition(tracks$tr, trial)
-  if (!is.null(tracks$pairs)) {
-    tracks$pairs <- multidplyr::partition(tracks$pairs, trial,
-                                          cluster = tracks$tr$cluster)
+  if (!is.null(tracks$soc)) {
+    tracks$soc <- multidplyr::partition(tracks$soc, trial,
+                                        cluster = tracks$tr$cluster)
   }
   return(tracks)
 }

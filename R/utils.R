@@ -3,32 +3,32 @@ get_party_df_names <- function(d) {
   multidplyr::cluster_call(d$cluster, fun, as.name(d$name))[[1]]
 }
 
-join_tr_to_pairs <- function(tracks, select) {
+join_tr_to_soc <- function(tracks, select) {
   # Select is a list of ~variables.
   cl <- tracks$tr$cluster
 
   tr <- dplyr::select_(tracks$tr, .dots = c(~trial, ~animal, ~frame, select))
   tr <- dplyr::collect(tr)
 
-  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$pairs$name),
+  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$soc$name),
                        function(x) names(table(x$trial)[table(x$trial) > 0]))
   tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
   multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
 
-  tracks$pairs <- dplyr::do_(tracks$pairs,
-                             ~dplyr::left_join(
-                               ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
+  tracks$soc <- dplyr::do_(tracks$soc,
+                           ~dplyr::left_join(
+                             ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
 
   Names <- as.character(select)
   ren1 <- setNames(select, paste0(substring(Names, 2), 1))
-  tracks$pairs <- dplyr::rename_(tracks$pairs, .dots = ren1)
+  tracks$soc <- dplyr::rename_(tracks$soc, .dots = ren1)
 
-  tracks$pairs <- dplyr::do_(tracks$pairs,
-                             ~dplyr::left_join(
-                               ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
+  tracks$soc <- dplyr::do_(tracks$soc,
+                           ~dplyr::left_join(
+                             ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
 
   ren2 <- setNames(select, paste0(substring(Names, 2), 2))
-  tracks$pairs <- dplyr::rename_(tracks$pairs, .dots = ren2)
+  tracks$soc <- dplyr::rename_(tracks$soc, .dots = ren2)
 
   return(tracks)
 }
@@ -39,24 +39,24 @@ remove_empty_shards <- function(tracks) {
                                                   as.name(tracks$tr$name))
                          == 0)
 
-  if (!is.null(tracks$pairs)) {
-    empty_shards_pairs <- any(multidplyr::cluster_call(tracks$pairs$cluster, fun,
-                                                       as.name(tracks$pairs$name))
-                              == 0)
+  if (!is.null(tracks$soc)) {
+    empty_shards_soc <- any(multidplyr::cluster_call(tracks$soc$cluster, fun,
+                                                     as.name(tracks$soc$name))
+                            == 0)
   } else {
-    empty_shards_pairs <- FALSE
+    empty_shards_soc <- FALSE
   }
 
-  if (empty_shards_tr | empty_shards_pairs) {
+  if (empty_shards_tr | empty_shards_soc) {
     tracks$tr <- dplyr::collect(tracks$tr)
-    if (!is.null(tracks$pairs)) {
-      tracks$pairs <- dplyr::collect(tracks$pairs)
+    if (!is.null(tracks$soc)) {
+      tracks$soc <- dplyr::collect(tracks$soc)
     }
 
     tracks$tr <- multidplyr::partition(tracks$tr, trial)
-    if (!is.null(tracks$pairs)) {
-      tracks$pairs <- multidplyr::partition(tracks$pairs, trial,
-                                            cluster = tracks$tr$cluster)
+    if (!is.null(tracks$soc)) {
+      tracks$soc <- multidplyr::partition(tracks$soc, trial,
+                                          cluster = tracks$tr$cluster)
     }
   }
   return(tracks)
@@ -105,9 +105,9 @@ frames_to_times <- function(frames, frame_rate) {
 #' @describeIn frame_time Convert human-readable times to frames.
 #' @export
 times_to_frames <- function(seconds, frame_rate) {
-   date_times <- lubridate::parse_date_time(seconds, c('H!M!S!', 'M!S!', 'S!'))
-   secs <- lubridate::seconds(date_times) + lubridate::seconds(62167219200)
-   as.numeric(secs * frame_rate)
+  date_times <- lubridate::parse_date_time(seconds, c('H!M!S!', 'M!S!', 'S!'))
+  secs <- lubridate::seconds(date_times) + lubridate::seconds(62167219200)
+  as.numeric(secs * frame_rate)
 }
 
 resolve_time_frame <- function(var, frame_rate) {

@@ -16,7 +16,7 @@
 #'
 #' @examples
 #' plot(guppies)
-#' plot(guppies, NULL) # No animal coloring
+#' plot(guppies, color = NULL) # No animal coloring
 #' plot(guppies, facet = ~1) # No facets
 #' plot(guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
 plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
@@ -148,7 +148,7 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
   }
 
   if (is.null(vars)) {
-    vars <- c(tracks$pr$tr, tracks$pr$pairs)
+    vars <- c(tracks$pr$tr, tracks$pr$soc)
   }
 
   sel <- list(trial, frames)
@@ -163,15 +163,15 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
                        names(tr)[!(names(tr) %in% c('animal', 'frame'))])
   tr$animal <- as.character(tr$animal)
 
-  pairs <- dplyr::collect(tracks$pairs)
-  pairs <- dplyr::ungroup(pairs)
-  pairs <- dplyr::mutate_(pairs, animal = ~paste(animal1, animal2, sep = '-'))
-  pairs <- dplyr::select_(pairs, .dots = c('animal', 'frame',
-                                           vars[vars %in% names(pairs)]))
-  pairs <- tidyr::gather_(pairs, 'var', 'value',
-                          names(pairs)[!(names(pairs) %in% c('animal', 'frame'))])
+  soc <- dplyr::collect(tracks$soc)
+  soc <- dplyr::ungroup(soc)
+  soc <- dplyr::mutate_(soc, animal = ~paste(animal1, animal2, sep = '-'))
+  soc <- dplyr::select_(soc, .dots = c('animal', 'frame',
+                                       vars[vars %in% names(soc)]))
+  soc <- tidyr::gather_(soc, 'var', 'value',
+                        names(soc)[!(names(soc) %in% c('animal', 'frame'))])
 
-  pdat <- dplyr::bind_rows(tr, pairs)
+  pdat <- dplyr::bind_rows(tr, soc)
   pdat <- dplyr::group_by_(pdat, ~animal, ~var)
   pdat$animal <- factor(pdat$animal, unique(pdat$animal))
   pdat$var <- factor(pdat$var, vars)

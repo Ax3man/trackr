@@ -1,7 +1,7 @@
 #' Thin the stored frame rate of a tracks object
 #'
 #' This function reduces the effective frame rate by dropping every n frame,
-#' recoding the frame variable in $tr, $pairs and $group and adjusts the
+#' recoding the frame variable in $tr, $soc and $group and adjusts the
 #' frame_rate parameter. Useful for reducing the size of a tracks object. Supply
 #' either n or new_frame_rate.
 #'
@@ -41,8 +41,8 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
   tracks$tr$frame <- tracks$tr$frame / n
   if (!is.null(tracks$group))
     tracks$group$frame <- tracks$group$frame / n
-  if (!is.null(tracks$pairs))
-    tracks$pairs$frame <- tracks$pairs$frame / n
+  if (!is.null(tracks$soc))
+    tracks$soc$frame <- tracks$soc$frame / n
   tracks$params$frame_rate <- new_frame_rate
 
   return(tracks)
@@ -56,7 +56,7 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #' (the default of 1 is zero tolerance).
 #'
 #' Any variables used as conditions will be looked up in the \code{tr},
-#' \code{pairs} and \code{group} tables and applied when present. Non-existing
+#' \code{soc} and \code{group} tables and applied when present. Non-existing
 #' variables will not produce an error.
 #'
 #' Seperate conditions on different variables with a \code{,}, not \code{&}.
