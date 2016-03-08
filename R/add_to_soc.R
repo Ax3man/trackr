@@ -101,8 +101,8 @@ add_nip_dist <- function(tracks, n = 20) {
   if ('nip_dist' %in% tracks$pr$soc) {
     return(tracks)
   }
-  tracks <- join_tr_to_pairs(tracks, list(~X, ~Y, ~orientation, ~minor_axis,
-                                          ~major_axis))
+  tracks <- join_tr_to_soc(tracks, list(~X, ~Y, ~orientation, ~minor_axis,
+                                        ~major_axis))
 
   cl <- tracks$soc$cluster
   multidplyr::cluster_assign_value(cl, 'find_closest_point_on_ellipse',
