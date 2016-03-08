@@ -4,19 +4,19 @@
 \alias{expand_tracks}
 \title{Add missing components to a tracks object.}
 \usage{
-expand_tracks(tracks, group = TRUE, pairs = TRUE, animal = TRUE,
-  trial = TRUE)
+expand_tracks(tracks, soc = TRUE, group = TRUE, trial = TRUE,
+  animal = TRUE, pair = TRUE)
 }
 \arguments{
 \item{tracks}{A tracks object.}
 
 \item{group}{If TRUE, group will be checked for and added if missing.}
 
-\item{pairs}{If TRUE, pairs will be checked for and added if missing.}
+\item{trial}{If TRUE, trial will be checked for and added if missing.}
 
 \item{animal}{If TRUE, animal will be checked for and added if missing.}
 
-\item{trial}{If TRUE, trial will be checked for and added if missing.}
+\item{pairs}{If TRUE, pairs will be checked for and added if missing.}
 }
 \value{
 A tracks object.

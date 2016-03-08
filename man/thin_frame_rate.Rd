@@ -21,7 +21,7 @@ Tracks object.
 }
 \description{
 This function reduces the effective frame rate by dropping every n frame,
-recoding the frame variable in $tr, $pairs and $group and adjusts the
+recoding the frame variable in $tr, $soc and $group and adjusts the
 frame_rate parameter. Useful for reducing the size of a tracks object. Supply
 either n or new_frame_rate.
 }

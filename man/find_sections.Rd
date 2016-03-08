@@ -27,7 +27,7 @@ tolerance level which allows for combining sequences that are close together
 }
 \details{
 Any variables used as conditions will be looked up in the \code{tr},
-\code{pairs} and \code{group} tables and applied when present. Non-existing
+\code{soc} and \code{group} tables and applied when present. Non-existing
 variables will not produce an error.
 
 Seperate conditions on different variables with a \code{,}, not \code{&}.

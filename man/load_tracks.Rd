@@ -14,7 +14,7 @@ A tracks object.
 }
 \description{
 This function allows for the reading of a tracks object from disk. The base
-version of \code{load } cannot be used, since the tr and pairs tables need to
+version of \code{load } cannot be used, since the tr and soc tables need to
 be reloaded onto a cluster.
 }
 \details{

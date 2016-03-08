@@ -34,7 +34,7 @@ Only plots a path between subsequent frames.
 }
 \examples{
 plot(guppies)
-plot(guppies, NULL) # No animal coloring
+plot(guppies, color = NULL) # No animal coloring
 plot(guppies, facet = ~1) # No facets
 plot(guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
 }

@@ -170,14 +170,28 @@ find_sections_ <- function(tracks, ..., tol = 1, .dots) {
 #'
 #' @return A tbl_df.
 #' @export
-summarize_sections <- function(sections, tracks, ...) {
-  summarize_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...))
+summarise_sections <- function(sections, tracks, ...) {
+  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...))
 }
 
-#' @describeIn summarize_sections Retrieve the timestamps for track section
+#' @describeIn summarise_sections Retrieve the timestamps for track section
+#'   based on conditions.
+#' @export
+summarize_sections <- function(sections, tracks, ...) {
+  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...))
+}
+
+#' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
 summarize_sections_ <- function(sections, tracks, ..., .dots) {
+  summarise_sections_(sections, tracks, ..., .dots)
+}
+
+#' @describeIn summarise_sections Retrieve the timestamps for track section
+#'   based on conditions.
+#' @export
+summarise_sections_ <- function(sections, tracks, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
   present <- names(tracks)[(names(tracks) %in% c('tr', 'pairs', 'group'))]

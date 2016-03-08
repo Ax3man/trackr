@@ -50,12 +50,12 @@ The tracks object is a \code{list} with the following tables:
   \item{\code{tr}}{\code{party_df} organized by trial, animal, frame.
   Useful for storing individual variables such as location, speed,
   orientation, distance to object etc.}
+  \item{\code{soc}}{\code{party_df} organized by trial, pair of animals,
+  frame. Useful for storing social variables, such as distance, relative
+  orientation etc.}
   \item{\code{group}}{\code{tbl_df} organized by trial, frame. Useful for
   storing group level variables, such as polarization, centrality, group
   size, mean neighbour distance etc.}
-  \item{\code{pairs}}{\code{party_df} organized by trial, pair of animals,
-  frame. Useful for storing social variables, such as distance, relative
-  orientation, vector correlation etc.}
   \item{\code{location}}{\code{tbl_df} organized by trial, xbin, ybin.
   Useful for aggregate data for spatial heatmaps etc.}
   \item{\code{meta_data}}{\code{tbl_df} organized by trial. Contains
@@ -64,6 +64,8 @@ The tracks object is a \code{list} with the following tables:
   \item{\code{animal}}{\code{tbl_df} organized by trial and animal,
   containing animal level measurements (nested in trial), such as average
   speed.}
+  \item{\code{pair}}{\code{tbl_df} organized by trial and pair, containing
+  pair level measurements (nested in trial), such as average distance.}
   \item{\code{trial}}{\code{tbl_df} organized by trial, containing trial
   level measurements, such as average speed.}
   \item{\code{params}}{A \code{list} with general experiment parameters, such
@@ -83,10 +85,11 @@ The tracks object is a \code{list} with the following tables:
 
 
 Trackr utilizes parallel computing as implemented by the multidplyr package.
-This means both the $tr and $pairs tables are always split by trial, and kept
-on seperate nodes as so called 'party_df's'. The other tables are typically
-small enough not to warrant the use of a cluster. If necessary, the tables
-that are split can be combined again using \code{dplyr::collect()}.
+This means both the \code{$tr} and \code{$soc} tables are always split by
+trial, and kept on seperate worker nodes as so called 'party_df's'. The other
+tables are typically small enough not to warrant the use of a cluster. If
+necessary, the tables that are split can be combined again using
+\code{dplyr::collect()}.
 }
 \seealso{
 \code{\link{read_idTracker}}, \code{\link{read_Ctrax}}

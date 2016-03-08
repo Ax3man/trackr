@@ -45,9 +45,10 @@ Method for the dplyr verb filter. You can use them as \code{filter()} and
   object. It will also attempt to check for any dependency problems. This is
   crucial in order to maintain internal consistency in the tracks object. For
   example, if you select a sequence of frames, any data that was aggregated
-  over time will now no longer match. If conflicts are found, by default, an
-  error will be raised. By setting \code{drop = TRUE}, you can allow for any
-  conflicting data to be deleted from the tracks object.
+  over time (such as in the \code{trial} table) will now no longer match. If
+  conflicts are found, by default, an error will be raised. By setting
+  \code{drop = TRUE}, you can allow for any conflicting data to be deleted
+  from the tracks object.
 }
 \seealso{
 \link[dplyr]{filter}

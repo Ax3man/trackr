@@ -68,7 +68,7 @@ tr <- tr %>%
 Summmary statistics work very similar to `dplyr`. We do have add some new tables to our `tracks` object though (see `?as_tracks`).
 ````{r}
 tr <- tr %>% 
-  expand_tracks(group = FALSE, animal = TRUE, pairs = FALSE, trial = TRUE) %>%
+  expand_tracks(group = FALSE, animal = TRUE, soc = FALSE, trial = TRUE) %>%
   summarize(mean_speed = mean(speed, na.rm = TRUE),
                        sum_abs_turn = sum(abs(turn), na.rm = TRUE))
 
