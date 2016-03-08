@@ -190,8 +190,8 @@ expand_tracks <- function(tracks,
   }
 
   #Build animal object ---------------------------------------------------------
-  if (animal & !is.null(Soc) & is.null(tracks$pair)) {
-    Pair <- dplyr::group_by_(tracks$soc, ~animal1, ~animal2)
+  if (pair & !is.null(Soc) & is.null(tracks$pair)) {
+    Pair <- dplyr::group_by_(Soc, ~animal1, ~animal2)
     Pair <- dplyr::summarize(Pair)
     Pair <- dplyr::collect(Pair)
   }
