@@ -2,54 +2,12 @@
 % Please edit documentation in R/non-dplyr_verbs.R
 \name{find_sections_}
 \alias{find_sections_}
-\alias{summarize_sections}
-\alias{summarize_sections_}
-\title{Retrieve the timestamps for track section based on conditions.}
 \usage{
 find_sections_(tracks, ..., tol = 1, .dots)
-
-summarize_sections(sections, tracks, ...)
-
-summarize_sections_(sections, tracks, ..., .dots)
-}
-\arguments{
-\item{tracks}{A table with track sections (output from
-\code{find_track_sections}).}
-
-\item{...}{Summary statements.}
-
-\item{.dots}{Used to work around non-standard evaluation. See vignette("nse")
-for details.}
-
-\item{tracks}{A tracks object.}
-}
-\value{
-A tbl_df.
-}
-\description{
-Similar to \code{filter}, but returns a table of sequences grouped by trial,
-with a \code{start}, \code{stop} and \code{length} column. It supports a
-tolerance level which allows for combining sequences that are close together
-(the default of 1 is zero tolerance).
-}
-\details{
-Any variables used as conditions will be looked up in the \code{tr},
-\code{pairs} and \code{group} tables and applied when present. Non-existing
-variables will not produce an error.
-
-Seperate conditions on different variables with a \code{,}, not \code{&}.
-Combine several conditions on the same variable with \code{&}.
-
-Example use case: If one has selected all sequences of frames where animals
-are chasing each other, one can calculate the mean speed for each of the
-chase sequences.
 }
 \section{Functions}{
 \itemize{
 \item \code{find_sections_}: Retrieve the timestamps for track section
-based on conditions.
-
-\item \code{summarize_sections_}: Retrieve the timestamps for track section
 based on conditions.
 }}
 

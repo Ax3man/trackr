@@ -6,10 +6,10 @@
 \alias{summarise_.tracks}
 \alias{summarize}
 \alias{summarize_}
-\title{Summarize a tracks variable into higher tables}
+\title{Summarize a tracks variable into higher tables.}
 \usage{
 \method{summarise_}{tracks}(.data, ..., .source = "tr", .tables = c("group",
-  "animal", "trial"), .dots)
+  "animal", "pair", "trial"), .dots)
 }
 \arguments{
 \item{.data}{A tracks object.}
@@ -17,11 +17,11 @@
 \item{...}{Summary expressions, such as \code{mean(speed, na.rm = TRUE)}, or
 \code{var_nnd = var(nearest_neighbour_dist, na.rm = TRUE)}.}
 
-\item{.source}{Which table those variables come from. Will make guesses in
-the future.}
+\item{.source}{Which table those variables come from (\code{tr} or
+\code{pairs}).}
 
-\item{.tables}{To which tables you want to summarize them. Will make guesses
-in the future.}
+\item{.tables}{To which tables you want to summarize them. By default
+\code{group}, \code{animal} and \code{trial}, when present.}
 
 \item{.dots}{Used to work around non-standard evaluation. See
 \code{vignette("nse")} for details.}
@@ -30,7 +30,7 @@ in the future.}
 A tracks object.
 }
 \description{
-Summarize a tracks variable into higher tables
+Summarize a tracks variable into higher tables.
 }
 \seealso{
 dplyr::summarise
