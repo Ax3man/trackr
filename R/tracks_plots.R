@@ -91,10 +91,7 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
               max(pdat$frame, na.rm = TRUE),
               length.out = time_bins + 1)
 
-  labels <- lubridate::seconds_to_period(bins / tracks$params$frame_rate)
-  labels <- gsub("\\s*\\w*$", "", round(labels))
-  labels <- tolower(gsub(" ", "", labels, fixed = TRUE))
-  labels <- paste(head(labels, -1), 'till', labels[-1])
+  labels <- time_bin_labels(bins, tracks$params$frame_rate)
 
   pdat$time_bin <- findInterval(pdat$frame, bins, all.inside = TRUE)
   pdat$time_bin <- factor(pdat$time_bin, labels = labels)

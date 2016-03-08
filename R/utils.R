@@ -68,3 +68,28 @@ find_max_cross_corr <- function(v1, v2, range) {
   res = res[which.max(res$cor), ]
   return(res)
 }
+
+frames_to_time <- function(frames, frame_rate) {
+  lubridate::seconds_to_period(bins / frame_rate)
+}
+
+time_to_frames <- function(seconds, frame_rate) {
+   date_times <- lubridate::parse_date_time(seconds, c('H!M!S!', 'M!S!', 'S!'))
+   secs <- lubridate::seconds(date_times) + lubridate::seconds(62167219200)
+   as.numeric(secs * frame_rate)
+}
+
+resolve_frame_time <- function(var, frame_rate) {
+  if (is.numeric(var)) {
+    var
+  } else {
+    time_to_frames(var, frame_rate)
+  }
+}
+
+time_bin_labels <- function(bins, frame_rate) {
+  labels <- frames_to_time(bins, frame_rate)
+  labels <- gsub("\\s*\\w*$", "", round(labels))
+  labels <- tolower(gsub(" ", "", labels, fixed = TRUE))
+  paste(head(labels, -1), 'till', labels[-1])
+}
