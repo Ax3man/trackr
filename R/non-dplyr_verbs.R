@@ -84,7 +84,7 @@ find_sections <- function(tracks, ..., tol = 0) {
 find_sections_ <- function(tracks, ..., tol = 1, .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
-  present <- names(tracks)[(names(tracks) %in% c('tr', 'pairs', 'group'))]
+  present <- names(tracks)[(names(tracks) %in% c('tr', 'soc', 'group'))]
 
   if (length(vars) > length(unique(vars))) {
     stop("Combine different conditions for the same variable with '&', instead
