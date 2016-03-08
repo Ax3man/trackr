@@ -122,7 +122,8 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #'   given, will plot all variables available.
 #' @param point_events An optional numerical vector of point events to highlight
 #'   with vertical dotted lines.
-#' @param window The number of frames that should be plotted around the events.
+#' @param window The time that should be plotted around the events, i.e. total
+#'   size of the window.
 #' @param quantiles A vector of length two with the probabilities to be used for
 #'   the shade grey quantile boxes.
 #'
@@ -131,9 +132,14 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #'
 #' @return A \code{ggplot} object.
 #' @export
-plot_tracks_sparklines <- function(tracks, trial, frames = NULL, vars = NULL,
-                                   point_events = NULL, window = 600,
-                                   quantiles = c(0.025, 0.975)) {
+plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
+                                   vars = NULL, point_events = NULL,
+                                   window = 600, quantiles = c(0.025, 0.975)) {
+  start <- resolve_time_frame(start, tracks$params$frame_rate)
+  end <- resolve_time_frame(end, tracks$params$frame_rate)
+  point_events <- resolve_time_frame(point_events, tracks$params$frame_rate)
+  window <- resolve_time_frame(window, tracks$params$frame_rate)
+
   if (is.null(frames)) {
     if (is.null(point_events) | is.null(window)) {
       stop('Provide either frames, or point_events and window.', call. = FALSE)

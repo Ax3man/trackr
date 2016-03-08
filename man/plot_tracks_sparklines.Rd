@@ -4,15 +4,14 @@
 \alias{plot_tracks_sparklines}
 \title{Plot sparklines for several track variables.}
 \usage{
-plot_tracks_sparklines(tracks, trial, frames = NULL, vars = NULL,
-  point_events = NULL, window = 600, quantiles = c(0.025, 0.975))
+plot_tracks_sparklines(tracks, trial, start = NULL, end = NULL,
+  vars = NULL, point_events = NULL, window = 600, quantiles = c(0.025,
+  0.975))
 }
 \arguments{
 \item{tracks}{A tracks object.}
 
 \item{trial}{A character vector indicating from which trial to plot.}
-
-\item{frames}{A numeric vector indicating which frames to plot.}
 
 \item{vars}{A character vector indicating which variables get a sparkline.
 They will be looked for in the $tr and $pairs tables. Optional. When not
@@ -21,13 +20,16 @@ given, will plot all variables available.}
 \item{point_events}{An optional numerical vector of point events to highlight
 with vertical dotted lines.}
 
-\item{window}{The number of frames that should be plotted around the events.}
+\item{window}{The time that should be plotted around the events, i.e. total
+size of the window.}
 
 \item{quantiles}{A vector of length two with the probabilities to be used for
   the shade grey quantile boxes.
 
  If frames is left NULL, but point_events and window are provided then a
  window around the point_events.}
+
+\item{frames}{A numeric vector indicating which frames to plot.}
 }
 \value{
 A \code{ggplot} object.

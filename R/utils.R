@@ -69,21 +69,52 @@ find_max_cross_corr <- function(v1, v2, range) {
   return(res)
 }
 
-frames_to_time <- function(frames, frame_rate) {
-  lubridate::seconds_to_period(bins / frame_rate)
+#' Convert between frame numbers and human readable time formats.
+#'
+#' @param frames A numerc vector of frame numbers to convert.
+#' @param seconds A character vector of times to convert (see examples).
+#' @param frame_rate The frame rate of the tracking data in frames per second
+#'   (e.g. \code{tracks$params$frame_rate}).
+#'
+#' @name frame_time
+#'
+#' @examples
+#' # Using frame rate of 1 for clarity of usable formats
+#' frames_to_times(1, 1)
+#' frames_to_times(120, 1)
+#' frames_to_times(3661, 1)
+#'
+#' times_to_frames('5S', 1)
+#' times_to_frames('2M 0S', 1)
+#' times_to_frames('1H 1M 1S', 1)
+#' times_to_frames('1H1M1S', 1)
+#'
+#' # Note that the letters are not functional, just spaces work too:
+#' times_to_frames('1 1 1', 1)
+#' # Which means you can leave out larger denominations, but not smaller ones
+#' times_to_frames('10S', 1) == times_to_frames('0M 10S', 1)
+#' times_to_frames('2M', 1) == times_to_frames('2M 0S', 1)
+NULL
+
+#' @describeIn frame_time Convert frames to human-readable times.
+#' @export
+frames_to_times <- function(frames, frame_rate) {
+  lubridate::seconds_to_period(frames / frame_rate)
 }
 
-time_to_frames <- function(seconds, frame_rate) {
+#' @describeIn frame_time Convert human-readable times to frames.
+#' @export
+times_to_frames <- function(seconds, frame_rate) {
    date_times <- lubridate::parse_date_time(seconds, c('H!M!S!', 'M!S!', 'S!'))
    secs <- lubridate::seconds(date_times) + lubridate::seconds(62167219200)
    as.numeric(secs * frame_rate)
 }
 
-resolve_frame_time <- function(var, frame_rate) {
-  if (is.numeric(var)) {
+resolve_time_frame <- function(var, frame_rate) {
+  if (is.numeric(var) | is.null(var)) {
     var
   } else {
-    time_to_frames(var, frame_rate)
+    times_to_frames(var, frame_rate)
   }
 }
 
