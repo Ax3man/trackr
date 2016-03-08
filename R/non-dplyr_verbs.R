@@ -75,7 +75,7 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #' @return A tbl_df.
 #' @export
 find_sections <- function(tracks, ..., tol = 0) {
-  find_track_sections_(tracks, tol = tol, .dots = lazyeval::lazy_dots(...))
+  find_sections_(tracks, tol = tol, .dots = lazyeval::lazy_dots(...))
 }
 
 #' @describeIn summarize_sections Retrieve the timestamps for track section
