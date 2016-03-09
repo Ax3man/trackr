@@ -69,20 +69,24 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #' @param tracks A tracks object.
 #' @param ... Conditions.
 #' @param tol Combine sequences that are \code{tol} frames apart.
+#' @param pad Add padding of this many frames around each section. This allows
+#'   for capturing context around interesting sections.
 #' @param .dots Used to work around non-standard evaluation. See vignette("nse")
 #'   for details.
 #'
 #' @return A tbl_df.
 #' @export
-find_sections <- function(tracks, ..., tol = 0) {
-  find_sections_(tracks, tol = tol, .dots = lazyeval::lazy_dots(...))
+find_sections <- function(tracks, ..., tol = 0, pad = 0) {
+  find_sections_(tracks, tol = tol, pad = pad, .dots = lazyeval::lazy_dots(...))
 }
 
-#' @describeIn summarize_sections Retrieve the timestamps for track section
-#'   based on conditions.
+#' @describeIn find_sections Retrieve the timestamps for track section based on
+#'   conditions.
 #' @export
-find_sections_ <- function(tracks, ..., tol = 1, .dots) {
+find_sections_ <- function(tracks, ..., tol = 1, pad = 0, .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  tables <- find_conds_in_tables(tracks, conds)
+
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
   present <- names(tracks)[(names(tracks) %in% c('tr', 'soc', 'group'))]
 
@@ -138,8 +142,8 @@ find_sections_ <- function(tracks, ..., tol = 1, .dots) {
   frames <- dplyr::select_(frames, ~trial, ~frame, ~seq)
   frames <- dplyr::group_by_(frames, ~trial, ~seq)
   frames <- dplyr::summarize_(frames,
-                              start = ~min(frame),
-                              end = ~max(frame),
+                              start = ~min(frame) - pad,
+                              end = ~max(frame) + pad,
                               length = ~end - start + 1)
 }
 
