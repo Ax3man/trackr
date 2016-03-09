@@ -3,7 +3,8 @@
 \name{as_tracks}
 \alias{as_tracks}
 \alias{is.tracks}
-\title{Create a tracks object from a data.frame.}
+\alias{tracks}
+\title{The \code{tracks} object}
 \usage{
 as_tracks(tr, frame_rate, resolution, meta_data = NULL, px_per_cm = NULL,
   minimal = TRUE)
@@ -36,7 +37,7 @@ components will already be generated.}
 A tracks object.
 }
 \description{
-Create a tracks object from a data.frame.
+The \code{tracks} object
 }
 \section{Functions}{
 \itemize{

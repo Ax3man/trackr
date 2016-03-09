@@ -1,4 +1,4 @@
-#' Create a tracks object from a data.frame.
+#' The \code{tracks} object
 #'
 #' @param tr Data.frame with tracking data (from read in functions).
 #' @param frame_rate Frames per second.
@@ -63,6 +63,7 @@
 #'
 #' @seealso \code{\link{read_idTracker}}, \code{\link{read_Ctrax}}
 #' @export
+#' @aliases tracks
 as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
                       px_per_cm = NULL, minimal = TRUE) {
   # Input handling -------------------------------------------------------------
@@ -156,7 +157,7 @@ expand_tracks <- function(tracks,
                           trial = TRUE,
                           animal = TRUE,
                           pair = TRUE) {
-  Group <- Pairs <- Animal <- Trial <- NULL
+  Group <- Soc <- Animal <- Trial <- Pair <- NULL
   # Build pairs object (becomes very large with many animals) ------------------
   if (soc & is.null(tracks$soc)) {
     # Might have to look for a faster way (without groups and using nesting)
