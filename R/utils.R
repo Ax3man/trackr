@@ -62,6 +62,25 @@ remove_empty_shards <- function(tracks) {
   return(tracks)
 }
 
+find_conds_in_tables <- function(tracks, conds) {
+  vars <- lapply(conds, function(x) all.vars(x$expr))
+  tables <- rep(NA, length(vars))
+  tables[sapply(vars, function(x) all(x %in% tracks$pr$tr))] <- 'tr'
+  if (!is.null(tracks$soc)) {
+    tables[sapply(vars, function(x) all(x %in% tracks$pr$soc))] <- 'soc'
+  }
+  if (!is.null(tracks$group)) {
+    tables[sapply(vars, function(x) all(x %in% names(tracks$group)))] <- 'group'
+  }
+  if (any(is.na(tables))) {
+    stop(paste('The following variables(s) caused a problem:\n',
+               paste(collapse = ' ', vars[[which(is.na(tables))]]),
+               '\nEither (one of) the variable(s) could not be found,
+               or they were not found in the same table.'), call. = FALSE)
+  }
+  return(tables)
+}
+
 find_max_cross_corr <- function(v1, v2, range) {
   cross_corr <- ccf(v1, v2, range, na.action = na.pass, plot = FALSE)
   res <- data.frame(cor = cross_corr$acf[, , 1], lag = cross_corr$lag[, 1, 1])
