@@ -7,17 +7,20 @@
 \alias{summarize_sections_}
 \title{Summarize track sections.}
 \usage{
-summarise_sections(sections, tracks, ...)
+summarise_sections(sections, tracks, group_by = NULL, ...)
 
-summarize_sections(sections, tracks, ...)
+summarize_sections(sections, tracks, group_by = NULL, ...)
 
-summarize_sections_(sections, tracks, ..., .dots)
+summarize_sections_(sections, tracks, group_by = NULL, ..., .dots)
 
-summarise_sections_(sections, tracks, ..., .dots)
+summarise_sections_(sections, tracks, group_by = NULL, ..., .dots)
 }
 \arguments{
 \item{tracks}{A table with track sections (output from
 \code{find_track_sections}).}
+
+\item{group_by}{What factors the result should be grouped by. For example,
+\code{~animal} will return a summary for each sequence for each animal.}
 
 \item{...}{Summary statements.}
 
