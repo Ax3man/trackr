@@ -6,7 +6,8 @@
 \alias{filter_.tracks}
 \title{Return a subset of a tracks object with matching conditions.}
 \usage{
-\method{filter_}{tracks}(.data, ..., drop = FALSE, .dots)
+\method{filter_}{tracks}(.data, ..., drop = FALSE, .dots,
+  .check_shards = TRUE)
 }
 \arguments{
 \item{.data}{A tracks object.}
@@ -22,6 +23,10 @@ aggregation may have been expensive.}
 
 \item{.dots}{Used to work around non-standard evaluation. See
 \code{vignette("nse")} for details.}
+
+\item{.check_shards}{If TRUE, will check if filtering has caused any worker
+nodes to be empty, and if so will collect and reassign the \code{tr} and
+\code{soc} tables.}
 }
 \value{
 The subsetted tracks object
@@ -38,7 +43,7 @@ Method for the dplyr verb filter. You can use them as \code{filter()} and
   \item xbin and ybin for spatial data (not implemented)
 }
 }
-\section{Policy on conflicting dependecies}{
+\section{Strategy on conflicting dependecies}{
 
 
   It will apply the fitering to all the applicable sections of the tracks

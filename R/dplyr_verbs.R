@@ -38,7 +38,7 @@ NULL
 #'
 #' @return The subsetted tracks object
 #'
-#' @section Policy on conflicting dependecies:
+#' @section Strategy on conflicting dependecies:
 #'
 #'   It will apply the fitering to all the applicable sections of the tracks
 #'   object. It will also attempt to check for any dependency problems. This is
@@ -53,9 +53,6 @@ NULL
 #' @seealso \link[dplyr]{filter}
 filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
                            .check_shards = TRUE) {
-  # rename the .data argument (we need it for dplyr consistency).
-  tracks <- .data
-  rm(.data)
   # collect conditions
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   # check if drop happens to be in the .dots (coming from filter dispatching to
@@ -73,13 +70,13 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
     stop("Combine different conditions for the same variable with '&', instead
          of using seperate ... arguments.")
   # Find which components of the tracks object are currently present
-  present <- names(tracks)[!(names(tracks) %in% c('params', 'pr'))]
+  present <- names(.data)[!(names(.data) %in% c('params', 'pr'))]
 
   # check for compatibility issues ---------------------------------------------
   if (any(vars == 'frame') & any(present %in% c('location', 'trial'))) {
     if (drop) {
-      tracks$location <- NULL
-      tracks$trial <- NULL
+      .data$location <- NULL
+      .data$trial <- NULL
     } else {
       stop("Found data aggregated over frames. Include drop == TRUE to delete.",
            call. = FALSE)
@@ -89,10 +86,10 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
       any(present %in% c('group', 'soc', 'location', 'trial'))) {
     if (drop) {
       message("Dropping incompatible data.")
-      tracks$group <- NULL
-      tracks$soc <- NULL
-      tracks$location <- NULL
-      tracks$trial <- NULL
+      .data$group <- NULL
+      .data$soc <- NULL
+      .data$location <- NULL
+      .data$trial <- NULL
     } else {
       stop("Found data aggregated over animals. Include drop == TRUE to
            delete.",
@@ -100,10 +97,10 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
     }
   }
   # Update which components of the tracks object are currently present
-  present <- names(tracks)[!(names(tracks) %in% c('params', 'pr'))]
+  present <- names(.data)[!(names(.data) %in% c('params', 'pr'))]
 
   # Apply filter to all tables -------------------------------------------------
-  tracks[present] <- lapply(tracks[present], function(d, conds, vars) {
+  .data[present] <- lapply(.data[present], function(d, conds, vars) {
     var_d <- switch(class(d)[1],
                     'party_df' = get_party_df_names(d),
                     'tbl_df' = names(d),
@@ -118,9 +115,9 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
   }, conds = conds, vars = vars)
 
   if (.check_shards) {
-    remove_empty_shards(tracks)
+    remove_empty_shards(.data)
   }
-  return(tracks)
+  return(.data)
 }
 
 #' @importFrom dplyr summarise
