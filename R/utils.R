@@ -65,13 +65,18 @@ remove_empty_shards <- function(tracks) {
 find_conds_in_tables <- function(tracks, conds) {
   vars <- lapply(conds, function(x) all.vars(x$expr))
   tables <- rep(NA, length(vars))
-  tables[sapply(vars, function(x) all(x %in% tracks$pr$tr))] <- 'tr'
-  if (!is.null(tracks$soc)) {
-    tables[sapply(vars, function(x) all(x %in% tracks$pr$soc))] <- 'soc'
+  for (i in seq_along(tracks)) {
+    tbl <- names(tracks)[i]
+    if (tbl %in% c('pr', 'params', 'meta_data')) {
+      next
+    }
+    if ('party_df' %in% class(tracks[[i]])) {
+      tables[sapply(vars, function(v) all(v %in% tracks$pr[[tbl]]))] <- tbl
+    } else {
+      tables[sapply(vars, function(v) all(v %in% names(tracks[[tbl]])))] <- tbl
+    }
   }
-  if (!is.null(tracks$group)) {
-    tables[sapply(vars, function(x) all(x %in% names(tracks$group)))] <- 'group'
-  }
+
   if (any(is.na(tables))) {
     stop(paste('The following variables(s) caused a problem:\n',
                paste(collapse = ' ', vars[[which(is.na(tables))]]),

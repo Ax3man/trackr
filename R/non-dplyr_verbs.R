@@ -85,7 +85,9 @@ find_sections <- function(tracks, ..., tol = 0, pad = 0) {
 #' @export
 find_sections_ <- function(tracks, ..., tol = 1, pad = 0, .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
-  tables <- find_conds_in_tables(tracks, conds)
+  tables <- find_conds_in_tables(list(tr = tracks$tr, soc = tracks$soc,
+                                      group = tracks$group),
+                                 conds)
 
   vars <- sapply(strsplit(names(conds), ' '), '[', 1)
   present <- names(tracks)[(names(tracks) %in% c('tr', 'soc', 'group'))]
