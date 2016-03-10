@@ -48,18 +48,22 @@ remove_empty_shards <- function(tracks) {
   }
 
   if (empty_shards_tr | empty_shards_soc) {
-    tracks$tr <- dplyr::collect(tracks$tr)
-    if (!is.null(tracks$soc)) {
-      tracks$soc <- dplyr::collect(tracks$soc)
-    }
-
-    tracks$tr <- multidplyr::partition(tracks$tr, trial)
-    if (!is.null(tracks$soc)) {
-      tracks$soc <- multidplyr::partition(tracks$soc, trial,
-                                          cluster = tracks$tr$cluster)
-    }
+    repartition(tracks)
   }
   return(tracks)
+}
+
+repartition <- function(tracks) {
+  tracks$tr <- dplyr::collect(tracks$tr)
+  if (!is.null(tracks$soc)) {
+    tracks$soc <- dplyr::collect(tracks$soc)
+  }
+
+  tracks$tr <- multidplyr::partition(tracks$tr, trial)
+  if (!is.null(tracks$soc)) {
+    tracks$soc <- multidplyr::partition(tracks$soc, trial,
+                                        cluster = tracks$tr$cluster)
+  }
 }
 
 find_conds_in_tables <- function(tracks, conds) {
