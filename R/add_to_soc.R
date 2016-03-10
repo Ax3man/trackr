@@ -110,7 +110,7 @@ add_nip_dist <- function(tracks, n = 20) {
                                ~-orientation2,  ~-minor_axis2, ~-major_axis2,
                                ~-head_X, ~-head_Y, ~-closest_X, ~-closest_Y)
 
-  multidplyr::cluster_rm(cl, c('tr', 'find_closest_point_on_ellipse', 'n'))
+  multidplyr::cluster_rm(cl, c('find_closest_point_on_ellipse', 'n'))
 
   tracks$pr$soc <- c(tracks$pr$soc, 'nip_dist')
   return(tracks)

@@ -26,7 +26,7 @@ join_tr_to_soc <- function(tracks, select) {
   tracks$soc <- dplyr::do_(tracks$soc,
                            ~dplyr::left_join(
                              ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
-
+  multidplyr::cluster_rm(cl, '.tr')
   ren2 <- setNames(select, paste0(substring(Names, 2), 2))
   tracks$soc <- dplyr::rename_(tracks$soc, .dots = ren2)
 
