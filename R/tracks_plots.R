@@ -255,9 +255,9 @@ plot_lag_cor <- function(data) {
     }
   }
 
-  ggplot2::ggplot(data, ggplot2::aes(x = lag, y = time_bin)) +
-    ggplot2::geom_point(ggplot2::aes(size = cor)) +
-    ggplot2::geom_path(ggplot2::aes(group = 1)) +
+  ggplot2::ggplot(data, ggplot2::aes_(x = ~lag, y = ~time_bin)) +
+    ggplot2::geom_point(ggplot2::aes_(size = ~cor)) +
+    ggplot2::geom_path(ggplot2::aes_(group = ~1)) +
     ggplot2::geom_vline(xintercept = 0) +
     ggplot2::theme_bw() +
     facet
