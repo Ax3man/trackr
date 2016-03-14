@@ -152,7 +152,8 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
 
   sel <- list(trial = trial, start = start, end = end)
   multidplyr::cluster_assign_value(tracks$tr$cluster, 'sel', sel)
-  tracks <- filter_(tracks, ~trial %in% sel[['trial']], drop = TRUE)
+  tracks <- filter_(tracks, drop = TRUE,
+                    .dots = lazyeval::interp(~trial %in% x, x = sel$trial))
 
   tr <- dplyr::collect(tracks$tr)
   tr <- dplyr::ungroup(tr)
@@ -183,7 +184,7 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
                                                  na.rm = TRUE))
   quants <- dplyr::right_join(quants, pdat, by = 'var')
 
-  pdat <- dplyr::filter_(pdat, ~frame %in% sel[['start']]:sel[['end']])
+  pdat <- dplyr::filter_(pdat, ~frame %in% sel$start:sel$end)
   quants <- dplyr::group_by_(quants, ~var, ~animal)
   quants <- dplyr::filter_(quants, ~frame %in% range(pdat$frame))
 
