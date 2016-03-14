@@ -62,7 +62,8 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
   }
   # extract which things those conditions apply to
   tables <- find_conds_in_tables(.data, conds)
-  to_be_kept <- c(unique(tables), 'pr', 'params', 'meta_data')
+  to_be_kept <- c(Reduce(intersect, tables), 'pr', 'params', 'meta_data')
+  tables <- lapply(tables, function(x) x <- x[x %in% to_be_kept])
 
   if (!(all(names(.data) %in% to_be_kept))) {
     if (drop) {
@@ -76,7 +77,8 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
   }
 
   for (i in seq_along(conds)) {
-    .data[tables[[i]]] <- dplyr::filter_(.data[[tables[i]]], .dots = conds[i])
+    .data[tables[[i]]] <- lapply(.data[tables[[i]]], dplyr::filter_,
+                                 .dots = conds[i])
   }
 
   if (.repartition) {
