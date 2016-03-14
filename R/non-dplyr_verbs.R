@@ -221,7 +221,7 @@ summarise_sections_ <- function(sections, tracks, .group_by = NULL, ..., .dots) 
                            } )
   }
   .tracks <- lapply(.tracks, lapply, dplyr::collect)
-  
+
   .tracks <- lapply(.tracks, dplyr::bind_rows, .id = 'section')
   if (is.null(.group_by)) {
     .tracks <- lapply(.tracks, dplyr::group_by_, ~trial, ~section)
@@ -237,6 +237,7 @@ summarise_sections_ <- function(sections, tracks, .group_by = NULL, ..., .dots) 
                     .tracks)
   .tracks$section <- as.numeric(.tracks$section)
   .tracks <- dplyr::arrange_(.tracks, ~trial, ~section)
+  .tracks <- dplyr::mutate(.tracks, section = 1:(dplyr::n()))
   return(.tracks)
 }
 
