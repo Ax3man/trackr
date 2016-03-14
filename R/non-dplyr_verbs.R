@@ -70,7 +70,7 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #' @param ... Conditions.
 #' @param tol Combine sequences that are \code{tol} frames apart.
 #' @param pad Add padding of this many frames around each section. This allows
-#'   for capturing context around interesting sections.
+#'   for capturing context around sections of interest.
 #' @param add_times When \code{TRUE}, three columns will be added to the result
 #'   that give human readable times, instead of only frame numbers.
 #' @param .dots Used to work around non-standard evaluation. See vignette("nse")

@@ -17,7 +17,7 @@ find_sections_(tracks, ..., tol = 1, pad = 0, add_times = TRUE, .dots)
 \item{tol}{Combine sequences that are \code{tol} frames apart.}
 
 \item{pad}{Add padding of this many frames around each section. This allows
-for capturing context around interesting sections.}
+for capturing context around sections of interest.}
 
 \item{add_times}{When \code{TRUE}, three columns will be added to the result
 that give human readable times, instead of only frame numbers.}
