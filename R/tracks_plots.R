@@ -64,10 +64,6 @@ plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
 #'
 #' @return A \code{ggplot} object.
 #' @export
-#'
-#' @examples
-#'   plot_time_facets(filter(guppies, trial == 'd1t3b'))
-#'   plot_time_facets(guppies, mode = 'manual')
 plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
                              color = ~animal, mode = 'dual', nrow = NULL,
                              scales = 'free_x', facet = trial ~ time_bin,
