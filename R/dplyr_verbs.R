@@ -17,8 +17,7 @@ NULL
 #' conditions cannot be be applied to all tables present, it will either give an
 #' error (\code{drop = FALSE}) or will delete the tables that can't be filtered
 #' from the tracks object (\code{drop = FALSE}), see details. For another
-#' strategy, see \code{find_track_sections}, and
-#' \code{summarize_track_sections}.
+#' strategy, see \code{find_sections} and \code{summarize_sections}.
 #'
 #' @param .data A tracks object.
 #' @param ... The filtering conditions (logical statements).
@@ -47,8 +46,8 @@ NULL
 #'   will be always be maintained in the tracks object.
 #'
 #' @export
-#' @seealso \link[dplyr]{filter}, \link{find_track_sections},
-#'   \link{summarize_track_sections}
+#' @seealso \link[dplyr]{filter}, \link{find_sections},
+#'   \link{summarise_sections}
 filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
                            .repartition = FALSE) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)

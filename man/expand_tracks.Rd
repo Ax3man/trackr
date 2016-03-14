@@ -10,13 +10,15 @@ expand_tracks(tracks, soc = TRUE, group = TRUE, trial = TRUE,
 \arguments{
 \item{tracks}{A tracks object.}
 
+\item{soc}{If TRUE, soc will be checked for and added if missing.}
+
 \item{group}{If TRUE, group will be checked for and added if missing.}
 
 \item{trial}{If TRUE, trial will be checked for and added if missing.}
 
 \item{animal}{If TRUE, animal will be checked for and added if missing.}
 
-\item{pairs}{If TRUE, pairs will be checked for and added if missing.}
+\item{pair}{If TRUE, pair will be checked for and added if missing.}
 }
 \value{
 A tracks object.
@@ -32,5 +34,8 @@ Note that this function is similar to running \code{as_tracks(tracks$tr, ...)
 }, but safer (i.e. no loss of data).
 
 If group, pairs and trial are all false, it will return tracks.
+}
+\seealso{
+\link{as_tracks}
 }
 

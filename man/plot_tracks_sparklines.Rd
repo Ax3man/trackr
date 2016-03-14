@@ -13,12 +13,16 @@ plot_tracks_sparklines(tracks, trial, start = NULL, end = NULL,
 
 \item{trial}{A character vector indicating from which trial to plot.}
 
+\item{start}{Start of section to plot (either in frames or time).}
+
+\item{end}{End of section to plot (either in frames or time).}
+
 \item{vars}{A character vector indicating which variables get a sparkline.
 They will be looked for in the $tr and $pairs tables. Optional. When not
 given, will plot all variables available.}
 
-\item{point_events}{An optional numerical vector of point events to highlight
-with vertical dotted lines.}
+\item{point_events}{An optional vector of point events to highlight with
+vertical dotted lines (either frame numbers or times).}
 
 \item{window}{The time that should be plotted around the events, i.e. total
 size of the window.}
@@ -28,8 +32,6 @@ size of the window.}
 
  If frames is left NULL, but point_events and window are provided then a
  window around the point_events.}
-
-\item{frames}{A numeric vector indicating which frames to plot.}
 }
 \value{
 A \code{ggplot} object.

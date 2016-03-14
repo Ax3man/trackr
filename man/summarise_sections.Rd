@@ -16,18 +16,21 @@ summarize_sections_(sections, tracks, group_by = NULL, ..., .dots)
 summarise_sections_(sections, tracks, group_by = NULL, ..., .dots)
 }
 \arguments{
-\item{tracks}{A table with track sections (output from
+\item{sections}{A table with track sections (output from
 \code{find_track_sections}).}
 
-\item{group_by}{What factors the result should be grouped by. For example,
-\code{~animal} will return a summary for each sequence for each animal.}
+\item{tracks}{The corresponding tracks object.}
+
+\item{group_by}{What factors the result should be grouped by, in addition to
+the default \code{trial} and \code{section}. For example, \code{animal}
+will return a summary for each sequence for each animal. The grouping
+variable(s) should be present in the tables that need to summarized, i.e.
+the tables that contain the variables used in the summary statements.}
 
 \item{...}{Summary statements.}
 
 \item{.dots}{Used to work around non-standard evaluation. See vignette("nse")
 for details.}
-
-\item{tracks}{A tracks object.}
 }
 \value{
 A tbl_df.

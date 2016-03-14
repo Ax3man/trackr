@@ -41,8 +41,4 @@ A \code{ggplot} object.
 \description{
 Facet paths using time bins.
 }
-\examples{
-  plot_time_facets(filter(guppies, trial == 'd1t3b'))
-  plot_time_facets(guppies, mode = 'manual')
-}
 

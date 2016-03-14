@@ -2,9 +2,12 @@
 % Please edit documentation in R/non-dplyr_verbs.R
 \name{find_sections}
 \alias{find_sections}
+\alias{find_sections_}
 \title{Retrieve the timestamps for track sections based on conditions.}
 \usage{
-find_sections(tracks, ..., tol = 0)
+find_sections(tracks, ..., tol = 0, pad = 0)
+
+find_sections_(tracks, ..., tol = 1, pad = 0, .dots)
 }
 \arguments{
 \item{tracks}{A tracks object.}
@@ -12,6 +15,9 @@ find_sections(tracks, ..., tol = 0)
 \item{...}{Conditions.}
 
 \item{tol}{Combine sequences that are \code{tol} frames apart.}
+
+\item{pad}{Add padding of this many frames around each section. This allows
+for capturing context around interesting sections.}
 
 \item{.dots}{Used to work around non-standard evaluation. See vignette("nse")
 for details.}
@@ -37,4 +43,9 @@ Example use case: If one wants to select all sequences of frames where
 animals are chasing each other (to plot them, for example), one could filter
 for a high mean speed of the pair, and a small pairwise distance.
 }
+\section{Functions}{
+\itemize{
+\item \code{find_sections_}: Retrieve the timestamps for track section based on
+conditions.
+}}
 

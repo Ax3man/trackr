@@ -112,12 +112,13 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #'
 #' @param tracks A tracks object.
 #' @param trial A character vector indicating from which trial to plot.
-#' @param frames A numeric vector indicating which frames to plot.
+#' @param start Start of section to plot (either in frames or time).
+#' @param end End of section to plot (either in frames or time).
 #' @param vars A character vector indicating which variables get a sparkline.
 #'   They will be looked for in the $tr and $pairs tables. Optional. When not
 #'   given, will plot all variables available.
-#' @param point_events An optional numerical vector of point events to highlight
-#'   with vertical dotted lines.
+#' @param point_events An optional vector of point events to highlight with
+#'   vertical dotted lines (either frame numbers or times).
 #' @param window The time that should be plotted around the events, i.e. total
 #'   size of the window.
 #' @param quantiles A vector of length two with the probabilities to be used for

@@ -7,41 +7,36 @@
 \title{Return a subset of a tracks object with matching conditions.}
 \usage{
 \method{filter_}{tracks}(.data, ..., drop = FALSE, .dots,
-  .check_shards = TRUE)
+  .repartition = FALSE)
 }
 \arguments{
 \item{.data}{A tracks object.}
 
-\item{...}{The conditions. Do not use \code{&} to combine different
-varialbles. Do use \code{&} to combine different conditions on the same
-variable.}
+\item{...}{The filtering conditions (logical statements).}
 
 \item{drop}{Whether to drop conflicting aggregate data. If the tracks object
 contains data that was aggregated over a variable that is now being used to
-filter, drop must be TRUE or an error will be raised. Have to opt in, since
-aggregation may have been expensive.}
+filter, drop must be TRUE or an error will be raised. That is, any table
+that can not be filtered (i.e. it does not contain the variable used to
+filter) will be dropped. Have to opt in, since aggregation may have been
+expensive.}
 
 \item{.dots}{Used to work around non-standard evaluation. See
 \code{vignette("nse")} for details.}
 
-\item{.check_shards}{If TRUE, will check if filtering has caused any worker
-nodes to be empty, and if so will collect and reassign the \code{tr} and
-\code{soc} tables.}
+\item{.repartition}{If TRUE, will collect and reassign the \code{tr} and
+\code{soc} tables. Useful if workers become unbalanced.}
 }
 \value{
 The subsetted tracks object
 }
 \description{
-Method for the dplyr verb filter. You can use them as \code{filter()} and
-\code{filter_()}, as \code{drop} will be passed on accordingly. Allows to
-  filter a tracks object on the following variables:
-\itemize{
-  \item Frame number
-  \item Trial
-  \item Animal
-  \item Animal pair (not implemented)
-  \item xbin and ybin for spatial data (not implemented)
-}
+Method for the dplyr verb \code{filter}. Filters the tracks object according
+to logical filtering statements, in a strict sense. If one of the filtering
+conditions cannot be be applied to all tables present, it will either give an
+error (\code{drop = FALSE}) or will delete the tables that can't be filtered
+from the tracks object (\code{drop = FALSE}), see details. For another
+strategy, see \code{find_sections} and \code{summarize_sections}.
 }
 \section{Strategy on conflicting dependecies}{
 
@@ -53,9 +48,11 @@ Method for the dplyr verb filter. You can use them as \code{filter()} and
   over time (such as in the \code{trial} table) will now no longer match. If
   conflicts are found, by default, an error will be raised. By setting
   \code{drop = TRUE}, you can allow for any conflicting data to be deleted
-  from the tracks object.
+  from the tracks object. The \code{pr}, \code{params} and \code{meta_data}
+  will be always be maintained in the tracks object.
 }
 \seealso{
-\link[dplyr]{filter}
+\link[dplyr]{filter}, \link{find_sections},
+  \link{summarise_sections}
 }
 

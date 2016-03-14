@@ -144,11 +144,13 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
 #' If group, pairs and trial are all false, it will return tracks.
 #'
 #' @param tracks A tracks object.
+#' @param soc If TRUE, soc will be checked for and added if missing.
 #' @param group If TRUE, group will be checked for and added if missing.
-#' @param pairs If TRUE, pairs will be checked for and added if missing.
-#' @param animal If TRUE, animal will be checked for and added if missing.
 #' @param trial If TRUE, trial will be checked for and added if missing.
+#' @param animal If TRUE, animal will be checked for and added if missing.
+#' @param pair If TRUE, pair will be checked for and added if missing.
 #'
+#' @seealso \link{as_tracks}
 #' @return A tracks object.
 #' @export
 expand_tracks <- function(tracks,
