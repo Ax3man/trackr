@@ -76,7 +76,7 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
   }
 
   for (i in seq_along(conds)) {
-    .data[[tables[i]]] <- dplyr::filter_(.data[[tables[i]]], .dots = conds[i])
+    .data[tables[[i]]] <- dplyr::filter_(.data[[tables[i]]], .dots = conds[i])
   }
 
   if (.repartition) {
