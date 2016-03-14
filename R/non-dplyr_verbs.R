@@ -167,7 +167,7 @@ find_sections_ <- function(tracks, ..., tol = 1, pad = 0, add_times = TRUE,
 #' @param sections A table with track sections (output from
 #'   \code{find_track_sections}).
 #' @param tracks The corresponding tracks object.
-#' @param group_by What factors the result should be grouped by, in addition to
+#' @param .group_by What factors the result should be grouped by, in addition to
 #'   the default \code{trial} and \code{section}. For example, \code{animal}
 #'   will return a summary for each sequence for each animal. The grouping
 #'   variable(s) should be present in the tables that need to summarized, i.e.
@@ -178,30 +178,30 @@ find_sections_ <- function(tracks, ..., tol = 1, pad = 0, add_times = TRUE,
 #'
 #' @return A tbl_df.
 #' @export
-summarise_sections <- function(sections, tracks, group_by = NULL, ...) {
+summarise_sections <- function(sections, tracks, .group_by = NULL, ...) {
   summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...),
-                      group_by = lazyeval::lazy(group_by))
+                      .group_by = lazyeval::lazy(.group_by))
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
-summarize_sections <- function(sections, tracks, group_by = NULL, ...) {
+summarize_sections <- function(sections, tracks, .group_by = NULL, ...) {
   summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...),
-                      group_by = lazyeval::lazy(group_by))
+                      .group_by = lazyeval::lazy(.group_by))
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
-summarize_sections_ <- function(sections, tracks, group_by = NULL, ..., .dots) {
-  summarise_sections_(sections, tracks, ..., .dots)
+summarize_sections_ <- function(sections, tracks, .group_by = NULL, ..., .dots) {
+  summarise_sections_(sections, tracks, .group_by = .group_by, ..., .dots)
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
-summarise_sections_ <- function(sections, tracks, group_by = NULL, ..., .dots) {
+summarise_sections_ <- function(sections, tracks, .group_by = NULL, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   conds_tables <- trackr:::find_conds_in_tables(tracks, conds)
   tables <- unique(unlist(conds_tables))
@@ -217,16 +217,16 @@ summarise_sections_ <- function(sections, tracks, group_by = NULL, ..., .dots) {
                                           lazyeval::interp(~frame %in% start:end,
                                                            start = sections$start[j],
                                                            end = sections$end[j]))
-                             temp <- dplyr::filter_(.tracks[[i]], .dots = dots)
-                             dplyr::collect(temp)
+                             dplyr::filter_(.tracks[[i]], .dots = dots)
                            } )
   }
-
+  .tracks <- lapply(.tracks, lapply, dplyr::collect)
+  
   .tracks <- lapply(.tracks, dplyr::bind_rows, .id = 'section')
-  if (is.null(group_by)) {
+  if (is.null(.group_by)) {
     .tracks <- lapply(.tracks, dplyr::group_by_, ~trial, ~section)
   } else {
-    .tracks <- lapply(.tracks, dplyr::group_by_, ~trial, ~section, group_by)
+    .tracks <- lapply(.tracks, dplyr::group_by_, ~trial, ~section, .group_by)
   }
   for (i in seq_along(.tracks)) {
     .tracks[[i]] <- dplyr::summarize_(
@@ -236,6 +236,7 @@ summarise_sections_ <- function(sections, tracks, group_by = NULL, ..., .dots) {
   .tracks <- Reduce(function(...) dplyr::full_join(..., by = c('trial', 'section')),
                     .tracks)
   .tracks$section <- as.numeric(.tracks$section)
-  dplyr::arrange_(.tracks, ~trial, ~section)
+  .tracks <- dplyr::arrange_(.tracks, ~trial, ~section)
+  return(.tracks)
 }
 
