@@ -1,5 +1,5 @@
 # trackr
-This R package is used to analyze and visualize animal video tracking data.
+This R package provides tools to analyze and visualize animal video tracking data.
 
 ### Goals
 ##### Offer a framework for the analysis of tracking data that is independent to the tracking software used.
