@@ -147,7 +147,7 @@ resolve_time_frame <- function(var, frame_rate) {
 }
 
 time_bin_labels <- function(bins, frame_rate) {
-  labels <- frames_to_time(bins, frame_rate)
+  labels <- frames_to_times(bins, frame_rate)
   labels <- gsub("\\s*\\w*$", "", round(labels))
   labels <- tolower(gsub(" ", "", labels, fixed = TRUE))
   paste(head(labels, -1), 'till', labels[-1])
