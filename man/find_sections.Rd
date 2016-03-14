@@ -5,9 +5,9 @@
 \alias{find_sections_}
 \title{Retrieve the timestamps for track sections based on conditions.}
 \usage{
-find_sections(tracks, ..., tol = 0, pad = 0)
+find_sections(tracks, ..., tol = 0, pad = 0, add_times = TRUE)
 
-find_sections_(tracks, ..., tol = 1, pad = 0, .dots)
+find_sections_(tracks, ..., tol = 1, pad = 0, add_times = TRUE, .dots)
 }
 \arguments{
 \item{tracks}{A tracks object.}
@@ -18,6 +18,9 @@ find_sections_(tracks, ..., tol = 1, pad = 0, .dots)
 
 \item{pad}{Add padding of this many frames around each section. This allows
 for capturing context around interesting sections.}
+
+\item{add_times}{When \code{TRUE}, three columns will be added to the result
+that give human readable times, instead of only frame numbers.}
 
 \item{.dots}{Used to work around non-standard evaluation. See vignette("nse")
 for details.}
