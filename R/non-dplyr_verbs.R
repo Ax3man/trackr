@@ -167,11 +167,11 @@ find_sections_ <- function(tracks, ..., tol = 1, pad = 0, .dots) {
 #' are chasing each other, one can calculate the mean speed for each of the
 #' chase sequences.
 #'
-#' @param tracks A table with track sections (output from
+#' @param sections A table with track sections (output from
 #'   \code{find_track_sections}).
-#' @param tracks A tracks object.
+#' @param tracks The corresponding tracks object.
 #' @param group_by What factors the result should be grouped by, in addition to
-#'   the default \code{trial} and \code{section}. For example, \code{~animal}
+#'   the default \code{trial} and \code{section}. For example, \code{animal}
 #'   will return a summary for each sequence for each animal. The grouping
 #'   variable(s) should be present in the tables that need to summarized, i.e.
 #'   the tables that contain the variables used in the summary statements.
@@ -182,14 +182,16 @@ find_sections_ <- function(tracks, ..., tol = 1, pad = 0, .dots) {
 #' @return A tbl_df.
 #' @export
 summarise_sections <- function(sections, tracks, group_by = NULL, ...) {
-  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...))
+  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...),
+                      group_by = lazyeval::lazy(group_by))
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
 summarize_sections <- function(sections, tracks, group_by = NULL, ...) {
-  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...))
+  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...),
+                      group_by = lazyeval::lazy(group_by))
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
