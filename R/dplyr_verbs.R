@@ -12,28 +12,24 @@ NULL
 
 #' Return a subset of a tracks object with matching conditions.
 #'
-#' Method for the dplyr verb filter. You can use them as \code{filter()} and
-#' \code{filter_()}, as \code{drop} will be passed on accordingly. Allows to
-#'   filter a tracks object on the following variables:
-#' \itemize{
-#'   \item Frame number
-#'   \item Trial
-#'   \item Animal
-#'   \item Animal pair (not implemented)
-#'   \item xbin and ybin for spatial data (not implemented)
-#' }
+#' Method for the dplyr verb \code{filter}. Filters the tracks object according
+#' to logical filtering statements, in a strict sense. If one of the filtering
+#' conditions cannot be be applied to all tables present, it will either give an
+#' error (\code{drop = FALSE}) or will delete the tables that can't be filtered
+#' from the tracks object (\code{drop = FALSE}), see details. For another
+#' strategy, see \code{find_track_sections}, and
+#' \code{summarize_track_sections}.
 #'
 #' @param .data A tracks object.
-#' @param ... The conditions. Do not use \code{&} to combine different
-#'   varialbles. Do use \code{&} to combine different conditions on the same
-#'   variable.
+#' @param ... The filtering conditions (logical statements).
 #' @param drop Whether to drop conflicting aggregate data. If the tracks object
 #'   contains data that was aggregated over a variable that is now being used to
-#'   filter, drop must be TRUE or an error will be raised. Have to opt in, since
-#'   aggregation may have been expensive.
-#' @param .check_shards If TRUE, will check if filtering has caused any worker
-#'   nodes to be empty, and if so will collect and reassign the \code{tr} and
-#'   \code{soc} tables.
+#'   filter, drop must be TRUE or an error will be raised. That is, any table
+#'   that can not be filtered (i.e. it does not contain the variable used to
+#'   filter) will be dropped. Have to opt in, since aggregation may have been
+#'   expensive.
+#' @param .repartition If TRUE, will collect and reassign the \code{tr} and
+#'   \code{soc} tables. Useful if workers become unbalanced.
 #' @inheritParams dplyr::filter
 #'
 #' @return The subsetted tracks object
@@ -47,75 +43,45 @@ NULL
 #'   over time (such as in the \code{trial} table) will now no longer match. If
 #'   conflicts are found, by default, an error will be raised. By setting
 #'   \code{drop = TRUE}, you can allow for any conflicting data to be deleted
-#'   from the tracks object.
+#'   from the tracks object. The \code{pr}, \code{params} and \code{meta_data}
+#'   will be always be maintained in the tracks object.
 #'
 #' @export
-#' @seealso \link[dplyr]{filter}
+#' @seealso \link[dplyr]{filter}, \link{find_track_sections},
+#'   \link{summarize_track_sections}
 filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
-                           .check_shards = TRUE) {
-  # collect conditions
+                           .repartition = FALSE) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
-  # check if drop happens to be in the .dots (coming from filter dispatching to
-  # filter_), if so then extract it out
+  # Extract special arguments from ...
   if (any(names(conds) == 'drop')) {
     drop <- lazyeval::lazy_eval(conds$drop)
     conds <- conds[-which(names(conds) == 'drop')]
   }
+  if (any(names(conds) == '.repartition')) {
+    drop <- lazyeval::lazy_eval(conds[['.repartition']])
+    conds <- conds[-which(names(conds) == '.repartition')]
+  }
   # extract which things those conditions apply to
-  vars <- sapply(strsplit(names(conds), ' '), '[', 1)
-  if (any(!(vars %in% c('frame', 'trial', 'animal', 'time'))) & !drop)
-    warning("Compatability is only checked when filtering on frame, trial or animal.",
-            call. = FALSE)
-  if (length(vars) > length(unique(vars)))
-    stop("Combine different conditions for the same variable with '&', instead
-         of using seperate ... arguments.")
-  # Find which components of the tracks object are currently present
-  present <- names(.data)[!(names(.data) %in% c('params', 'pr'))]
+  tables <- find_conds_in_tables(.data, conds)
+  to_be_kept <- c(unique(tables), 'pr', 'params', 'meta_data')
 
-  # check for compatibility issues ---------------------------------------------
-  if (any(vars == 'frame') & any(present %in% c('location', 'trial'))) {
+  if (!(all(names(.data) %in% to_be_kept))) {
     if (drop) {
-      .data$location <- NULL
-      .data$trial <- NULL
+      .data <- .data[to_be_kept]
+      class(.data) <- c('tracks', class(.data))
     } else {
-      stop("Found data aggregated over frames. Include drop == TRUE to delete.",
+      stop('This filter cannot be applied to all tables present.
+           Set drop to TRUE if you want to drop the tables that can\'t be filtered',
            call. = FALSE)
     }
   }
-  if (any(vars == 'animal') &
-      any(present %in% c('group', 'soc', 'location', 'trial'))) {
-    if (drop) {
-      message("Dropping incompatible data.")
-      .data$group <- NULL
-      .data$soc <- NULL
-      .data$location <- NULL
-      .data$trial <- NULL
-    } else {
-      stop("Found data aggregated over animals. Include drop == TRUE to
-           delete.",
-           call. = FALSE)
-    }
+
+  for (i in seq_along(conds)) {
+    .data[[tables[i]]] <- dplyr::filter_(.data[[tables[i]]], .dots = conds[i])
   }
-  # Update which components of the tracks object are currently present
-  present <- names(.data)[!(names(.data) %in% c('params', 'pr'))]
-
-  # Apply filter to all tables -------------------------------------------------
-  .data[present] <- lapply(.data[present], function(d, conds, vars) {
-    var_d <- switch(class(d)[1],
-                    'party_df' = get_party_df_names(d),
-                    'tbl_df' = names(d),
-                    return(d))
-
-    conds2 <- conds[which(vars %in% var_d)]
-    if (length(conds2) > 0) {
-      d <- dplyr::filter_(d, .dots = conds2)
-      #d <- droplevels(d)
-    }
-    d
-  }, conds = conds, vars = vars)
 
   if (.check_shards) {
-    remove_empty_shards(.data)
+    .data <- repartition(.data)
   }
   return(.data)
 }
