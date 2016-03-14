@@ -203,22 +203,25 @@ summarize_sections_ <- function(sections, tracks, group_by = NULL, ..., .dots) {
 #' @export
 summarise_sections_ <- function(sections, tracks, group_by = NULL, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
-  conds_tables <- find_conds_in_tables(tracks, conds)
-  tables <- unique(conds_tables)
+  conds_tables <- trackr:::find_conds_in_tables(tracks, conds)
+  tables <- unique(unlist(conds_tables))
 
   .tracks <- tracks[tables]
+  # The lapply is slow here, may wat to come with a different implementation.
+  # Perhaps filter once for all frames combined, and mutate a section variable.
   for (i in seq_along(.tracks)) {
     .tracks[[i]] <- lapply(1:nrow(sections),
-                         function(j) {
-                           dots <- list(lazyeval::interp(~trial == x,
-                                                         x = sections$trial[j]),
-                                        lazyeval::interp(~frame %in% start:end,
-                                                         start = sections$start[j],
-                                                         end = sections$end[j]))
-                           temp <- dplyr::filter_(.tracks[[i]], .dots = dots)
-                           dplyr::collect(temp)
-                         } )
+                           function(j) {
+                             dots <- list(lazyeval::interp(~trial == x,
+                                                           x = sections$trial[j]),
+                                          lazyeval::interp(~frame %in% start:end,
+                                                           start = sections$start[j],
+                                                           end = sections$end[j]))
+                             temp <- dplyr::filter_(.tracks[[i]], .dots = dots)
+                             dplyr::collect(temp)
+                           } )
   }
+
   .tracks <- lapply(.tracks, dplyr::bind_rows, .id = 'section')
   if (is.null(group_by)) {
     .tracks <- lapply(.tracks, dplyr::group_by_, ~trial, ~section)
@@ -230,7 +233,9 @@ summarise_sections_ <- function(sections, tracks, group_by = NULL, ..., .dots) {
       .tracks[[i]], .dots = conds[which(conds_tables == tables[i])])
   }
   # Join all results
-  Reduce(function(...) dplyr::full_join(..., by = c('trial', 'section')),
-         .tracks)
+  .tracks <- Reduce(function(...) dplyr::full_join(..., by = c('trial', 'section')),
+                    .tracks)
+  .tracks$section <- as.numeric(.tracks$section)
+  dplyr::arrange_(.tracks, ~trial, ~section)
 }
 
