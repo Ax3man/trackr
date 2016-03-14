@@ -87,9 +87,10 @@ find_conds_in_tables <- function(tracks, conds) {
     }
   }
 
-  if (any(is.na(tables))) {
+  if (any(sapply(tables, function(x) all(is.na(x))))) {
     stop(paste('The following variables(s) caused a problem:\n',
-               paste(collapse = ' ', vars[[which(is.na(tables))]]),
+               paste(collapse = ' ',
+                     vars[[which(sapply(tables, function(x) all(is.na(x))))]]),
                '\nEither (one of) the variable(s) could not be found,
                or they were not found in the same table.'), call. = FALSE)
   }
