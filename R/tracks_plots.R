@@ -137,20 +137,22 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
   point_events <- resolve_time_frame(point_events, tracks$params$frame_rate)
   window <- resolve_time_frame(window, tracks$params$frame_rate)
 
-  if (is.null(frames)) {
+  if (is.null(start) | is.null(end)) {
     if (is.null(point_events) | is.null(window)) {
-      stop('Provide either frames, or point_events and window.', call. = FALSE)
+      stop('Provide either start and end, or point_events and window.',
+           call. = FALSE)
     }
-    frames <- (min(point_events) - window / 2):(max(point_events) + window / 2)
+    start <- min(point_events) - window / 2
+    end <- max(point_events) + window / 2
   }
 
   if (is.null(vars)) {
     vars <- c(tracks$pr$tr, tracks$pr$soc)
   }
 
-  sel <- list(trial, frames)
+  sel <- list(trial = trial, start = start, end = end)
   multidplyr::cluster_assign_value(tracks$tr$cluster, 'sel', sel)
-  tracks <- filter_(tracks, ~trial %in% sel[[1]], drop = TRUE)
+  tracks <- filter_(tracks, ~trial %in% sel[['trial']], drop = TRUE)
 
   tr <- dplyr::collect(tracks$tr)
   tr <- dplyr::ungroup(tr)
@@ -181,7 +183,7 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
                                                  na.rm = TRUE))
   quants <- dplyr::right_join(quants, pdat, by = 'var')
 
-  pdat <- dplyr::filter_(pdat, ~frame %in% sel[[2]])
+  pdat <- dplyr::filter_(pdat, ~frame %in% sel[['start']]:sel[['end']])
   quants <- dplyr::group_by_(quants, ~var, ~animal)
   quants <- dplyr::filter_(quants, ~frame %in% range(pdat$frame))
 
