@@ -76,49 +76,34 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #'
 #' @return A tbl_df.
 #' @export
-find_sections <- function(tracks, ..., tol = 0, pad = 0) {
-  find_sections_(tracks, tol = tol, pad = pad, .dots = lazyeval::lazy_dots(...))
+find_sections <- function(tracks, ..., tol = 0, pad = 0, add_times = TRUE) {
+  find_sections_(tracks, tol = tol, pad = pad, add_times = add_times,
+                 .dots = lazyeval::lazy_dots(...))
 }
 
 #' @describeIn find_sections Retrieve the timestamps for track section based on
 #'   conditions.
 #' @export
-find_sections_ <- function(tracks, ..., tol = 1, pad = 0, .dots) {
+find_sections_ <- function(tracks, ..., tol = 1, pad = 0, add_times = TRUE,
+                           .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   tables <- find_conds_in_tables(list(tr = tracks$tr, soc = tracks$soc,
-                                      group = tracks$group),
+                                      group = tracks$group, pr = tracks$pr),
                                  conds)
 
-  vars <- sapply(strsplit(names(conds), ' '), '[', 1)
   present <- names(tracks)[(names(tracks) %in% c('tr', 'soc', 'group'))]
-
-  if (length(vars) > length(unique(vars))) {
-    stop("Combine different conditions for the same variable with '&', instead
-       of using seperate ... arguments.")
+  frames <- tracks[present]
+  for (i in seq_along(conds)) {
+    frames[tables[[i]]] <- lapply(frames[tables[[i]]], dplyr::filter_,
+                                  .dots = conds[i])
   }
-
-  # Apply filter to all tables -------------------------------------------------
-  frames <- lapply(tracks[present], function(d, conds, vars) {
-    var_d <- switch(class(d)[1],
-                    'party_df' = get_party_df_names(d),
-                    'tbl_df' = names(d),
-                    return(d))
-
-    conds2 <- conds[which(vars %in% var_d)]
-    if (length(conds2) > 0) {
-      d <- dplyr::filter_(d, .dots = conds2)
-    }
-    if ('party_df' %in% class(d)) {
-      d <- dplyr::collect(d)
-    }
-    dplyr::select_(d, ~trial, ~frame)
-  }, conds = conds, vars = vars)
+  frames <- lapply(frames, dplyr::collect)
 
   # Find common frames ---------------------------------------------------------
-  if (length(present) == 1) {
+  if (length(frames) == 1) {
     frames <- unlist(frames)
   } else {
-    if (length(present) == 2) {
+    if (length(frames) == 2) {
       frames <- dplyr::inner_join(frames[[1]], frames[[2]],
                                   by = c('trial', 'frame'))
     } else {
@@ -147,6 +132,16 @@ find_sections_ <- function(tracks, ..., tol = 1, pad = 0, .dots) {
                               start = ~min(frame) - pad,
                               end = ~max(frame) + pad,
                               length = ~end - start + 1)
+
+  if (add_times) {
+    get_time <- function(x) {
+      as.character(round(frames_to_times(x, tracks$params$frame_rate)))
+    }
+    frames <- dplyr::mutate_(frames,
+                             start_t = ~get_time(start),
+                             end_t = ~get_time(end),
+                             length_t = ~get_time(length))
+  }
 }
 
 #' Summarize track sections.
