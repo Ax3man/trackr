@@ -80,7 +80,7 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
     .data[[tables[i]]] <- dplyr::filter_(.data[[tables[i]]], .dots = conds[i])
   }
 
-  if (.check_shards) {
+  if (.repartition) {
     .data <- repartition(.data)
   }
   return(.data)
