@@ -57,6 +57,10 @@ roll_fast <- function(tracks, table, var, fun, window, weights, hit) {
       c('temp', paste0(var, '_roll'))))
   tracks[[table]] <- dplyr::select_(tracks[[table]], ~-temp)
 
+  if ('party_df' %in% class(tracks[[table]])) {
+    tracks$pr[[table]] <- c(tracks$pr[[table]], paste0(var, '_roll'))
+  }
+
   return(tracks)
 }
 
