@@ -8,7 +8,7 @@
 #' @param file Either directly supply a path to a file, a list of paths,
 #' @param folder Or supply a path to a folder.
 #' @param type If folder is supplied, use type to indicate which track type
-#'   should be read. Currently always tries to find nogaps files.
+#'   should be read. Can be either \code{"gaps"} or \code{"nogaps"}.
 #' @param multiple If TRUE, will try to find files in the subfolders of folder
 #'   and combine them into one long data.frame. Only use when using folder.
 #' @param animals Optional vector of names (ordered in the same order as the
@@ -24,24 +24,40 @@ read_idTracker <- function(file = NULL,
                            multiple = TRUE,
                            animals = NULL) {
   # Input handeling ------------------------------------------------------------
-  if ((is.null(file) & is.null(folder)) | (!is.null(file) & !is.null(folder)))
+  if ((is.null(file) & is.null(folder)) | (!is.null(file) & !is.null(folder))) {
     stop("Supply either `file` or `folder`.", call. = FALSE)
+  }
 
-  if (!is.null(file) & is.character(file))
+  if (!is.null(file) & is.character(file)) {
     file <- list(file)
+  }
 
-  if (!is.null(folder) & type != "nogaps")
-    stop("No other type than `nogaps` implemented.", call. = FALSE)
+  if (!is.null(folder) & !(type %in% c("gaps", "nogaps"))) {
+    stop("No other type than `gaps` or `nogaps` implemented.", call. = FALSE)
+  }
 
-  if (!is.null(folder) & type == "nogaps" & !multiple)
-    file <- list(file.path(folder, 'trajectories_nogaps.txt'))
-
-  if (!is.null(folder) & type == "nogaps" & multiple) {
-    file <- file.path(folder, list.files(folder, 'trajectories_nogaps.txt',
-                                         recursive = TRUE))
-    if (length(file) == 0)
-      stop("No files of this type found in this folder, or its subfolders.",
-           call. = FALSE)
+  if (!is.null(folder)) {
+      if (type == "nogaps") {
+        if (multiple) {
+          file <- file.path(folder, list.files(folder, 'trajectories_nogaps.txt',
+                                               recursive = TRUE))
+          if (length(file) == 0)
+            stop("No files of this type found in this folder, or its subfolders.",
+                 call. = FALSE)
+        } else {
+          file <- list(file.path(folder, 'trajectories_nogaps.txt'))
+        }
+      } else {
+        if (multiple) {
+          file <- file.path(folder, list.files(folder, 'trajectories.txt',
+                                               recursive = TRUE))
+          if (length(file) == 0)
+            stop("No files of this type found in this folder, or its subfolders.",
+                 call. = FALSE)
+        } else {
+          file <- list(file.path(folder, 'trajectories.txt'))
+        }
+      }
   }
 
   # Read file ------------------------------------------------------------------

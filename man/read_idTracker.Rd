@@ -13,7 +13,7 @@ read_idTracker(file = NULL, folder = NULL, type = "nogaps",
 \item{folder}{Or supply a path to a folder.}
 
 \item{type}{If folder is supplied, use type to indicate which track type
-should be read. Currently always tries to find nogaps files.}
+should be read. Can be either \code{"gaps"} or \code{"nogaps"}.}
 
 \item{multiple}{If TRUE, will try to find files in the subfolders of folder
 and combine them into one long data.frame. Only use when using folder.}
