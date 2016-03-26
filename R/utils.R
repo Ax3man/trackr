@@ -69,6 +69,14 @@ repartition <- function(tracks) {
 find_conds_in_tables <- function(tracks, conds) {
   vars <- lapply(conds, function(x) all.vars(x$expr))
   tables <- vector("list", length(vars))
+
+  for (i in seq_along(vars)) {
+    if (any(vars[[i]] %in% names(conds))) {
+      w <- which(vars[[i]] %in% names(conds))
+      vars[[i]] <- c(vars[[i]][-w], vars[[vars[[i]][w]]])
+    }
+  }
+
   for (i in seq_along(tracks)) {
     tbl <- names(tracks)[i]
     if (tbl %in% c('pr', 'params', 'meta_data')) {
