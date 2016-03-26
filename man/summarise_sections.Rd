@@ -7,13 +7,13 @@
 \alias{summarize_sections_}
 \title{Summarize track sections.}
 \usage{
-summarise_sections(sections, tracks, group_by = NULL, ...)
+summarise_sections(sections, tracks, .group_by = NULL, ...)
 
-summarize_sections(sections, tracks, group_by = NULL, ...)
+summarize_sections(sections, tracks, .group_by = NULL, ...)
 
-summarize_sections_(sections, tracks, group_by = NULL, ..., .dots)
+summarize_sections_(sections, tracks, .group_by = NULL, ..., .dots)
 
-summarise_sections_(sections, tracks, group_by = NULL, ..., .dots)
+summarise_sections_(sections, tracks, .group_by = NULL, ..., .dots)
 }
 \arguments{
 \item{sections}{A table with track sections (output from
@@ -21,7 +21,7 @@ summarise_sections_(sections, tracks, group_by = NULL, ..., .dots)
 
 \item{tracks}{The corresponding tracks object.}
 
-\item{group_by}{What factors the result should be grouped by, in addition to
+\item{.group_by}{What factors the result should be grouped by, in addition to
 the default \code{trial} and \code{section}. For example, \code{animal}
 will return a summary for each sequence for each animal. The grouping
 variable(s) should be present in the tables that need to summarized, i.e.
