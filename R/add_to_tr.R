@@ -84,13 +84,19 @@ add_turn <- function(tracks) {
   return(tracks)
 }
 
-add_diff_to_track <- function(tracks, var, name) {
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
-  tracks$tr <- dplyr::mutate_(
-    tracks$tr,
-    .dots = setNames(list(lazyeval::interp(~x - dplyr::lag(x, order_by = frame),
-                                           x = as.name(var))), name))
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial)
-  return(tracks)
+
+#' Safely calculate the change over time for a variable.
+#'
+#' Use this convenience function within calls to mutate_.tracks.
+#'
+#' @param x A vector.
+#' @param n Time lag in frames.
+#'
+#' @return A vector.
+#' @export
+change <- function(x, frame, n = 1) {
+  ifelse(frame - dplyr::lag(frame, n = n, order_by = frame) == n,
+         x - dplyr::lag(x, n = n, order_by = frame),
+         NA)
 }
 

@@ -189,6 +189,41 @@ summarise_.tracks <- function(.data,
   return(tracks)
 }
 
+#' @importFrom dplyr mutate
+#' @name mutate
+#' @rdname mutate_.tracks
+#' @export
+NULL
+
+#' @importFrom dplyr mutate_
+#' @name mutate_
+#' @rdname mutate_.tracks
+#' @export
+NULL
+
+#' Add new variables to a tracks object.
+#'
+#' @param .data A tracks object
+#' @inheritParams dplyr::mutate
+#'
+#' @return A tracks object.
+#' @export
+mutate_.tracks <- function(.data, ..., .dots) {
+  conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  tables <- find_conds_in_tables(.data, conds)
+
+  for (i in seq_along(conds)) {
+    .data[tables[[i]]] <- lapply(.data[tables[[i]]], dplyr::mutate_,
+                                 .dots = conds[i])
+    if (tables[[i]] %in% names(.data$pr)) {
+      .data$pr[tables[[i]] == names(.data$pr)] <-
+        c(.data$pr[tables[[i]] == names(.data$pr)],
+          names(conds[i]))
+    }
+  }
+  return(.data)
+}
+
 #' @importFrom dplyr select
 #' @name select
 #' @rdname select_.tracks
@@ -218,7 +253,7 @@ NULL
 #' @return A tracks object.
 #' @export
 select_.tracks <- function(.data, ..., .dots) {
-  dots <- lazyeval::all_dots(.dots, ...)
+  dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   vars <- dplyr::select_vars_(names(.data), dots,
                               include = c('tr', 'meta_data', 'params'))
   .data <- .data[vars]
