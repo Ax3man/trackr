@@ -111,6 +111,7 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
   # Parallel -------------------------------------------------------------------
   pr_tr <- names(tr)
   tr <- multidplyr::partition(tr, trial)
+  multidplyr::cluster_library(tr$cluster, 'trackr')
 
   # Build object and return ----------------------------------------------------
   tracks <- list(tr = tr,
@@ -342,5 +343,6 @@ load_tracks <- function(file) {
     tracks$soc <- multidplyr::partition(tracks$soc, trial,
                                         cluster = tracks$tr$cluster)
   }
+  multidplyr::cluster_library(tracks$tr$cluster, 'trackr')
   return(tracks)
 }
