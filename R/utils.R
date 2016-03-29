@@ -3,36 +3,6 @@ get_party_df_names <- function(d) {
   multidplyr::cluster_call(d$cluster, fun, as.name(d$name))[[1]]
 }
 
-join_tr_to_soc <- function(tracks, select) {
-  # Select is a list of ~variables.
-  cl <- tracks$tr$cluster
-
-  tr <- dplyr::select_(tracks$tr, .dots = c(~trial, ~animal, ~frame, select))
-  tr <- dplyr::collect(tr)
-
-  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$soc$name),
-                       function(x) names(table(x$trial)[table(x$trial) > 0]))
-  tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
-  multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
-
-  tracks$soc <- dplyr::do_(tracks$soc,
-                           ~dplyr::left_join(
-                             ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
-
-  Names <- as.character(select)
-  ren1 <- setNames(select, paste0(substring(Names, 2), 1))
-  tracks$soc <- dplyr::rename_(tracks$soc, .dots = ren1)
-
-  tracks$soc <- dplyr::do_(tracks$soc,
-                           ~dplyr::left_join(
-                             ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
-  multidplyr::cluster_rm(cl, '.tr')
-  ren2 <- setNames(select, paste0(substring(Names, 2), 2))
-  tracks$soc <- dplyr::rename_(tracks$soc, .dots = ren2)
-
-  return(tracks)
-}
-
 remove_empty_shards <- function(tracks) {
   fun <- function(x) nrow(eval(x))
   empty_shards_tr <- any(multidplyr::cluster_call(tracks$tr$cluster, fun,

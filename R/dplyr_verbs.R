@@ -210,14 +210,15 @@ NULL
 #' @export
 mutate_.tracks <- function(.data, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  conds <- lapply(conds, lazyeval::interp, f = as.name('frame'))
   tables <- find_conds_in_tables(.data, conds)
 
   for (i in seq_along(conds)) {
     .data[tables[[i]]] <- lapply(.data[tables[[i]]], dplyr::mutate_,
                                  .dots = conds[i])
     if (tables[[i]] %in% names(.data$pr)) {
-      .data$pr[tables[[i]] == names(.data$pr)] <-
-        c(.data$pr[tables[[i]] == names(.data$pr)],
+      .data$pr[tables[[i]] == names(.data$pr)][[1]] <-
+        c(.data$pr[tables[[i]] == names(.data$pr)][[1]],
           names(conds[i]))
     }
   }

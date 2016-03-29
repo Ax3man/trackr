@@ -4,7 +4,7 @@
 \alias{change}
 \title{Safely calculate the change over time for a variable.}
 \usage{
-change(x, frame, n = 1)
+change(x, f, n = 1)
 }
 \arguments{
 \item{x}{A vector.}

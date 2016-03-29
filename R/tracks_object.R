@@ -111,6 +111,7 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
   # Parallel -------------------------------------------------------------------
   pr_tr <- names(tr)
   tr <- multidplyr::partition(tr, trial)
+  tr <- dplyr::group_by_(tr, ~animal)
   multidplyr::cluster_library(tr$cluster, 'trackr')
 
   # Build object and return ----------------------------------------------------
@@ -171,6 +172,7 @@ expand_tracks <- function(tracks,
     tracks$pr$soc <- names(Soc)
     Soc <- multidplyr::partition(Soc, trial, cluster = tracks$tr$cluster)
     Soc <- dplyr::filter_(Soc, ~animal1 != animal2)
+    Soc <- dplyr::group_by_(Soc, ~animal1, ~animal2)
   }
 
   # Build group object ---------------------------------------------------------

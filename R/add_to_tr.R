@@ -1,89 +1,49 @@
-# Functions that add variables to the $tr table of a tracks object
-
-#' Add speed to tracks object.
+#' Calculate distance.
 #'
-#' @param tracks A tracks object.
+#' @param x X coordinates.
+#' @param y Y coordinates.
+#' @param f Always use 'f' or 'frame' (equivalent). Used to order by frame
+#'   before calculation.
 #'
-#' @return tracks object
+#' @return A vector of distances in px.
 #' @export
-add_speed <- function(tracks) {
-  if ('speed' %in% tracks$pr$tr) {
-    return(tracks)
-  }
-  frame_rate <- tracks$params$frame_rate
-  scale <- ifelse(is.null(tracks$params$scale), 1, tracks$params$scale)
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'frame_rate', frame_rate)
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'scale', scale)
-
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~animal)
-  tracks$tr <- dplyr::mutate_(tracks$tr,
-                              prev_X = ~dplyr::lag(X, order_by = frame),
-                              prev_Y = ~dplyr::lag(Y, order_by = frame),
-                              prev_frame = ~dplyr::lag(frame, order_by = frame))
-  tracks$tr <- dplyr::mutate_(
-    tracks$tr,
-    speed = ~ifelse(frame - prev_frame == 1,
-                    sqrt((X - prev_X) ^ 2 + (Y - prev_Y) ^ 2) / frame_rate * scale,
-                    NA)) # we use order_by since arrange doesnt work on party_df
-  tracks$tr <- dplyr::select_(tracks$tr, ~-prev_X, ~-prev_Y, ~-prev_frame)
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial)
-
-  multidplyr::cluster_rm(tracks$tr$cluster, c('frame_rate', 'scale'))
-
-  tracks$pr$tr <- c(tracks$pr$tr, 'speed')
-  return(tracks)
+distance <- function(x, y, f) {
+  sqrt(change(x, f) ^ 2 + change(y, f) ^ 2)
 }
 
-#' Add acceleration to tracks object.
+#' Calculate speed.
 #'
-#' @param tracks A tracks object.
-#'
-#' @return tracks object
+#' @inheritParams distance
+#' @return A vector of accelerations in px per frame.
 #' @export
-add_acceleration <- function(tracks) {
-  if ('acceleration' %in% tracks$pr$tr) {
-    return(tracks)
-  }
-  if (!('speed' %in% tracks$pr$tr)) {
-    message('Adding speed to tracks object first.')
-    tracks <- add_speed(tracks)
-  }
-  tracks <- add_diff_to_track(tracks, 'speed', 'acceleration')
-  tracks$pr$tr <- c(tracks$pr$tr, 'acceleration')
-  return(tracks)
+speed <- function(x, y, f) {
+  change(distance(y, x, f), f)
 }
 
-#' Add turning angle to tracks object.
+#' Calculate acceleration.
+#'
+#' @inheritParams distance
+#' @return A vector of accelerations in px per frame^2.
+#' @export
+acceleration <- function(x, y, f) {
+  change(change(distance(y, x, f), f), f)
+}
+
+#' Calculate turning angle.
 #'
 #' This adds the turning angle of the path, that is, based on coordinates, not
 #' orientation.
-#'
-#' @param tracks A tracks object.
-#'
-#' @return tracks object
+#' @inheritParams distance
 #' @export
-add_turn <- function(tracks) {
-  if ('turn' %in% tracks$pr$tr)
-    return(tracks)
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'angle_diff', angle_diff)
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'angle', angle)
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
-  tracks$tr <- dplyr::mutate_(
-    tracks$tr,
-    'turn' = ~ifelse(
-      frame - dplyr::lag(frame, order_by = frame) == 1,
-      angle_diff(angle(dplyr::lag(X, order_by = frame),
-                       dplyr::lag(Y, order_by = frame), X, Y),
-                 angle(X, Y, dplyr::lead(X, order_by = frame),
-                       dplyr::lead(Y, order_by = frame))),
-      NA))
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial)
-  multidplyr::cluster_rm(tracks$tr$cluster, c('angle_diff', 'angle'))
-
-  tracks$pr$tr <- c(tracks$pr$tr, 'turn')
-  return(tracks)
+turn <- function(x, y, f) {
+  ifelse(
+    f - dplyr::lag(f, order_by = f) == 1,
+    angle_diff(angle(dplyr::lag(x, order_by = f),
+                     dplyr::lag(y, order_by = f), x, y),
+               angle(x, y, dplyr::lead(x, order_by = f),
+                     dplyr::lead(y, order_by = f))),
+    NA)
 }
-
 
 #' Safely calculate the change over time for a variable.
 #'
@@ -94,9 +54,9 @@ add_turn <- function(tracks) {
 #'
 #' @return A vector.
 #' @export
-change <- function(x, frame, n = 1) {
-  ifelse(frame - dplyr::lag(frame, n = n, order_by = frame) == n,
-         x - dplyr::lag(x, n = n, order_by = frame),
+change <- function(x, f, n = 1) {
+  ifelse(f - dplyr::lag(f, n = n, order_by = f) == n,
+         x - dplyr::lag(x, n = n, order_by = f),
          NA)
 }
 

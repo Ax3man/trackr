@@ -43,25 +43,3 @@ find_smallest_surrounding_rect <- function(points) {
 
   return(rect)
 }
-
-find_closest_point_on_ellipse <- function(px, py, ex, ey, a, b, angle, n = 100,
-                                          ret = 'x') {
-  # This is a numerical approximation based on n evenly spaced points
-  # (vectorized with loop)
-  theta <- seq(0, 2 * pi, length.out = n + 1)
-  res <- rep(NA, length(px))
-  for (i in seq_along(px)) {
-    x <- a[i] * cos(theta)
-    y <- b[i] * sin(theta)
-    # Rotate around origin and offset
-    x <- x * cos(angle[i]) + y * sin(angle[i]) + ex[i]
-    y <- y * cos(angle[i]) + y * sin(angle[i]) + ey[i]
-    m <- which.min((x - px[i]) ^ 2 + (y - py[i]) ^ 2)
-    if (length(m) == 0) {
-      res[i] <- NA
-      next
-    }
-    res[i] <- switch(ret, x = x[m], y = y[m])
-  }
-  res
-}

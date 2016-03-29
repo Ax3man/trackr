@@ -1,70 +1,92 @@
-# Functions that add variables to the $soc table of a tracks object.
-
-#' Add pairwise distance.
+#' Add select variables from the tr table to the soc table.
 #'
-#' Add the distance between centroids for the pair of animals for each entry in
-#' the $soc table.
+#' Use this function if you need access to track variables while computing
+#' social variables. Each variable will be split into two columns, for fish1 and
+#' fish2, with the numbers 1 and 2 amended. E.g. joining X and Y will generate
+#' four new columns in \code{soc}, X1, X2, Y1, Y2.
 #'
 #' @param tracks A tracks object.
+#' @param ... Which variables to join.
 #'
-#' @return A tracks object
+#' @return A tracks object.
 #' @export
-add_pair_dist <- function(tracks) {
-  if ('dist' %in% tracks$pr$soc) {
-    return(tracks)
-  }
-  tracks <- join_tr_to_soc(tracks, list(~X, ~Y))
+join_tr_to_soc <- function(tracks, ...) {
+  join_tr_to_soc_(tracks, .dots = lazyeval::lazy_dots(...))
+}
 
-  tracks$soc <- dplyr::mutate_(tracks$soc,
-                               pair_dist = ~sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2))
-  tracks$soc <- dplyr::select_(tracks$soc, ~-X1, ~-Y1, ~-X2, ~-Y2)
+join_tr_to_soc_ <- function(tracks, ..., .dots) {
+  select <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  cl <- tracks$tr$cluster
 
-  tracks$pr$soc <- c(tracks$pr$soc, 'pair_dist')
+  tr <- dplyr::select_(tracks$tr, .dots = c(~trial, ~animal, ~frame, select))
+  tr <- dplyr::collect(tr)
+
+  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$soc$name),
+                       function(x) names(table(x$trial)[table(x$trial) > 0]))
+  tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
+  multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
+
+  tracks$soc <- dplyr::do_(tracks$soc,
+                           ~dplyr::left_join(
+                             ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
+
+  Names1 <- setNames(names(select), paste0(names(select), 1))
+  tracks$soc <- dplyr::rename_(tracks$soc, .dots = Names1)
+
+  tracks$soc <- dplyr::do_(tracks$soc,
+                           ~dplyr::left_join(
+                             ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
+  multidplyr::cluster_rm(cl, '.tr')
+  Names2 <- setNames(names(select), paste0(names(select), 2))
+  tracks$soc <- dplyr::rename_(tracks$soc, .dots = Names2)
+
+  tracks$pr$soc <- c(tracks$pr$soc, names(Names1), names(Names2))
   return(tracks)
 }
 
-#' Add change in distance between pairs.
+#' Calculate pairwise distance.
 #'
-#' Add the change in distance between the pair of animals for each entry in the
-#' $soc table. Negative values mean the animals are moving closer to each
-#' other, postitive values means they are moving apart.
+#' Calculate the distance between centroids for a pair of animals.
 #'
-#' @param tracks A tracks object.
+#' @param x1 x-coordinate for fish 1.
+#' @param x2 x-coordinate for fish 2.
+#' @param y1 y-coordinate for fish 1.
+#' @param y2 y-coordinate for fish 2.
 #'
-#' @return A tracks object.
+#' @return A vector of distances in pixels.
 #' @export
-add_pair_dist_velocity <- function(tracks) {
-  if ('pair_dist_velocity' %in% tracks$pr$soc) {
-    return(tracks)
-  }
-  if (!('pair_dist' %in% tracks$pr$soc)) {
-    message('Adding distance to soc table first.')
-    tracks <- add_pair_dist(tracks)
-  }
-  tracks$pr$soc <- c(tracks$pr$soc, 'pair_dist_velocity')
-  add_diff_to_pairs(tracks, 'pair_dist', 'pair_dist_velocity')
+pair_dist <- function(x1, x2, y1, y2) {
+  sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 }
 
-#' Add acceleration in distance between pairs
+#' Calculate change in distance between pairs.
 #'
-#' Add the change in the change in distance between the pair of animals for each
-#' entry in the $soc table. Positive values mean the animals are increasing
-#' the speed at which their distance in changing.
+#' Calculate the change in distance between the pair of animals. Negative values
+#' mean the animals are moving closer to each other, postitive values means they
+#' are moving apart.
 #'
-#' @param tracks A tracks object.
+#' @inheritParams pair_dist
+#' @inheritParams distance
 #'
-#' @return A tracks object.
+#' @return A vector of velocities in pixels per frame.
 #' @export
-add_pair_dist_acceleration <- function(tracks) {
-  if ('pair_dist_acceleration' %in% tracks$pr$soc) {
-    return(tracks)
-  }
-  if (!('pair_dist_velocity' %in% tracks$pr$soc)) {
-    message('Adding distance velocity to soc table first.')
-    tracks <- add_pair_dist_velocity(tracks)
-  }
-  tracks$pr$soc <- c(tracks$pr$soc, 'pair_dist_acceleration')
-  add_diff_to_pairs(tracks, 'pair_dist_velocity', 'pair_dist_acceleration')
+pair_dist_velocity <- function(x1, x2, y1, y2, f) {
+  change(pair_dist(x1, x2, y1, y2), f)
+}
+
+#' Calculate accereleration in distance between pairs.
+#'
+#' Calculate the change in relative velocity between the pair of animals.
+#' Negative values mean the animals are decreasing the rate at which their
+#' distance changes, postitive values means an increase.
+#'
+#' @inheritParams pair_dist
+#' @inheritParams distance
+#'
+#' @return A vector of accelerations in pixels per frame^2.
+#' @export
+pair_dist_acceleration <- function(x1, x2, y1, y2, f) {
+  change(change(pair_dist(x1, x2, y1, y2), f), f)
 }
 
 #' Add pairwise distance based on tip to ellipse.
@@ -73,67 +95,45 @@ add_pair_dist_acceleration <- function(tracks) {
 #' table. This distance is from the mouth of fish 1 (tip of the ellipse) to
 #' an approximately closest point on the ellipse for fish 2.
 #'
-#' It does not get the closest point at the moment, as this calculation is quite
-#' complicated, but does a numerical approximation based on n points along the
-#' ellipse.
+#' It does not get the closest point, as this calculation is quite involved, but
+#' does a numerical approximation based on n points along the ellipse.
 #'
 #' @param tracks A tracks object.
-#' @param n How many
+#' @param n How many points along the ellipse are used for the approximation.
 #'
 #' @return A tracks object
 #' @export
-add_nip_dist <- function(tracks, n = 20) {
-  if ('nip_dist' %in% tracks$pr$soc) {
-    return(tracks)
-  }
-  tracks <- join_tr_to_soc(tracks, list(~X, ~Y, ~orientation, ~minor_axis,
-                                        ~major_axis))
+nip_dist <- function(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1,
+                         major_axis2, orientation1, orientation2, n = 20) {
+  # Vector of angles that need to be tested.
+  theta <- seq(0, 2 * pi, length.out = n + 1)
+  # Find the head position of fish1.
+  head_X <- major_axis1 * cos(orientation1) + x1
+  head_Y <- major_axis1 * sin(orientation1) + y1
+  # Create matrices of all x and y coordinates on the ellipse (at origin)
+  x <- major_axis2 %o% cos(theta)
+  y <- minor_axis2 %o% sin(theta)
+  # Rotate around origin and add offset
+  x <- x * cos(orientation2) + y * sin(orientation2) + x2
+  y <- y * cos(orientation2) + y * sin(orientation2) + y2
 
-  cl <- tracks$soc$cluster
-  multidplyr::cluster_assign_value(cl, 'find_closest_point_on_ellipse',
-                                   find_closest_point_on_ellipse)
-  multidplyr::cluster_assign_value(cl, 'n', n)
-
-  tracks$soc <- dplyr::mutate_(
-    tracks$soc,
-    head_X = ~major_axis1 * cos(orientation1) + X1,
-    head_Y = ~major_axis1 * sin(orientation1) + Y1,
-    closest_X = ~find_closest_point_on_ellipse(head_X, head_Y, X2, Y2,
-                                               major_axis2, minor_axis2,
-                                               orientation2, n = n, ret = 'x'),
-    closest_Y = ~find_closest_point_on_ellipse(head_X, head_Y, X2, Y2,
-                                               major_axis2, minor_axis2,
-                                               orientation2, n = n, ret = 'y'),
-    nip_dist = ~sqrt((head_X - closest_X) ^ 2 + (head_Y - closest_Y) ^ 2))
-  tracks$soc <- dplyr::select_(tracks$soc, ~-X1, ~-Y1, ~-orientation1,
-                               ~-minor_axis1, ~-major_axis1, ~-X2, ~-Y2,
-                               ~-orientation2,  ~-minor_axis2, ~-major_axis2,
-                               ~-head_X, ~-head_Y, ~-closest_X, ~-closest_Y)
-
-  multidplyr::cluster_rm(cl, c('find_closest_point_on_ellipse', 'n'))
-
-  tracks$pr$soc <- c(tracks$pr$soc, 'nip_dist')
-  return(tracks)
+  # Find the minimal distances
+  res <- apply((x - head_X) ^ 2 + (y - head_Y) ^ 2, 1, min)
+  sqrt(res)
 }
 
-#' Add change in pairwise distance based on tip to ellipse.
+#' Calculate change in pairwise distance based on tip to ellipse.
 #'
-#' @param tracks A tracks object.
+#' @inheritParams nip_dist
+#' @inheritParams dist
 #'
-#' @return A tracks object.
+#' @return A vector of velocities in px per frame.
 #' @export
-#'
-#' @seealso add_nip_dist, add_pair_dist_velocity
-add_nip_dist_velocity <- function(tracks) {
-  if ('nip_dist_velocity' %in% tracks$pr$soc) {
-    return(tracks)
-  }
-  if (!('nip_dist' %in% tracks$pr$soc)) {
-    message('Adding nip distance to pairs table first.')
-    tracks <- add_pair_dist(tracks)
-  }
-  tracks$pr$soc <- c(tracks$pr$soc, 'nip_dist_velocity')
-  add_diff_to_pairs(tracks, 'nip_dist', 'nip_dist_velocity')
+nip_dist_velocity <- function(x1, x2, y1, y2, minor_axis1, minor_axis2,
+                              major_axis1, major_axis2, orientation1,
+                              orientation2, n = 20, f) {
+  change(nip_dist(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1,
+                  major_axis2, orientation1, orientation2), f)
 }
 
 add_diff_to_pairs <- function(tracks, var, name) {
