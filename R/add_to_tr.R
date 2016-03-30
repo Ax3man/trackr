@@ -10,7 +10,6 @@
 distance <- function(x = X, y = Y, order_by = frame) {
   sqrt(change(x, order_by) ^ 2 + change(y, order_by) ^ 2)
 }
-..distance.. <- ~distance(X, Y, frame)
 
 #' Calculate speed.
 #'
@@ -20,7 +19,6 @@ distance <- function(x = X, y = Y, order_by = frame) {
 speed <- function(x, y, f) {
   change(distance(y, x, f), f)
 }
-..speed.. <- ~speed(X, Y, frame)
 
 #' Calculate acceleration.
 #'
@@ -30,7 +28,6 @@ speed <- function(x, y, f) {
 acceleration <- function(x, y, f) {
   change(change(distance(y, x, f), f), f)
 }
-..acceleration.. <- ~acceleration(X, Y, f)
 
 #' Calculate turning angle.
 #'
@@ -47,7 +44,6 @@ turn <- function(x, y, f) {
                      dplyr::lead(y, order_by = f))),
     NA)
 }
-..turn.. <- ~turn(X, Y, f)
 
 #' Safely calculate the change over time for a variable.
 #'

@@ -58,7 +58,6 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 pair_dist <- function(x1, x2, y1, y2) {
   sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 }
-..pair_dist.. <- ~pair_dist(X1, X2, Y1, Y2)
 
 #' Calculate change in distance between pairs.
 #'
@@ -74,7 +73,6 @@ pair_dist <- function(x1, x2, y1, y2) {
 pair_dist_velocity <- function(x1, x2, y1, y2, f) {
   change(pair_dist(x1, x2, y1, y2), f)
 }
-..pair_dist_velocity.. <- ~pair_dist_velocity(X1, X2, Y1, Y2, frame)
 
 #' Calculate accereleration in distance between pairs.
 #'
@@ -90,7 +88,6 @@ pair_dist_velocity <- function(x1, x2, y1, y2, f) {
 pair_dist_acceleration <- function(x1, x2, y1, y2, f) {
   change(change(pair_dist(x1, x2, y1, y2), f), f)
 }
-..pair_dist_acceleration.. <- ~pair_dist_acceleration(X1, X2, Y1, Y2, frame)
 
 #' Add pairwise distance based on tip to ellipse.
 #'
@@ -124,8 +121,6 @@ nip_dist <- function(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1,
   res <- apply((x - head_X) ^ 2 + (y - head_Y) ^ 2, 1, min)
   sqrt(res)
 }
-..nip_dist.. <- ~nip_dist(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
-                          major_axis2, orientation1, orientation2)
 
 #' Calculate change in pairwise distance based on tip to ellipse.
 #'
@@ -140,6 +135,3 @@ nip_dist_velocity <- function(x1, x2, y1, y2, minor_axis1, minor_axis2,
   change(nip_dist(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1,
                   major_axis2, orientation1, orientation2), f)
 }
-..nip_dist_velocity.. <-
-  ~nip_dist_velocity(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
-                     major_axis2, orientation1, orientation2, f = frame)
