@@ -227,6 +227,9 @@ mutate_.tracks <- function(.data, ..., .dots) {
   return(.data)
 }
 
+# These two coming functions are dirty hacks that can have side effects in the
+# Global environment. Specifically, any of these _specific_ ..*.. objects will
+# be deleted.
 export_summary_utils <- function() {
   #tr
   assign('..distance..', ~distance(X, Y, frame), envir = .GlobalEnv)
