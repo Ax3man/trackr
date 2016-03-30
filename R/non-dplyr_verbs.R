@@ -207,7 +207,7 @@ summarise_sections_ <- function(sections, tracks, .group_by = NULL, ..., .dots) 
   tables <- unique(unlist(conds_tables))
 
   .tracks <- tracks[tables]
-  # The lapply is slow here, may wat to come with a different implementation.
+  # The lapply is slow here, may want to come with a different implementation.
   # Perhaps filter once for all frames combined, and mutate a section variable.
   for (i in seq_along(.tracks)) {
     .tracks[[i]] <- lapply(1:nrow(sections),

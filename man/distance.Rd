@@ -4,7 +4,7 @@
 \alias{distance}
 \title{Calculate distance.}
 \usage{
-distance(x, y, f)
+distance(x = X, y = Y, order_by = frame)
 }
 \arguments{
 \item{x}{X coordinates.}
