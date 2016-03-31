@@ -1,3 +1,7 @@
+#' @importFrom dplyr collect
+#' @export
+dplyr::collect
+
 #' @importFrom dplyr filter
 #' @name filter
 #' @rdname filter_.tracks
