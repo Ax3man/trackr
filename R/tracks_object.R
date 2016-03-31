@@ -260,11 +260,13 @@ check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95) {
                                      max(.$frame) - min(.$frame) + 1)),
                     ., by = c('frame', 'animal', 'trial')))
   # Count the NA's in vars
+  tr <- dplyr::collect(tr)
+  tr <- dplyr::group_by_(tr, ~trial)
   tab <- dplyr::do(tr,
                    complete = nrow(.[complete.cases(.), vars]) / nrow(.))
   tab <- dplyr::collect(tab)
   tab <- dplyr::arrange(tab, trial)
-  tr <- dplyr::group_by_(tr, ~frame)
+  tr <- dplyr::group_by_(tr,~trial, ~frame)
 
   f <- function(dat, var) {
     dots <- setNames(list(lazyeval::interp(~anyNA(v), v = as.name(var))), 'na')
