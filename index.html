@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Trackr by Ax3man</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Trackr</h1>
+      <h2 class="project-tagline">Analyze and Visualize Tracking Data</h2>
+      <a href="https://github.com/Ax3man/trackr" class="btn">View on GitHub</a>
+      <a href="https://github.com/Ax3man/trackr/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Ax3man/trackr/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="trackr" class="anchor" href="#trackr" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>trackr</h1>
+
+<p>This R package provides tools to analyze and visualize animal video tracking data.</p>
+
+<h3>
+<a id="goals" class="anchor" href="#goals" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goals</h3>
+
+<h5>
+<a id="offer-a-framework-for-the-analysis-of-tracking-data-that-is-independent-to-the-tracking-software-used" class="anchor" href="#offer-a-framework-for-the-analysis-of-tracking-data-that-is-independent-to-the-tracking-software-used" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Offer a framework for the analysis of tracking data that is independent to the tracking software used.</h5>
+
+<p>There are many tracking solutions available (both proprietary and free software), and many come with their own analysis tools. I believe it is more efficient to have one strong analysis framework for analysis, that can read in data from many trackers. This saves developers from having to offer analysis tools, and the user from re-learning if they make a switch. It can also enable wider adoption of trackers without native analysis tools, such as <em>idTracker</em>.</p>
+
+<h5>
+<a id="offer-a-way-to-analyze-animal-tracking-data-within-r" class="anchor" href="#offer-a-way-to-analyze-animal-tracking-data-within-r" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Offer a way to analyze animal tracking data within R.</h5>
+
+<p><code>R</code> currently offers some of the best statistics and visualization packages out there, and <code>trackr</code> output easily works with them. <code>R</code> is also the main (and often only) language that many end users (biologists) already know, making it a logical choice in many cases.</p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>You can install this package from within your R session using <code>devtools</code>. You currently also need my fork of <code>multidplyr</code> for it to work, as there are currently some bugs (the fork is up-to-date and compatible with the main <code>multidplyr</code> repository).</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-c"># Install devtools if necessary</span>
+<span class="pl-c"># install.packages('devtools')</span>
+<span class="pl-e">devtools</span><span class="pl-k">::</span>install_github(<span class="pl-s"><span class="pl-pds">'</span>Ax3man/trackr<span class="pl-pds">'</span></span>)
+<span class="pl-e">devtools</span><span class="pl-k">::</span>install_github(<span class="pl-s"><span class="pl-pds">'</span>Ax3man/multidplyr<span class="pl-pds">'</span></span>)</pre></div>
+
+<h3>
+<a id="currently-supported-trackers" class="anchor" href="#currently-supported-trackers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Currently supported trackers</h3>
+
+<ul>
+<li><a href="http://ctrax.sourceforge.net/">Ctrax</a></li>
+<li><a href="http://www.idtracker.es/">idTracker</a></li>
+</ul>
+
+<p>Support for other trackers can be added. Please file an <a href="https://github.com/Ax3man/trackr/issues">issue</a>.</p>
+
+<h3>
+<a id="performance" class="anchor" href="#performance" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Performance</h3>
+
+<p><code>R</code> is not typically known for lightning fast performance. However, <code>trackr</code> makes use of several packages in the <em>Hadleyverse</em> that greatly speed things up. Specifically, it uses <code>readr</code> to read in large data files and <code>dplyr</code> for data manipulation. On top of that, the two largest tables in the tracks object (see <code>?as_tracks</code>) are kept on worker nodes so all calculations are in parallel. Keeping the tables on the workers minimizes data copying (eliminating the added cost of parallel computations).</p>
+
+<h3>
+<a id="example-code" class="anchor" href="#example-code" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example code</h3>
+
+<p>As a quick example, let's read in some data of male guppy pairs.</p>
+
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-smi">trackr</span>)
+library(<span class="pl-smi">dplyr</span>)
+
+<span class="pl-c"># Read in data</span>
+<span class="pl-smi">tr</span> <span class="pl-k">&lt;-</span> read_idTracker(<span class="pl-v">folder</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>data<span class="pl-pds">'</span></span>)
+<span class="pl-smi">tr</span> <span class="pl-k">&lt;-</span> as_tracks(<span class="pl-smi">tr</span>, <span class="pl-v">frame_rate</span> <span class="pl-k">=</span> <span class="pl-c1">30</span>, <span class="pl-v">resolution</span> <span class="pl-k">=</span> <span class="pl-c1">1080</span>)
+
+<span class="pl-c"># We can get a quick overview by plotting the first ten thousand frames for all four trials</span>
+<span class="pl-c"># (Note that we use the %&gt;% (pipe) operator from margrittr (and dplyr).)</span>
+filter(<span class="pl-smi">tr</span>, <span class="pl-smi">frame</span> <span class="pl-k">&lt;</span> <span class="pl-c1">10000</span>) %<span class="pl-k">&gt;</span>% plot()</pre></div>
+
+<p><img src="http://i.imgur.com/zgxRpSz.png" alt="plot1"></p>
+
+<p>All plotting functions output ggplot objects, so they can be easily manipulated:</p>
+
+<div class="highlight highlight-source-r"><pre>filter(<span class="pl-smi">tr</span>, <span class="pl-smi">frame</span> <span class="pl-k">&lt;</span> <span class="pl-c1">10000</span>) %<span class="pl-k">&gt;</span>% plot() <span class="pl-k">+</span> <span class="pl-e">ggplot2</span><span class="pl-k">::</span>scale_color_manual(<span class="pl-v">values</span> <span class="pl-k">=</span> c(<span class="pl-s"><span class="pl-pds">'</span>purple<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>limegreen<span class="pl-pds">'</span></span>))</pre></div>
+
+<p><img src="http://i.imgur.com/gbWvcA1.png" alt="plot1b"></p>
+
+<p>Since these are quite long trials, I want to look how the behavior changes for one trial, let's say between minutes 20 and 60. We can use filter, just like in <code>dplyr</code>.</p>
+
+<div class="highlight highlight-source-r"><pre>filter(<span class="pl-smi">tr</span>, <span class="pl-smi">trial</span> <span class="pl-k">==</span> <span class="pl-s"><span class="pl-pds">'</span>trial2-1<span class="pl-pds">'</span></span>, <span class="pl-smi">frame</span> <span class="pl-k">%in%</span> <span class="pl-c1">36000</span><span class="pl-k">:</span><span class="pl-c1">108000</span>) %<span class="pl-k">&gt;</span>% 
+  plot_time_facets(<span class="pl-v">time_bins</span> <span class="pl-k">=</span> <span class="pl-c1">10</span>, <span class="pl-v">nrow</span> <span class="pl-k">=</span> <span class="pl-c1">2</span>)</pre></div>
+
+<p>It looks like some periods are a bit more active than others.</p>
+
+<p><img src="http://i.imgur.com/ABR8siE.png" alt="plot2">
+Ok, so we have our trajectories, and most of it seems quite ok. Let's calculate some per frame statistics.</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-smi">tr</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">tr</span> %<span class="pl-k">&gt;</span>%
+  add_speed() %<span class="pl-k">&gt;</span>%
+  add_acceleration() %<span class="pl-k">&gt;</span>%
+  add_turn()</pre></div>
+
+<p>Summmary statistics work very similar to <code>dplyr</code>. We do have add some new tables to our <code>tracks</code> object though (see <code>?as_tracks</code>).</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-smi">tr</span> <span class="pl-k">&lt;-</span> <span class="pl-smi">tr</span> %<span class="pl-k">&gt;</span>% 
+  expand_tracks(<span class="pl-v">group</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">animal</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>, <span class="pl-v">soc</span> <span class="pl-k">=</span> <span class="pl-c1">FALSE</span>, <span class="pl-v">trial</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>) %<span class="pl-k">&gt;</span>%
+  summarize(<span class="pl-v">mean_speed</span> <span class="pl-k">=</span> mean(<span class="pl-smi">speed</span>, <span class="pl-v">na.rm</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>),
+                       <span class="pl-v">sum_abs_turn</span> <span class="pl-k">=</span> sum(abs(<span class="pl-smi">turn</span>), <span class="pl-v">na.rm</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>))
+
+<span class="pl-smi">tr</span><span class="pl-k">$</span><span class="pl-smi">animal</span>
+
+<span class="pl-smi">Source</span><span class="pl-k">:</span> <span class="pl-smi">local</span> <span class="pl-smi">data</span> <span class="pl-smi">frame</span> [<span class="pl-c1">8</span> <span class="pl-smi">x</span> <span class="pl-c1">4</span>]
+
+     <span class="pl-smi">trial</span> <span class="pl-smi">animal</span> <span class="pl-smi">mean_speed</span> <span class="pl-smi">sum_abs_turn</span>
+    (<span class="pl-smi">fctr</span>) (<span class="pl-smi">fctr</span>)      (<span class="pl-smi">dbl</span>)        (<span class="pl-smi">dbl</span>)
+<span class="pl-c1">1</span> <span class="pl-smi">trial2</span><span class="pl-k">-</span><span class="pl-c1">2</span>      <span class="pl-c1">1</span> <span class="pl-c1">0.15063087</span>     <span class="pl-c1">121350.9</span>
+<span class="pl-c1">2</span> <span class="pl-smi">trial2</span><span class="pl-k">-</span><span class="pl-c1">2</span>      <span class="pl-c1">2</span> <span class="pl-c1">0.16505333</span>     <span class="pl-c1">135011.6</span>
+<span class="pl-c1">3</span> <span class="pl-smi">trial2</span><span class="pl-k">-</span><span class="pl-c1">1</span>      <span class="pl-c1">1</span> <span class="pl-c1">0.05598333</span>     <span class="pl-c1">287765.2</span>
+<span class="pl-c1">4</span> <span class="pl-smi">trial2</span><span class="pl-k">-</span><span class="pl-c1">1</span>      <span class="pl-c1">2</span> <span class="pl-c1">0.07007088</span>     <span class="pl-c1">287118.0</span>
+<span class="pl-c1">5</span> <span class="pl-smi">trial3</span><span class="pl-k">-</span><span class="pl-c1">2</span>      <span class="pl-c1">1</span> <span class="pl-c1">0.03191847</span>     <span class="pl-c1">371926.9</span>
+<span class="pl-c1">6</span> <span class="pl-smi">trial3</span><span class="pl-k">-</span><span class="pl-c1">2</span>      <span class="pl-c1">2</span> <span class="pl-c1">0.03815877</span>     <span class="pl-c1">392532.3</span>
+<span class="pl-c1">7</span> <span class="pl-smi">trial3</span><span class="pl-k">-</span><span class="pl-c1">1</span>      <span class="pl-c1">1</span> <span class="pl-c1">0.10114426</span>     <span class="pl-c1">182766.9</span>
+<span class="pl-c1">8</span> <span class="pl-smi">trial3</span><span class="pl-k">-</span><span class="pl-c1">1</span>      <span class="pl-c1">2</span> <span class="pl-c1">0.10817431</span>     <span class="pl-c1">171243.5</span></pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Ax3man/trackr">Trackr</a> is maintained by <a href="https://github.com/Ax3man">Ax3man</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
