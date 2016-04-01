@@ -1,62 +1,97 @@
-#' Calculate distance.
+#' Conveniently add common new variables to the \code{soc} table.
 #'
-#' @param x X coordinates.
-#' @param y Y coordinates.
-#' @param f Always use 'f' or 'frame' (equivalent). Used to order by frame
-#'   before calculation.
+#' These functions are designed for use within \code{summarise_}, and will
+#' compute common derived parameters for tracks. By default, these functions
+#' will use the expected variable names, as are default in \code{tracks}
+#' objects, but they can be overridden.
 #'
-#' @return A vector of distances in px.
+#' @param x X-coordinate.
+#' @param y Y-coordinate.
+#' @param order_by This parameter controls the ordering of \code{dplyr::lag} and
+#'   \code{dplyr::lead} and it is strongly advised to leave it at it's default
+#'   (\code{frame}).
+#'
+#' @name mutate_tr
+#' @seealso mutate_soc mutate_.tracks
+NULL
+
+#' @rdname mutate_tr
 #' @export
-distance <- function(x = X, y = Y, order_by = frame) {
-  sqrt(change(x, order_by) ^ 2 + change(y, order_by) ^ 2)
+change <- function(x, order_by = frame, n = 1) {
+  x <- deparse(substitute(x))
+  order_by <- deparse(substitute(order_by))
+  paste0('trackr::change_(x = ', x, ', order_by = ', order_by, ', n = ', n, ')')
 }
 
-#' Calculate speed.
-#'
-#' @inheritParams distance
-#' @return A vector of accelerations in px per frame.
+#' @rdname mutate_tr
 #' @export
-speed <- function(x, y, f) {
-  change(distance(y, x, f), f)
-}
-
-#' Calculate acceleration.
-#'
-#' @inheritParams distance
-#' @return A vector of accelerations in px per frame^2.
-#' @export
-acceleration <- function(x, y, f) {
-  change(change(distance(y, x, f), f), f)
-}
-
-#' Calculate turning angle.
-#'
-#' This adds the turning angle of the path, that is, based on coordinates, not
-#' orientation.
-#' @inheritParams distance
-#' @export
-turn <- function(x, y, f) {
-  ifelse(
-    f - dplyr::lag(f, order_by = f) == 1,
-    angle_diff(angle(dplyr::lag(x, order_by = f),
-                     dplyr::lag(y, order_by = f), x, y),
-               angle(x, y, dplyr::lead(x, order_by = f),
-                     dplyr::lead(y, order_by = f))),
-    NA)
-}
-
-#' Safely calculate the change over time for a variable.
-#'
-#' Use this convenience function within calls to mutate_.tracks.
-#'
-#' @param x A vector.
-#' @param n Time lag in frames.
-#'
-#' @return A vector.
-#' @export
-change <- function(x, f, n = 1) {
-  ifelse(f - dplyr::lag(f, n = n, order_by = f) == n,
-         x - dplyr::lag(x, n = n, order_by = f),
+change_ <- function(x, order_by, n = 1) {
+  ifelse(order_by - dplyr::lag(order_by, n = n, order_by = order_by) == n,
+         x - dplyr::lag(x, n = n, order_by = order_by),
          NA)
 }
 
+#' @rdname mutate_tr
+#' @export
+distance <- function(x = X, y = Y, order_by = frame) {
+  X <- deparse(substitute(X))
+  Y <- deparse(substitute(Y))
+  order_by <- deparse(substitute(order_by))
+  paste0('trackr::distance_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
+}
+
+#' @rdname mutate_tr
+#' @export
+distance_ <- function(x, y, order_by) {
+  sqrt(change_(x, order_by) ^ 2 + change_(y, order_by) ^ 2)
+}
+
+#' @rdname mutate_tr
+#' @export
+speed <- function(x = X, y = Y, order_by = frame) {
+  X <- deparse(substitute(X))
+  Y <- deparse(substitute(Y))
+  order_by <- deparse(substitute(order_by))
+  paste0('trackr::speed_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
+}
+#' @rdname mutate_tr
+#' @export
+speed_ <- function(x, y, order_by) {
+  change_(distance_(y, x, order_by), order_by)
+}
+
+#' @rdname mutate_tr
+#' @export
+acceleration <- function(x = X, y = Y, order_by = frame) {
+  X <- deparse(substitute(X))
+  Y <- deparse(substitute(Y))
+  order_by <- deparse(substitute(order_by))
+  paste0('trackr::acceleration_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
+}
+
+#' @rdname mutate_tr
+#' @export
+acceleration_ <- function(x, y, order_by) {
+  change_(change_(distance_(y, x, order_by), order_by), order_by)
+}
+
+#' @rdname mutate_tr
+#' @export
+turn <- function(x = X, y = Y, order_by = frame) {
+  X <- deparse(substitute(X))
+  Y <- deparse(substitute(Y))
+  order_by <- deparse(substitute(order_by))
+  paste0('trackr::turn_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
+}
+
+#' @rdname mutate_tr
+#' @export
+turn_ <- function(x, y, order_by) {
+  ifelse(
+    order_by - dplyr::lag(order_by, order_by = order_by) == 1,
+    angle_diff(angle(dplyr::lag(x, order_by = order_by),
+                     dplyr::lag(y, order_by = order_by), x, y),
+               angle(x, y, dplyr::lead(x, order_by = order_by),
+                     dplyr::lead(y, order_by = order_by))),
+    NA)
+}

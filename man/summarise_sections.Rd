@@ -7,25 +7,16 @@
 \alias{summarize_sections_}
 \title{Summarize track sections.}
 \usage{
-summarise_sections(sections, tracks, .group_by = NULL, ...)
+summarise_sections(sections, ...)
 
-summarize_sections(sections, tracks, .group_by = NULL, ...)
+summarize_sections(sections, ...)
 
-summarize_sections_(sections, tracks, .group_by = NULL, ..., .dots)
+summarize_sections_(sections, ..., .dots)
 
-summarise_sections_(sections, tracks, .group_by = NULL, ..., .dots)
+summarise_sections_(sections, ..., .dots)
 }
 \arguments{
-\item{sections}{A table with track sections (output from
-\code{find_track_sections}).}
-
-\item{tracks}{The corresponding tracks object.}
-
-\item{.group_by}{What factors the result should be grouped by, in addition to
-the default \code{trial} and \code{section}. For example, \code{animal}
-will return a summary for each sequence for each animal. The grouping
-variable(s) should be present in the tables that need to summarized, i.e.
-the tables that contain the variables used in the summary statements.}
+\item{sections}{Ouput from \code{find_sections} (a list of length 2).}
 
 \item{...}{Summary statements.}
 
@@ -36,22 +27,13 @@ for details.}
 A tbl_df.
 }
 \description{
-Similar to \code{filter}, but returns a table of sequences grouped by trial,
-with a \code{start}, \code{stop} and \code{length} column. It supports a
-tolerance level which allows for combining sequences that are close together
-(the default of 1 is zero tolerance).
+Process the output of \code{find_sections} by summarizing each tracks
+portion, and joing that to the sections table.
 }
 \details{
-Any variables used as conditions will be looked up in the \code{tr},
-\code{pairs} and \code{group} tables and applied when present. Non-existing
-variables will not produce an error.
-
-Seperate conditions on different variables with a \code{,}, not \code{&}.
-Combine several conditions on the same variable with \code{&}.
-
-Example use case: If one has selected all sequences of frames where animals
-are chasing each other, one can calculate the mean speed for each of the
-chase sequences.
+Multiple rows per section can be created, as grouping is preserved in the
+summary. By default, \code{tr} is grouped by animal and \code{soc} is grouped
+by pair. Adjust grouping beforehand if other results are required.
 }
 \section{Functions}{
 \itemize{

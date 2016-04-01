@@ -213,7 +213,6 @@ NULL
 #' @return A tracks object.
 #' @export
 mutate_.tracks <- function(.data, ..., .dots) {
-  export_summary_utils()
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   conds <- lapply(conds, lazyeval::interp, f = as.name('frame'))
   tables <- find_conds_in_tables(.data, conds)
@@ -227,39 +226,7 @@ mutate_.tracks <- function(.data, ..., .dots) {
           names(conds[i]))
     }
   }
-  remove_summary_utils()
   return(.data)
-}
-
-# These two coming functions are dirty hacks that can have side effects in the
-# Global environment. Specifically, any of these _specific_ ..*.. objects will
-# be deleted.
-export_summary_utils <- function() {
-  #tr
-  assign('..distance..', ~distance(X, Y, frame), envir = .GlobalEnv)
-  assign('..speed..',  ~speed(X, Y, frame), envir = .GlobalEnv)
-  assign('..acceleration..', ~acceleration(X, Y, f), envir = .GlobalEnv)
-  assign('..turn..', ~turn(X, Y, f), envir = .GlobalEnv)
-  #soc
-  assign('..pair_dist..', ~pair_dist(X1, X2, Y1, Y2), envir = .GlobalEnv)
-  assign('..pair_dist_velocity..', ~pair_dist_velocity(X1, X2, Y1, Y2, frame),
-         envir = .GlobalEnv)
-  assign('..pair_dist_acceleration..',
-         ~pair_dist_acceleration(X1, X2, Y1, Y2, frame), envir = .GlobalEnv)
-  assign('..nip_dist..',
-         ~nip_dist(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
-                   major_axis2, orientation1, orientation2), envir = .GlobalEnv)
-  assign('..nip_dist_velocity..',
-         ~nip_dist_velocity(X1, X2, Y1, Y2, minor_axis1, minor_axis2,
-                            major_axis1, major_axis2, orientation1,
-                            orientation2, f = frame), envir = .GlobalEnv)
-}
-
-remove_summary_utils <- function() {
-  rm('..distance..', '..speed..', '..acceleration..', '..turn..',
-     envir = .GlobalEnv)
-  rm('..pair_dist..', '..pair_dist_velocity..', '..pair_dist_acceleration..',
-     '..nip_dist..', '..nip_dist_velocity..', envir = .GlobalEnv)
 }
 
 #' @importFrom dplyr select
