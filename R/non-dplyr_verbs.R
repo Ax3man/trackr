@@ -48,21 +48,29 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
   return(tracks)
 }
 
-#' Retrieve the timestamps for track sections based on conditions.
+#' Retrieve track sections based on conditions from multiple tables
 #'
-#' Similar to \code{filter}, but returns a table of sequences grouped by trial,
-#' with a \code{start}, \code{stop} and \code{length} column. It supports a
-#' tolerance level which allows for combining sequences that are close together
-#' (the default of 1 is zero tolerance).
+#' Similar to \code{filter}, but does not filter on each table seperately, but
+#' filters frames for which all conditions from seperate tables apply. That is,
+#' one can filter frames based on a variable in e.g. the \code{tr} table and
+#' \code{tr}, \code{soc} and \code{group} will be filtered for the frames where
+#' that condition is \code{TRUE}.
+#'
+#' It returns a list with tracks tables as well as a summary table of sequences.
+#' The first is named \code{tracks}, tables are grouped appropriately. The
+#' second list enty is named \code{sections} and provides an overview of the
+#' track sections that were found. It is grouped by trial, with a \code{start},
+#' \code{stop} and \code{length} column.
+#'
+#' The function supports a tolerance level which allows for combining sequences
+#' that are close together.
 #'
 #' Any variables used as conditions will be looked up in the \code{tr},
-#' \code{soc} and \code{group} tables and applied when present. Non-existing
-#' variables will not produce an error.
+#' \code{soc} and \code{group} tables and applied when present.
 #'
-#' Seperate conditions on different variables with a \code{,}, not \code{&}.
-#' Combine several conditions on the same variable with \code{&}.
+#' @section Example use case:
 #'
-#' Example use case: If one wants to select all sequences of frames where
+#' If one wants to select all sequences of frames where
 #' animals are chasing each other (to plot them, for example), one could filter
 #' for a high mean speed of the pair, and a small pairwise distance.
 #'
@@ -71,8 +79,9 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #' @param tol Combine sequences that are \code{tol} frames apart.
 #' @param pad Add padding of this many frames around each section. This allows
 #'   for capturing context around sections of interest.
-#' @param add_times When \code{TRUE}, three columns will be added to the result
-#'   that give human readable times, instead of only frame numbers.
+#' @param add_times When \code{TRUE}, three columns will be added to the
+#'   sections table that give human readable times, instead of only frame
+#'   numbers.
 #' @param .dots Used to work around non-standard evaluation. See vignette("nse")
 #'   for details.
 #'
@@ -88,19 +97,25 @@ find_sections <- function(tracks, ..., tol = 0, pad = 0, add_times = TRUE) {
 #' @export
 find_sections_ <- function(tracks, ..., tol = 1, pad = 0, add_times = TRUE,
                            .dots) {
+  # Setup ----------------------------------------------------------------------
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   tables <- find_conds_in_tables(list(tr = tracks$tr, soc = tracks$soc,
                                       group = tracks$group, pr = tracks$pr),
                                  conds)
-
+  if (pad >= tol) {
+    stop('pad is equal or larger than tol. This can cause sections with overlapping frames, which is not allowed.',
+            .call = FALSE)
+  }
   present <- names(tracks)[(names(tracks) %in% c('tr', 'soc', 'group'))]
-  frames <- tracks[present]
+  frame_rate <- tracks$params$frame_rate
+  cl <- tracks$tr$cluster
+  # Filter tracks tables on conds ----------------------------------------------
+  frames <- tracks <- tracks[present]
   for (i in seq_along(conds)) {
     frames[tables[[i]]] <- lapply(frames[tables[[i]]], dplyr::filter_,
                                   .dots = conds[i])
   }
   frames <- lapply(frames, dplyr::collect)
-
   # Find common frames ---------------------------------------------------------
   if (length(frames) == 1) {
     frames <- unlist(frames)
@@ -119,125 +134,157 @@ find_sections_ <- function(tracks, ..., tol = 1, pad = 0, add_times = TRUE,
   frames <- dplyr::select_(frames, ~trial, ~frame)
   frames <- dplyr::distinct(frames)
   frames <- dplyr::arrange_(frames, ~trial, ~frame)
-  frames <- dplyr::group_by_(frames, ~trial)
-
-  frames <- dplyr::mutate_(frames,
-                           dif = ~ifelse(row_number() == 1,
-                                         Inf,
-                                         frame - dplyr::lag(frame, 1)),
-                           gap = ~ifelse(dif > tol, TRUE, FALSE))
-  frames <- dplyr::filter_(frames, ~!is.na(gap))
-  frames <- dplyr::mutate_(frames, seq = ~cumsum(gap))
-  frames <- dplyr::select_(frames, ~trial, ~frame, ~seq)
-  frames <- dplyr::group_by_(frames, ~trial, ~seq)
+  frames <- add_section_numbers(frames, tol)
+  frames <- dplyr::select_(frames, ~trial, ~frame, ~section)
+  frames <- dplyr::group_by_(frames, ~trial, ~section)
+  frames <- dplyr::do_(frames, ~pad_frames(., pad))
+  frames <- dplyr::distinct_(frames, .dots = list(~trial, ~frame))
+  ref <- frames <- add_section_numbers(frames, tol)
+  frames <- dplyr::group_by_(frames, ~trial, ~section)
+  # browser()
   frames <- dplyr::summarize_(frames,
-                              start = ~min(frame) - pad,
-                              end = ~max(frame) + pad,
+                              start = ~min(frame),
+                              end = ~max(frame),
                               length = ~end - start + 1)
-
+  # Filter all tables on common those frames -----------------------------------
+  fr <- split(frames, frames$trial)
+  fr <- lapply(fr,
+               function(.) {
+                 unlist(mapply(`:`, .$start, .$end, SIMPLIFY = FALSE))
+               } )
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'fr', fr)
+  for (i in seq_along(tracks)) {
+    tracks[[i]] <- lapply(1:length(fr),
+                          function(j) {
+                            multidplyr::cluster_assign_value(cl, 'j', j)
+                            dots <- list(lazyeval::interp(~trial == x,
+                                                          x = names(fr)[j]),
+                                         lazyeval::interp(~frame %in% fr[[j]]))
+                            dplyr::filter_(tracks[[i]], .dots = dots)
+                          } )
+  }
+  multidplyr::cluster_rm(cl, c('fr', 'j'))
+  tracks <- lapply(tracks, lapply, dplyr::collect)
+  tracks <- lapply(tracks, function(.) bind_rows(.[!is.null(.)]))
+  tracks <- add_sections_by_reference(tracks, ref, pad)
+  # Prepare nice output with grouped tables and human readable times -----------
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~section, ~animal)
+  if (!is.null(tracks$soc)) {
+    tracks$soc <- dplyr::group_by_(tracks$soc, ~trial, ~section, ~animal1,
+                                   ~animal2)
+  }
+  if (!is.null(tracks$group)) {
+    tracks$group <- dplyr::group_by_(tracks$group, ~trial, ~section)
+  }
   if (add_times) {
     get_time <- function(x) {
-      as.character(round(frames_to_times(x, tracks$params$frame_rate)))
+      as.character(round(frames_to_times(x, frame_rate)))
     }
     frames <- dplyr::mutate_(frames,
                              start_t = ~get_time(start),
                              end_t = ~get_time(end),
                              length_t = ~get_time(length))
   }
+  return(list(tracks = tracks, sections = frames))
+}
+
+pad_frames <- function(tbl, pad) {
+  dplyr::bind_rows(
+    data.frame(trial = tbl$trial[1],
+               frame = (tbl$frame[1] - pad):(tbl$frame[1] - 1),
+               section = tbl$section[1]),
+    tbl,
+    data.frame(trial = tbl$trial[1],
+               frame = (tbl$frame[nrow(tbl)] + 1):(tbl$frame[nrow(tbl)] + pad),
+               section = tbl$section[1])
+  )
+}
+
+add_section_numbers <- function(tbl, tol) {
+  tbl <- dplyr::group_by_(tbl, ~trial)
+  tbl <- dplyr::mutate_(tbl,
+                        dif = ~ifelse(row_number() == 1,
+                                      Inf,
+                                      frame - dplyr::lag(frame, 1) - 1),
+                        gap = ~ifelse(dif > tol, TRUE, FALSE))
+  tbl <- dplyr::filter_(tbl, ~!is.na(gap))
+  tbl <- dplyr::mutate_(tbl, section = ~cumsum(gap))
+  dplyr::select_(tbl, ~-dif, ~-gap)
+}
+
+add_sections_by_reference <- function(tracks, ref, pad) {
+  tracks <- lapply(tracks, dplyr::left_join, ref, by = c('trial', 'frame'))
+  # Now we need to deal with padding
+  find_nearest_section <- function(v) {
+    leads <- apply(sapply(1:pad, function(x) lead(v, x)),
+                   1, function(y) y[which.min(is.na(y))])
+    lags <- apply(sapply(1:pad, function(x) lag(v, x)),
+                  1, function(y) y[which.min(is.na(y))])
+    ifelse(!is.na(v), v, ifelse(!is.na(leads), leads, lags))
+  }
+
+  tracks <- lapply(tracks, dplyr::group_by_, ~trial)
+  tracks <- lapply(tracks, function(tr) {
+    dplyr::mutate_(tr, section = ~find_nearest_section(section))
+  } )
+  return(tracks)
 }
 
 #' Summarize track sections.
 #'
-#' Similar to \code{filter}, but returns a table of sequences grouped by trial,
-#' with a \code{start}, \code{stop} and \code{length} column. It supports a
-#' tolerance level which allows for combining sequences that are close together
-#' (the default of 1 is zero tolerance).
+#' Process the output of \code{find_sections} by summarizing each tracks
+#' portion, and joing that to the sections table.
 #'
-#' Any variables used as conditions will be looked up in the \code{tr},
-#' \code{pairs} and \code{group} tables and applied when present. Non-existing
-#' variables will not produce an error.
+#' Multiple rows per section can be created, as grouping is preserved in the
+#' summary. By default, \code{tr} is grouped by animal and \code{soc} is grouped
+#' by pair. Adjust grouping beforehand if other results are required.
 #'
-#' Seperate conditions on different variables with a \code{,}, not \code{&}.
-#' Combine several conditions on the same variable with \code{&}.
-#'
-#' Example use case: If one has selected all sequences of frames where animals
-#' are chasing each other, one can calculate the mean speed for each of the
-#' chase sequences.
-#'
-#' @param sections A table with track sections (output from
-#'   \code{find_track_sections}).
-#' @param tracks The corresponding tracks object.
-#' @param .group_by What factors the result should be grouped by, in addition to
-#'   the default \code{trial} and \code{section}. For example, \code{animal}
-#'   will return a summary for each sequence for each animal. The grouping
-#'   variable(s) should be present in the tables that need to summarized, i.e.
-#'   the tables that contain the variables used in the summary statements.
+#' @param sections Ouput from \code{find_sections} (a list of length 2).
 #' @param ... Summary statements.
 #' @param .dots Used to work around non-standard evaluation. See vignette("nse")
 #'   for details.
 #'
 #' @return A tbl_df.
 #' @export
-summarise_sections <- function(sections, tracks, .group_by = NULL, ...) {
-  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...),
-                      .group_by = lazyeval::lazy(.group_by))
+summarise_sections <- function(sections, ...) {
+  summarise_sections_(sections, .dots = lazyeval::lazy_dots(...))
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
-summarize_sections <- function(sections, tracks, .group_by = NULL, ...) {
-  summarise_sections_(sections, tracks, .dots = lazyeval::lazy_dots(...),
-                      .group_by = lazyeval::lazy(.group_by))
+summarize_sections <- function(sections, ...) {
+  summarise_sections_(sections, .dots = lazyeval::lazy_dots(...))
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
-summarize_sections_ <- function(sections, tracks, .group_by = NULL, ..., .dots) {
-  summarise_sections_(sections, tracks, .group_by = .group_by, ..., .dots)
+summarize_sections_ <- function(sections, ..., .dots) {
+  summarise_sections_(sections, ..., .dots)
 }
 
 #' @describeIn summarise_sections Retrieve the timestamps for track section
 #'   based on conditions.
 #' @export
-summarise_sections_ <- function(sections, tracks, .group_by = NULL, ..., .dots) {
+summarise_sections_ <- function(sections, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  tracks <- sections$tracks
+  sections <- sections$sections
   conds_tables <- trackr:::find_conds_in_tables(tracks, conds)
   tables <- unique(unlist(conds_tables))
+  tracks <- tracks[tables]
 
-  .tracks <- tracks[tables]
-  # The lapply is slow here, may want to come with a different implementation.
-  # Perhaps filter once for all frames combined, and mutate a section variable.
-  for (i in seq_along(.tracks)) {
-    .tracks[[i]] <- lapply(1:nrow(sections),
-                           function(j) {
-                             dots <- list(lazyeval::interp(~trial == x,
-                                                           x = sections$trial[j]),
-                                          lazyeval::interp(~frame %in% start:end,
-                                                           start = sections$start[j],
-                                                           end = sections$end[j]))
-                             dplyr::filter_(.tracks[[i]], .dots = dots)
-                           } )
-  }
-  .tracks <- lapply(.tracks, lapply, dplyr::collect)
-
-  .tracks <- lapply(.tracks, dplyr::bind_rows, .id = 'section')
-  if (is.null(.group_by)) {
-    .tracks <- lapply(.tracks, dplyr::group_by_, ~trial, ~section)
-  } else {
-    .tracks <- lapply(.tracks, dplyr::group_by_, ~trial, ~section, .group_by)
-  }
-  for (i in seq_along(.tracks)) {
-    .tracks[[i]] <- dplyr::summarize_(
-      .tracks[[i]], .dots = conds[which(conds_tables == tables[i])])
+  for (i in seq_along(tracks)) {
+    tracks[[i]] <- dplyr::summarize_(
+      tracks[[i]], .dots = conds[which(conds_tables == tables[i])])
   }
   # Join all results
-  .tracks <- Reduce(function(...) dplyr::full_join(..., by = c('trial', 'section')),
-                    .tracks)
-  .tracks$section <- as.numeric(.tracks$section)
-  .tracks <- dplyr::arrange_(.tracks, ~trial, ~section)
-  .tracks <- dplyr::mutate(.tracks, section = 1:(dplyr::n()))
-  return(.tracks)
+  tracks <- Reduce(
+    function(...) dplyr::full_join(..., by = c('trial', 'section')), tracks)
+  tracks$section <- as.numeric(tracks$section)
+  sections <- dplyr::full_join(sections, tracks, by = c('trial', 'section'))
+  sections <- dplyr::arrange_(sections, ~trial, ~section)
+  return(sections)
 }
 

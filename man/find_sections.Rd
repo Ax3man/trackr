@@ -3,7 +3,7 @@
 \name{find_sections}
 \alias{find_sections}
 \alias{find_sections_}
-\title{Retrieve the timestamps for track sections based on conditions.}
+\title{Retrieve track sections based on conditions from multiple tables}
 \usage{
 find_sections(tracks, ..., tol = 0, pad = 0, add_times = TRUE)
 
@@ -19,8 +19,9 @@ find_sections_(tracks, ..., tol = 1, pad = 0, add_times = TRUE, .dots)
 \item{pad}{Add padding of this many frames around each section. This allows
 for capturing context around sections of interest.}
 
-\item{add_times}{When \code{TRUE}, three columns will be added to the result
-that give human readable times, instead of only frame numbers.}
+\item{add_times}{When \code{TRUE}, three columns will be added to the
+sections table that give human readable times, instead of only frame
+numbers.}
 
 \item{.dots}{Used to work around non-standard evaluation. See vignette("nse")
 for details.}
@@ -29,26 +30,35 @@ for details.}
 A tbl_df.
 }
 \description{
-Similar to \code{filter}, but returns a table of sequences grouped by trial,
-with a \code{start}, \code{stop} and \code{length} column. It supports a
-tolerance level which allows for combining sequences that are close together
-(the default of 1 is zero tolerance).
+Similar to \code{filter}, but does not filter on each table seperately, but
+filters frames for which all conditions from seperate tables apply. That is,
+one can filter frames based on a variable in e.g. the \code{tr} table and
+\code{tr}, \code{soc} and \code{group} will be filtered for the frames where
+that condition is \code{TRUE}.
 }
 \details{
+It returns a list with tracks tables as well as a summary table of sequences.
+The first is named \code{tracks}, tables are grouped appropriately. The
+second list enty is named \code{sections} and provides an overview of the
+track sections that were found. It is grouped by trial, with a \code{start},
+\code{stop} and \code{length} column.
+
+The function supports a tolerance level which allows for combining sequences
+that are close together.
+
 Any variables used as conditions will be looked up in the \code{tr},
-\code{soc} and \code{group} tables and applied when present. Non-existing
-variables will not produce an error.
-
-Seperate conditions on different variables with a \code{,}, not \code{&}.
-Combine several conditions on the same variable with \code{&}.
-
-Example use case: If one wants to select all sequences of frames where
-animals are chasing each other (to plot them, for example), one could filter
-for a high mean speed of the pair, and a small pairwise distance.
+\code{soc} and \code{group} tables and applied when present.
 }
 \section{Functions}{
 \itemize{
 \item \code{find_sections_}: Retrieve the timestamps for track section based on
 conditions.
 }}
+\section{Example use case}{
+
+
+If one wants to select all sequences of frames where
+animals are chasing each other (to plot them, for example), one could filter
+for a high mean speed of the pair, and a small pairwise distance.
+}
 
