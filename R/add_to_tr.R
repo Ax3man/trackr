@@ -77,6 +77,27 @@ acceleration_ <- function(x, y, order_by) {
 
 #' @rdname mutate_tr
 #' @export
+heading <- function(x = X, y = Y, order_by = frame) {
+  X <- deparse(substitute(X))
+  Y <- deparse(substitute(Y))
+  order_by <- deparse(substitute(order_by))
+  paste0('trackr::heading_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
+}
+
+#' @rdname mutate_tr
+#' @export
+heading_ <- function(x, y, order_by) {
+  ifelse(
+    order_by - dplyr::lag(order_by, order_by = order_by) == 1,
+    angle(dplyr::lag(x, order_by = order_by),
+          dplyr::lag(y, order_by = order_by),
+          x,
+          y),
+    NA)
+}
+
+#' @rdname mutate_tr
+#' @export
 turn <- function(x = X, y = Y, order_by = frame) {
   X <- deparse(substitute(X))
   Y <- deparse(substitute(Y))
@@ -87,11 +108,5 @@ turn <- function(x = X, y = Y, order_by = frame) {
 #' @rdname mutate_tr
 #' @export
 turn_ <- function(x, y, order_by) {
-  ifelse(
-    order_by - dplyr::lag(order_by, order_by = order_by) == 1,
-    angle_diff(angle(dplyr::lag(x, order_by = order_by),
-                     dplyr::lag(y, order_by = order_by), x, y),
-               angle(x, y, dplyr::lead(x, order_by = order_by),
-                     dplyr::lead(y, order_by = order_by))),
-    NA)
+  change_(heading_(x, y, order_by), order_by)
 }

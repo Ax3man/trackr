@@ -7,6 +7,8 @@
 \alias{change_}
 \alias{distance}
 \alias{distance_}
+\alias{heading}
+\alias{heading_}
 \alias{mutate_tr}
 \alias{speed}
 \alias{speed_}
@@ -29,6 +31,10 @@ speed_(x, y, order_by)
 acceleration(x = X, y = Y, order_by = frame)
 
 acceleration_(x, y, order_by)
+
+heading(x = X, y = Y, order_by = frame)
+
+heading_(x, y, order_by)
 
 turn(x = X, y = Y, order_by = frame)
 
