@@ -343,9 +343,11 @@ load_tracks <- function(file) {
   rm(tmp_env)
 
   tracks$tr <- multidplyr::partition(tracks$tr, trial)
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~animal)
   if (!is.null(tracks$soc)) {
     tracks$soc <- multidplyr::partition(tracks$soc, trial,
                                         cluster = tracks$tr$cluster)
+    tracks$soc <- dplyr::group_by_(tracks$soc, ~animal1, ~animal2)
   }
   multidplyr::cluster_library(tracks$tr$cluster, 'trackr')
   return(tracks)
