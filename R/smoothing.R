@@ -1,11 +1,22 @@
-sm <- function(x, window = 5, weights = dnorm(seq(-3, 3, length.out = 20))) {
+#' Smooth a vector using a rolling mean.
+#'
+#' By default, smoothing is done by averaging over a Gaussian kernel.
+#'
+#' @param x A vector to smooth.
+#' @param window The size of the window to smooth over (ignored if weights is
+#'   non-\code{NULL}).
+#' @param weights A vector of weights.
+#'
+#' @return A numeric vector.
+#' @export
+sm <- function(x, window = 5, weights = dnorm(seq(-3, 3, length.out = 9))) {
   if (is.null(weights)) {
     l <- window
   } else {
     l <- length(weights)
   }
   l <- (l - 1) / 2
-  c(rep(NA, l), RcppRoll:roll_mean(x, window, weights), rep(NA, l))
+  c(rep(NA, l), RcppRoll::roll_mean(x, window, weights), rep(NA, l))
 }
 
 #' #' Roll a function over a tracks variable.
