@@ -5,8 +5,6 @@
 \alias{acceleration_}
 \alias{change}
 \alias{change_}
-\alias{distance}
-\alias{distance_}
 \alias{heading}
 \alias{heading_}
 \alias{mutate_tr}
@@ -19,10 +17,6 @@
 change(x, order_by = frame, n = 1)
 
 change_(x, order_by, n = 1)
-
-distance(x = X, y = Y, order_by = frame)
-
-distance_(x, y, order_by)
 
 speed(x = X, y = Y, order_by = frame)
 

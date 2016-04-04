@@ -33,31 +33,17 @@ change_ <- function(x, order_by, n = 1) {
 
 #' @rdname mutate_tr
 #' @export
-distance <- function(x = X, y = Y, order_by = frame) {
-  X <- deparse(substitute(X))
-  Y <- deparse(substitute(Y))
-  order_by <- deparse(substitute(order_by))
-  paste0('trackr::distance_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
-}
-
-#' @rdname mutate_tr
-#' @export
-distance_ <- function(x, y, order_by) {
-  sqrt(change_(x, order_by) ^ 2 + change_(y, order_by) ^ 2)
-}
-
-#' @rdname mutate_tr
-#' @export
 speed <- function(x = X, y = Y, order_by = frame) {
   X <- deparse(substitute(X))
   Y <- deparse(substitute(Y))
   order_by <- deparse(substitute(order_by))
   paste0('trackr::speed_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
 }
+
 #' @rdname mutate_tr
 #' @export
 speed_ <- function(x, y, order_by) {
-  change_(distance_(y, x, order_by), order_by)
+  sqrt(change_(x, order_by) ^ 2 + change_(y, order_by) ^ 2)
 }
 
 #' @rdname mutate_tr
@@ -68,11 +54,10 @@ acceleration <- function(x = X, y = Y, order_by = frame) {
   order_by <- deparse(substitute(order_by))
   paste0('trackr::acceleration_(x = ', X, ', y = ', Y, ', order_by = ', order_by, ')')
 }
-
 #' @rdname mutate_tr
 #' @export
 acceleration_ <- function(x, y, order_by) {
-  change_(change_(distance_(y, x, order_by), order_by), order_by)
+  change_(speed_(y, x, order_by), order_by)
 }
 
 #' @rdname mutate_tr
