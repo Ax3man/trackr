@@ -132,3 +132,20 @@ nip_dist_ <- function(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1,
   res <- apply((x - head_X) ^ 2 + (y - head_Y) ^ 2, 1, min)
   sqrt(res)
 }
+
+#' @rdname mutate_soc
+#' @export
+orientation_diff <- function(orientation1 = orientation1,
+                              orientation2 = orientation2) {
+  orientation1 <- deparse(substitute(orientation1))
+  orientation2 <- deparse(substitute(orientation2))
+  paste0('trackr::orientation_diff_(',
+         paste(orientation1, orientation2, sep = ', '),
+         ')')
+}
+
+#' @rdname mutate_soc
+#' @export
+orientation_diff_ <- function(orientation1, orientation2) {
+  abs((orientation1 - orientation2 + pi) %% (2*pi) - pi)
+}

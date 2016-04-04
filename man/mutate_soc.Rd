@@ -4,6 +4,8 @@
 \alias{mutate_soc}
 \alias{nip_dist}
 \alias{nip_dist_}
+\alias{orientation_diff}
+\alias{orientation_diff_}
 \alias{pair_dist}
 \alias{pair_dist_}
 \title{Conveniently add common new variables to the \code{soc} table.}
@@ -19,6 +21,10 @@ nip_dist(x1 = X1, x2 = X2, y1 = Y1, y2 = Y2,
 
 nip_dist_(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1, major_axis2,
   orientation1, orientation2, n = 20)
+
+orientation_diff(orientation1 = orientation1, orientation2 = orientation2)
+
+orientation_diff_(orientation1, orientation2)
 }
 \arguments{
 \item{x1}{X-coordinate for animal 1.}
