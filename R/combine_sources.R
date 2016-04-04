@@ -116,8 +116,8 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
   if (attributes(res)$biggest_group_size > 1) {
     res <- multidplyr::partition(res, trial, animal, frame)
     multidplyr::cluster_assign_value(res$cluster, 'err_cutoff', err_cutoff)
-    multidplyr::cluster_assign_value(res$cluster, 'mean_direction',
-                                     mean_direction)
+    multidplyr::cluster_assign_value(res$cluster, 'mean_angle',
+                                     mean_angle)
     cat('Finding duplicates...\n')
     res_ok <- dplyr::filter(res, n() == 1)
     res_dups <- dplyr::filter(res, n() > 1)
@@ -131,7 +131,7 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
                         minor_axis =
                           ~mean(minor_axis[combine_err < err_cutoff]),
                         orientation =
-                          ~mean_direction(
+                          ~mean_angle(
                             orientation[combine_err < err_cutoff]),
                         combine_err =
                           ~mean(combine_err[combine_err < err_cutoff]))
