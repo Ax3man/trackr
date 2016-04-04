@@ -147,5 +147,22 @@ orientation_diff <- function(orientation1 = orientation1,
 #' @rdname mutate_soc
 #' @export
 orientation_diff_ <- function(orientation1, orientation2) {
-  abs((orientation1 - orientation2 + pi) %% (2*pi) - pi)
+  abs(angle_diff(orientation1 - orientation2))
+}
+
+#' @rdname mutate_soc
+#' @export
+heading_diff <- function(heading1 = heading1,
+                         heading2 = heading2) {
+  heading1 <- deparse(substitute(heading1))
+  heading2 <- deparse(substitute(heading2))
+  paste0('trackr::heading_diff_(',
+         paste(heading1, heading2, sep = ', '),
+         ')')
+}
+
+#' @rdname mutate_soc
+#' @export
+heading_diff_ <- function(heading1, heading2) {
+  abs(angle_diff(heading1 - heading2 + pi))
 }
