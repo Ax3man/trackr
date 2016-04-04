@@ -167,6 +167,7 @@ expand_tracks <- function(tracks,
     # Might have to look for a faster way (without groups and using nesting)
     Soc <- dplyr::mutate_(tracks$tr, .dots = list(animal2 = ~animal))
     Soc <- dplyr::collect(Soc)
+    Soc <- dplyr::group_by_(Soc, ~trial)
     Soc <- tidyr::expand_(Soc, dots = list(~frame, ~animal, ~animal2))
     Soc <- dplyr::rename_(Soc, .dots = list(animal1 = ~animal))
     tracks$pr$soc <- names(Soc)
