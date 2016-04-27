@@ -131,7 +131,7 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
 
   if (minimal) {
     attributes(tracks)$class <- 'tracks'
-    return(tracks)
+    expand_tracks(tracks, soc = FALSE, group = FALSE)
   } else {
     expand_tracks(tracks)
   }
