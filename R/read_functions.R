@@ -219,6 +219,11 @@ read_Ctrax <- function(file = NULL,
 read_Ctrax_csv <- function(file, animals) {
   # Read file ------------------------------------------------------------------
   d <- lapply(file, readr::read_table, col_names = FALSE)
+  # Check for alternate column seperators
+  if (any(sapply(d, ncol) == 1)) {
+    d[any(sapply(d, ncol) == 1)] <-
+      lapply(file[any(sapply(d, ncol) == 1)], readr::read_csv, col_names = FALSE)
+  }
   # Create the column names
   d <- lapply(d, function(x) {
     new.names <- expand.grid(c('ID', 'X', 'Y', 'major_axis', 'minor_axis',
