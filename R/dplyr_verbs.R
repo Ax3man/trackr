@@ -154,8 +154,12 @@ summarise_.tracks <- function(.data,
   Source <- switch(.source,
                    'tr' = tracks$tr,
                    'soc' = tracks$pairs)
+  vars <- names(conds)
 
   if ('group' %in% .tables & !is.null(tracks$group)) {
+    if (any(names(tracks$group) %in% vars)) {
+      tracks$group <- tracks$group[-which(names(tracks$group) %in% vars)]
+    }
     Group <- dplyr::group_by_(Source, ~trial, ~frame)
     Group <- dplyr::summarize_(Group, .dots = conds)
     Group <- dplyr::collect(Group)
@@ -165,6 +169,9 @@ summarise_.tracks <- function(.data,
   }
 
   if ('animal' %in% .tables & !is.null(tracks$animal) & .source == 'tr') {
+    if (any(names(tracks$animal) %in% vars)) {
+      tracks$animal <- tracks$animal[-which(names(tracks$animal) %in% vars)]
+    }
     Animal <- dplyr::group_by_(Source, ~trial, ~animal)
     Animal <- dplyr::summarize_(Animal, .dots = conds)
     Animal <- dplyr::collect(Animal)
@@ -175,16 +182,22 @@ summarise_.tracks <- function(.data,
   }
 
   if ('pair' %in% .tables & !is.null(tracks$pair) & .source == 'soc') {
+    if (any(names(tracks$pair) %in% vars)) {
+      tracks$pair <- tracks$pair[-which(names(tracks$pair) %in% vars)]
+    }
     Pair <- dplyr::group_by_(Source, ~trial, ~animal1, ~animal2)
     Pair <- dplyr::summarize_(Pair, .dots = conds)
     Pair <- dplyr::collect(Pair)
     tracks$pair <- dplyr::full_join(Pair, tracks$animal,
-                                      c('trial', 'animal1', 'animal2'))
+                                    c('trial', 'animal1', 'animal2'))
     rm(Pair)
     tracks$pair <- dplyr::ungroup(tracks$pair)
   }
 
   if ('trial' %in% .tables & !is.null(tracks$trial)) {
+    if (any(names(tracks$trial) %in% vars)) {
+      tracks$trial <- tracks$trial[-which(names(tracks$trial) %in% vars)]
+    }
     Trial <- dplyr::group_by_(Source, ~trial)
     Trial <- dplyr::summarize_(Trial, .dots = conds)
     Trial <- dplyr::collect(Trial)
