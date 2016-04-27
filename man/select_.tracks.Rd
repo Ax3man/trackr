@@ -23,9 +23,11 @@ A tracks object.
 \description{
 This function allows for convenient selection of some of the tables in a
 tracks object, usually to manage space or computation times. It will always
-retain the tr and meta_data tables, as well as the list of parameters.
+retain the tr and meta_data tables, as well as internal components.
 }
 \details{
+You can drop a table by writing it as a negative.
+
 You can use dplyr's special functions inside of select calls, such as
 starts_with().
 }

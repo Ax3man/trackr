@@ -245,7 +245,9 @@ NULL
 #'
 #' This function allows for convenient selection of some of the tables in a
 #' tracks object, usually to manage space or computation times. It will always
-#' retain the tr and meta_data tables, as well as the list of parameters.
+#' retain the tr and meta_data tables, as well as internal components.
+#'
+#' You can drop a table by writing it as a negative.
 #'
 #' You can use dplyr's special functions inside of select calls, such as
 #' starts_with().
@@ -260,8 +262,9 @@ NULL
 select_.tracks <- function(.data, ..., .dots) {
   dots <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   vars <- dplyr::select_vars_(names(.data), dots,
-                              include = c('tr', 'meta_data', 'params'))
+                              include = c('tr', 'meta_data', 'params', 'pr'))
   .data <- .data[vars]
-  class(.data) <- c("tracks",class(.data))
+  .data$pr <- .data$pr[names(.data$pr) %in% vars]
+  class(.data) <- c("tracks", class(.data))
   return(.data)
 }
