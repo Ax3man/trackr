@@ -16,6 +16,9 @@ join_tr_to_soc <- function(tracks, ...) {
 
 join_tr_to_soc_ <- function(tracks, ..., .dots) {
   select <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
+  if (is.null(tracks$soc)) {
+    stop('soc table was not found or is empty.', call. = FALSE)
+  }
   cl <- tracks$tr$cluster
 
   tr <- dplyr::select_(tracks$tr, .dots = c(~trial, ~animal, ~frame, select))
@@ -26,18 +29,25 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
   tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
   multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
 
+  Names1 <- setNames(names(select), paste0(names(select), 1))
+  Names2 <- setNames(names(select), paste0(names(select), 2))
+  if (any(tracks$pr$soc %in% c(Names1, Names2))) {
+    tracks$soc <- dplyr::select_(tracks$soc,
+                                 lazyeval::interp(~-one_of(x), x = c(Names1, Names2)))
+  }
+
+  tracks$soc <- dplyr::select_(tracks$soc, .dots)
+
   tracks$soc <- dplyr::do_(tracks$soc,
                            ~dplyr::left_join(
                              ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
 
-  Names1 <- setNames(names(select), paste0(names(select), 1))
   tracks$soc <- dplyr::rename_(tracks$soc, .dots = Names1)
 
   tracks$soc <- dplyr::do_(tracks$soc,
                            ~dplyr::left_join(
                              ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
   multidplyr::cluster_rm(cl, '.tr')
-  Names2 <- setNames(names(select), paste0(names(select), 2))
   tracks$soc <- dplyr::rename_(tracks$soc, .dots = Names2)
 
   tracks$pr$soc <- c(tracks$pr$soc, names(Names1), names(Names2))
