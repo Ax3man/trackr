@@ -17,8 +17,8 @@ read_Ctrax(file = NULL, folder = NULL, type = "fixed",
 should be read. When 'fixed', will try to find files with a 'fixed_'
 suffix, when 'raw' those with the suffix will be excluded.}
 
-\item{file_type}{Whether to use csv files or mat files. Will guess from the
-extension if file is used, defaults to 'csv' if folder is used.}
+\item{file_type}{Whether to use mat files or csv files. Will guess from the
+extension if file is used, defaults to 'mat' if folder is used.}
 
 \item{recursive}{If TRUE, will also try to find files in the subfolders of
 folder and combine them into one long data.frame. Only use when using folder.}

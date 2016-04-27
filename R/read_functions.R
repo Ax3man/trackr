@@ -123,8 +123,8 @@ read_idTracker <- function(file = NULL,
 #' @param type If folder is supplied, use type to indicate which track type
 #'   should be read. When 'fixed', will try to find files with a 'fixed_'
 #'   suffix, when 'raw' those with the suffix will be excluded.
-#' @param file_type Whether to use csv files or mat files. Will guess from the
-#'   extension if file is used, defaults to 'csv' if folder is used.
+#' @param file_type Whether to use mat files or csv files. Will guess from the
+#'   extension if file is used, defaults to 'mat' if folder is used.
 #' @param recursive If TRUE, will also try to find files in the subfolders of
 #' folder and combine them into one long data.frame. Only use when using folder.
 #' @param animals Optional vector of names (ordered in the same order as the
