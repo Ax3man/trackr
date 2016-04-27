@@ -108,6 +108,10 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
     }
   }
 
+  if (is.null(tr$trial)) {
+    tr$trial <- factor(1)
+  }
+
   # Parallel -------------------------------------------------------------------
   pr_tr <- names(tr)
   tr <- multidplyr::partition(tr, trial)
