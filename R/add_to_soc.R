@@ -35,9 +35,6 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
     tracks$soc <- dplyr::select_(tracks$soc,
                                  lazyeval::interp(~-one_of(x), x = c(Names1, Names2)))
   }
-
-  tracks$soc <- dplyr::select_(tracks$soc, .dots)
-
   tracks$soc <- dplyr::do_(tracks$soc,
                            ~dplyr::left_join(
                              ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
