@@ -36,7 +36,7 @@ print.tracks <- function(x, ...) {
   cat('Tracks object conaining the following elements:\n\n')
 
   cat('Tracks:\n')
-  if (length(trials > 1)) {
+  if (length(trials) > 1) {
     cat('  Containing data from:\n')
     cat('    Trials:', trials, '\n')
   }
