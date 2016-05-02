@@ -7,6 +7,7 @@
 #'
 #' @param x X-coordinate.
 #' @param y Y-coordinate.
+#' @param n Offset for change. See \code{\link[dplyr]{lag}}.
 #' @param order_by This parameter controls the ordering of \code{dplyr::lag} and
 #'   \code{dplyr::lead} and it is strongly advised to leave it at it's default
 #'   (\code{frame}).

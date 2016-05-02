@@ -12,16 +12,16 @@
 \alias{pair_dist_}
 \title{Conveniently add common new variables to the \code{soc} table.}
 \usage{
-pair_dist(x1 = X1, x2 = X2, y1 = Y1, y2 = Y2)
+pair_dist(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2)
 
-pair_dist_(x1, x2, y1, y2)
+pair_dist_(X1, X2, Y1, Y2)
 
-nip_dist(x1 = X1, x2 = X2, y1 = Y1, y2 = Y2,
+nip_dist(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2,
   minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
   major_axis1 = major_axis1, major_axis2 = major_axis2,
   orientation1 = orientation1, orientation2 = orientation2, n = 20)
 
-nip_dist_(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1, major_axis2,
+nip_dist_(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1, major_axis2,
   orientation1, orientation2, n = 20)
 
 orientation_diff(orientation1 = orientation1, orientation2 = orientation2)
@@ -33,13 +33,13 @@ heading_diff(heading1 = heading1, heading2 = heading2)
 heading_diff_(heading1, heading2)
 }
 \arguments{
-\item{x1}{X-coordinate for animal 1.}
+\item{X1}{X-coordinate for animal 1.}
 
-\item{x2}{X-coordinate for animal 2.}
+\item{X2}{X-coordinate for animal 2.}
 
-\item{y1}{Y-coordinate for animal 1.}
+\item{Y1}{Y-coordinate for animal 1.}
 
-\item{y2}{Y-coordinate for animal 2.}
+\item{Y2}{Y-coordinate for animal 2.}
 
 \item{minor_axis1}{Minor axis (*b*) of the ellipse fit of animal 1.}
 
@@ -54,6 +54,12 @@ heading_diff_(heading1, heading2)
 \item{orientation2}{Angle of ellipse fit with the x-axis for animal 2.}
 
 \item{n}{Number of point used for numerical approximation.}
+
+\item{heading1}{Angle animal 1 is heading based on previous and coming
+coordinates.}
+
+\item{heading2}{Angle animal 2 is heading based on previous and coming
+coordinates.}
 }
 \description{
 These functions are designed for use within \code{summarise_}, and will

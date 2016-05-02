@@ -22,6 +22,7 @@ Imports:
     ggplot2 (>= 2.0.0),
     lazyeval (>= 0.1.10),
     lubridate (>= 1.5.0),
+    magrittr,
     multidplyr,
     RcppRoll (>= 0.2.2),
     readr (>= 0.2.2),

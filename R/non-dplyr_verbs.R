@@ -165,7 +165,7 @@ find_sections_ <- function(tracks, ..., tol = 1, pad = 0, add_times = TRUE,
   }
   multidplyr::cluster_rm(cl, c('fr', 'j'))
   tracks <- lapply(tracks, lapply, dplyr::collect)
-  tracks <- lapply(tracks, function(.) bind_rows(.[!is.null(.)]))
+  tracks <- lapply(tracks, function(.) dplyr::bind_rows(.[!is.null(.)]))
   tracks <- add_sections_by_reference(tracks, ref, pad)
   # Prepare nice output with grouped tables and human readable times -----------
   tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~section, ~animal)
@@ -216,9 +216,9 @@ add_sections_by_reference <- function(tracks, ref, pad) {
   tracks <- lapply(tracks, dplyr::left_join, ref, by = c('trial', 'frame'))
   # Now we need to deal with padding
   find_nearest_section <- function(v) {
-    leads <- apply(sapply(1:pad, function(x) lead(v, x)),
+    leads <- apply(sapply(1:pad, function(x) dplyr::lead(v, x)),
                    1, function(y) y[which.min(is.na(y))])
-    lags <- apply(sapply(1:pad, function(x) lag(v, x)),
+    lags <- apply(sapply(1:pad, function(x) dplyr::lag(v, x)),
                   1, function(y) y[which.min(is.na(y))])
     ifelse(!is.na(v), v, ifelse(!is.na(leads), leads, lags))
   }
@@ -271,7 +271,7 @@ summarise_sections_ <- function(sections, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   tracks <- sections$tracks
   sections <- sections$sections
-  conds_tables <- trackr:::find_conds_in_tables(tracks, conds)
+  conds_tables <- find_conds_in_tables(tracks, conds)
   tables <- unique(unlist(conds_tables))
   tracks <- tracks[tables]
 

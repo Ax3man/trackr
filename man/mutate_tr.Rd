@@ -41,6 +41,8 @@ turn_(x, y, order_by)
 \code{dplyr::lead} and it is strongly advised to leave it at it's default
 (\code{frame}).}
 
+\item{n}{Offset for change. See \code{\link[dplyr]{lag}}.}
+
 \item{y}{Y-coordinate.}
 }
 \description{

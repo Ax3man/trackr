@@ -19,8 +19,7 @@
 #' @export
 calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
   if (!('speed' %in% tracks$pr$tr)) {
-    message('Adding speed to tracks first...')
-    tracks <- add_speed(tracks)
+    stop('Speed not found in tr table.', call. = FALSE)
   }
 
   multidplyr::cluster_assign_value(tracks$soc$cluster, 'range', range)

@@ -63,16 +63,20 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 #' to add those variable to the \code{soc} table first, by calling
 #' \code{join_tr_to_soc}.
 #'
-#' @param x1 X-coordinate for animal 1.
-#' @param x2 X-coordinate for animal 2.
-#' @param y1 Y-coordinate for animal 1.
-#' @param y2 Y-coordinate for animal 2.
+#' @param X1 X-coordinate for animal 1.
+#' @param X2 X-coordinate for animal 2.
+#' @param Y1 Y-coordinate for animal 1.
+#' @param Y2 Y-coordinate for animal 2.
 #' @param minor_axis1 Minor axis (*b*) of the ellipse fit of animal 1.
 #' @param minor_axis2 Minor axis (*b*) of the ellipse fit of animal 2.
 #' @param major_axis1 Major axis (*a*) of the ellipse fit of animal 1.
 #' @param major_axis2 Major axis (*a*) of the ellipse fit of animal 2.
 #' @param orientation1 Angle of ellipse fit with the x-axis for animal 1.
 #' @param orientation2 Angle of ellipse fit with the x-axis for animal 2.
+#' @param heading1 Angle animal 1 is heading based on previous and coming
+#'   coordinates.
+#' @param heading2 Angle animal 2 is heading based on previous and coming
+#'   coordinates.
 #' @param n Number of point used for numerical approximation.
 #'
 #' @name mutate_soc
@@ -81,32 +85,32 @@ NULL
 
 #' @rdname mutate_soc
 #' @export
-pair_dist <- function(x1 = X1, x2 = X2, y1 = Y1, y2 = Y2) {
+pair_dist <- function(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2) {
   X1 <- deparse(substitute(X1))
   X2 <- deparse(substitute(X2))
   Y1 <- deparse(substitute(Y1))
   Y2 <- deparse(substitute(Y2))
-  paste0('trackr::pair_dist_(x1 = ', x1, ', x2 = ', x2, ', y1 = ', y1,
-         ', y2 = ', y2,')')
+  paste0('trackr::pair_dist_(X1 = ', X1, ', X2 = ', X2, ', Y1 = ', Y1,
+         ', Y2 = ', Y2,')')
 }
 
 #' @rdname mutate_soc
 #' @export
-pair_dist_ <- function(x1, x2, y1, y2) {
-  sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
+pair_dist_ <- function(X1, X2, Y1, Y2) {
+  sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2)
 }
 
 #' @rdname mutate_soc
 #' @export
-nip_dist <- function(x1 = X1, x2 = X2, y1 = Y1, y2 = Y2,
+nip_dist <- function(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2,
                      minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
                      major_axis1 = major_axis1, major_axis2 = major_axis2,
                      orientation1 = orientation1, orientation2 = orientation2,
                      n = 20) {
-  x1 <- deparse(substitute(x1))
-  x2 <- deparse(substitute(x2))
-  y1 <- deparse(substitute(y1))
-  y2 <- deparse(substitute(y2))
+  X1 <- deparse(substitute(X1))
+  X2 <- deparse(substitute(X2))
+  Y1 <- deparse(substitute(Y1))
+  Y2 <- deparse(substitute(Y2))
   minor_axis1 <- deparse(substitute(minor_axis1))
   minor_axis2 <- deparse(substitute(minor_axis2))
   major_axis1 <- deparse(substitute(major_axis1))
@@ -114,26 +118,26 @@ nip_dist <- function(x1 = X1, x2 = X2, y1 = Y1, y2 = Y2,
   orientation1 <- deparse(substitute(orientation1))
   orientation2 <- deparse(substitute(orientation2))
   paste0('trackr::nip_dist_(',
-         paste(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1,
+         paste(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
                major_axis2, orientation1, orientation2, n, sep = ', '),
          ')')
 }
 
 #' @rdname mutate_soc
 #' @export
-nip_dist_ <- function(x1, x2, y1, y2, minor_axis1, minor_axis2, major_axis1,
+nip_dist_ <- function(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
                          major_axis2, orientation1, orientation2, n = 20) {
   # Vector of angles that need to be tested.
   theta <- seq(0, 2 * pi, length.out = n + 1)
   # Find the head position of fish1.
-  head_X <- major_axis1 * cos(orientation1) + x1
-  head_Y <- major_axis1 * sin(orientation1) + y1
+  head_X <- major_axis1 * cos(orientation1) + X1
+  head_Y <- major_axis1 * sin(orientation1) + Y1
   # Create matrices of all x and y coordinates on the ellipse (at origin)
   x <- major_axis2 %o% cos(theta)
   y <- minor_axis2 %o% sin(theta)
   # Rotate around origin and add offset
-  x <- x * cos(orientation2) + y * sin(orientation2) + x2
-  y <- y * cos(orientation2) + y * sin(orientation2) + y2
+  x <- x * cos(orientation2) + y * sin(orientation2) + X2
+  y <- y * cos(orientation2) + y * sin(orientation2) + Y2
 
   # Find the minimal distances
   res <- apply((x - head_X) ^ 2 + (y - head_Y) ^ 2, 1, min)
