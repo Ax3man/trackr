@@ -214,6 +214,7 @@ expand_tracks <- function(tracks,
               list(trial = Trial),
               list(animal = Animal),
               list(pair = Pair))
+  tracks <- tracks[!sapply(tracks, is.null)]
   attributes(tracks)$class <- 'tracks'
 
   return(tracks)
