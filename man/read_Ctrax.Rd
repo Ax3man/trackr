@@ -9,9 +9,9 @@ read_Ctrax(file = NULL, folder = NULL, type = "fixed",
   recursive = TRUE, animals = NULL)
 }
 \arguments{
-\item{file}{Either directly supply a path to a file, a list of paths,}
+\item{file}{Either directly supply a path to a file, a list/vector of paths,}
 
-\item{folder}{Or supply a path to a folder.}
+\item{folder}{or supply a path to a folder.}
 
 \item{type}{If folder is supplied, use type to indicate which track type
 should be read. When 'fixed', will try to find files with a 'fixed_'

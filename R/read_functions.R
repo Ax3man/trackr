@@ -118,8 +118,8 @@ read_idTracker <- function(file = NULL,
 #'
 #' This function always filters out (0, 0) coordinates, as they are a Ctrax bug.
 #'
-#' @param file Either directly supply a path to a file, a list of paths,
-#' @param folder Or supply a path to a folder.
+#' @param file Either directly supply a path to a file, a list/vector of paths,
+#' @param folder or supply a path to a folder.
 #' @param type If folder is supplied, use type to indicate which track type
 #'   should be read. When 'fixed', will try to find files with a 'fixed_'
 #'   suffix, when 'raw' those with the suffix will be excluded.
@@ -150,6 +150,10 @@ read_Ctrax <- function(file = NULL,
 
   if (!(type %in% c('fixed', 'raw')))
     stop('type should be either fixed or raw.')
+
+  if (is.list(file)) {
+    file <- unlist(file)
+  }
 
   # Find the files in folder ---------------------------------------------------
   if (!is.null(folder)) {
