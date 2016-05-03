@@ -2,3 +2,7 @@
 ^\.Rproj\.user$
 ^R\test\.R$
 ^test.Rdata
+^data\creation_of_guppies\.R$
+^data\fixed_trial5-1\.mat$
+^data\trial5-2\.mat$
+^R/TESTER\.R$
