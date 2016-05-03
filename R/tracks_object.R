@@ -76,6 +76,10 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
   Source <- attributes(tr)$source
 
   # Define bounds (default) #---------------------------------------------------
+  if (substr(res, nchar(res), nchar(res)) == 'p') {
+    res <- substr(res, 1, nchar(res) - 1)
+  }
+
   if (res %in% c('480', '720', '1080')) {
     ress <- list('480' = c(640, 480),
                  '720' = c(1280, 720),
