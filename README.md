@@ -12,8 +12,8 @@ You can install this package from within your R session using `devtools`. You cu
 ````{r}
 # Install devtools if necessary
 # install.packages('devtools')
-devtools::install_github('Ax3man/trackr')
 devtools::install_github('Ax3man/multidplyr')
+devtools::install_github('Ax3man/trackr')
 ````
 
 ### Currently supported trackers
