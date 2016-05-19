@@ -263,16 +263,17 @@ read_Ctrax_mat <- function(file, animals) {
 
   lapply(d, function(x) {
     if (names(x)[1] == "ntargets") {
-      if (is.null(animals))
-        animals <- as.character(unique(x$identity) + 1)
       xx <- dplyr::data_frame(
-        animal = animals[x$identity[, 1] + 1],
+        animal = x$identity[, 1] + 1,
         frame = rep.int(seq_along(x$ntargets[, 1]), x$ntargets[, 1]),
         X = x$x.pos[, 1],
         Y = x$y.pos[, 1],
         major_axis = x$maj.ax[, 1],
         minor_axis = x$min.ax[, 1],
         orientation = x$angle[, 1])
+      if (!is.null(animals)) {
+        levels(xx$animal) <- animals
+      }
       res <- dplyr::arrange_(xx, ~animal, ~frame)
     } else {
       xs <- lapply(1:dim(x$trx)[3], function(i) x$trx[, , i])
