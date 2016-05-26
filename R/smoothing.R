@@ -16,7 +16,7 @@ sm <- function(x, window = 5, weights = dnorm(seq(-3, 3, length.out = 9))) {
     w <- length(weights)
   }
   l <- (w - 1) / 2
-  r <- l + w %% 2
+  r <- l + (1 - w %% 2)
   c(rep(NA, l), RcppRoll::roll_mean(x, window, weights), rep(NA, r))
 }
 
