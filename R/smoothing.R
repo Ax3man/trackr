@@ -11,12 +11,13 @@
 #' @export
 sm <- function(x, window = 5, weights = dnorm(seq(-3, 3, length.out = 9))) {
   if (is.null(weights)) {
-    l <- window
+    w <- window
   } else {
-    l <- length(weights)
+    w <- length(weights)
   }
-  l <- (l - 1) / 2
-  c(rep(NA, l), RcppRoll::roll_mean(x, window, weights), rep(NA, l))
+  l <- (w - 1) / 2
+  r <- l + w %% 2
+  c(rep(NA, l), RcppRoll::roll_mean(x, window, weights), rep(NA, r))
 }
 
 #' #' Roll a function over a tracks variable.
