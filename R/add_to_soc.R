@@ -85,47 +85,13 @@ NULL
 
 #' @rdname mutate_soc
 #' @export
-pair_dist <- function(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2) {
-  X1 <- deparse(substitute(X1))
-  X2 <- deparse(substitute(X2))
-  Y1 <- deparse(substitute(Y1))
-  Y2 <- deparse(substitute(Y2))
-  paste0('trackr::pair_dist_(X1 = ', X1, ', X2 = ', X2, ', Y1 = ', Y1,
-         ', Y2 = ', Y2,')')
-}
-
-#' @rdname mutate_soc
-#' @export
-pair_dist_ <- function(X1, X2, Y1, Y2) {
+pair_dist <- function(X1, X2, Y1, Y2) {
   sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2)
 }
 
 #' @rdname mutate_soc
 #' @export
-nip_dist <- function(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2,
-                     minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
-                     major_axis1 = major_axis1, major_axis2 = major_axis2,
-                     orientation1 = orientation1, orientation2 = orientation2,
-                     n = 20) {
-  X1 <- deparse(substitute(X1))
-  X2 <- deparse(substitute(X2))
-  Y1 <- deparse(substitute(Y1))
-  Y2 <- deparse(substitute(Y2))
-  minor_axis1 <- deparse(substitute(minor_axis1))
-  minor_axis2 <- deparse(substitute(minor_axis2))
-  major_axis1 <- deparse(substitute(major_axis1))
-  major_axis2 <- deparse(substitute(major_axis2))
-  orientation1 <- deparse(substitute(orientation1))
-  orientation2 <- deparse(substitute(orientation2))
-  paste0('trackr::nip_dist_(',
-         paste(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
-               major_axis2, orientation1, orientation2, n, sep = ', '),
-         ')')
-}
-
-#' @rdname mutate_soc
-#' @export
-nip_dist_ <- function(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
+nip_dist <- function(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
                          major_axis2, orientation1, orientation2, n = 20) {
   # Vector of angles that need to be tested.
   theta <- seq(0, 2 * pi, length.out = n + 1)
@@ -146,34 +112,12 @@ nip_dist_ <- function(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1,
 
 #' @rdname mutate_soc
 #' @export
-orientation_diff <- function(orientation1 = orientation1,
-                              orientation2 = orientation2) {
-  orientation1 <- deparse(substitute(orientation1))
-  orientation2 <- deparse(substitute(orientation2))
-  paste0('trackr::orientation_diff_(',
-         paste(orientation1, orientation2, sep = ', '),
-         ')')
-}
-
-#' @rdname mutate_soc
-#' @export
-orientation_diff_ <- function(orientation1, orientation2) {
+orientation_diff <- function(orientation1, orientation2) {
   abs(angle_diff(orientation1, orientation2))
 }
 
 #' @rdname mutate_soc
 #' @export
-heading_diff <- function(heading1 = heading1,
-                         heading2 = heading2) {
-  heading1 <- deparse(substitute(heading1))
-  heading2 <- deparse(substitute(heading2))
-  paste0('trackr::heading_diff_(',
-         paste(heading1, heading2, sep = ', '),
-         ')')
-}
-
-#' @rdname mutate_soc
-#' @export
-heading_diff_ <- function(heading1, heading2) {
+heading_diff <- function(heading1, heading2) {
   abs(angle_diff(heading1, heading2))
 }

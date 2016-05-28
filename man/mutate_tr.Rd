@@ -2,37 +2,22 @@
 % Please edit documentation in R/add_to_tr.R
 \name{mutate_tr}
 \alias{acceleration}
-\alias{acceleration_}
 \alias{change}
-\alias{change_}
 \alias{heading}
-\alias{heading_}
 \alias{mutate_tr}
 \alias{speed}
-\alias{speed_}
 \alias{turn}
-\alias{turn_}
 \title{Conveniently add common new variables to the \code{soc} table.}
 \usage{
 change(x, order_by = frame, n = 1)
 
-change_(x, order_by, n = 1)
-
 speed(x = X, y = Y, order_by = frame)
 
-speed_(x, y, order_by)
+acceleration(x, y, order_by)
 
-acceleration(x = X, y = Y, order_by = frame)
+heading(x, y, order_by)
 
-acceleration_(x, y, order_by)
-
-heading(x = X, y = Y, order_by = frame)
-
-heading_(x, y, order_by)
-
-turn(x = X, y = Y, order_by = frame)
-
-turn_(x, y, order_by)
+turn(x, y, order_by)
 }
 \arguments{
 \item{x}{X-coordinate.}
