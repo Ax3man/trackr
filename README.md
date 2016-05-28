@@ -57,20 +57,20 @@ filter(tr, trial == 'trial2-1', frame %in% 36000:108000) %>%
 It looks like some periods are a bit more active than others.
 
 ![plot2](http://i.imgur.com/ABR8siE.png)
-Ok, so we have our trajectories, and most of it seems quite ok. Let's calculate some per frame statistics.
+Ok, so we have our trajectories, and most of it seems quite ok. Let's calculate some per frame statistics. We use the `mutate` syntax from `dplyr`.
 
 ````{r}
-tr <- tr %>%
-  add_speed() %>%
-  add_acceleration() %>%
-  add_turn()
-````
+tr <- mutate(tr,
+             speed = speed(),
+             acc = acceleration(),
+             turn = turn())
+```
 Summmary statistics work very similar to `dplyr`. We do have add some new tables to our `tracks` object though (see `?as_tracks`).
 ````{r}
 tr <- tr %>% 
-  expand_tracks(group = FALSE, animal = TRUE, soc = FALSE, trial = TRUE) %>%
+  expand_tracks() %>%
   summarize(mean_speed = mean(speed, na.rm = TRUE),
-                       sum_abs_turn = sum(abs(turn), na.rm = TRUE))
+            sum_abs_turn = sum(abs(turn), na.rm = TRUE))
 
 tr$animal
 
