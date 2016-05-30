@@ -13,11 +13,11 @@ change(x, order_by = frame, n = 1)
 
 speed(x = X, y = Y, order_by = frame)
 
-acceleration(x, y, order_by)
+acceleration(x = X, y = Y, order_by = frame)
 
-heading(x, y, order_by)
+heading(x = X, y = Y, order_by = frame)
 
-turn(x, y, order_by)
+turn(x = X, y = Y, order_by = frame)
 }
 \arguments{
 \item{x}{X-coordinate.}

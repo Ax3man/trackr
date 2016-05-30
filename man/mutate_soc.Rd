@@ -8,14 +8,16 @@
 \alias{pair_dist}
 \title{Conveniently add common new variables to the \code{soc} table.}
 \usage{
-pair_dist(X1, X2, Y1, Y2)
+pair_dist(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2)
 
-nip_dist(X1, X2, Y1, Y2, minor_axis1, minor_axis2, major_axis1, major_axis2,
-  orientation1, orientation2, n = 20)
+nip_dist(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2,
+  minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
+  major_axis1 = major_axis1, major_axis2 = major_axis2,
+  orientation1 = orientation1, orientation2 = orientation2, n = 20)
 
-orientation_diff(orientation1, orientation2)
+orientation_diff(orientation1 = orientation1, orientation2 = orientation2)
 
-heading_diff(heading1, heading2)
+heading_diff(heading1 = heading1, heading2 = heading2)
 }
 \arguments{
 \item{X1}{X-coordinate for animal 1.}

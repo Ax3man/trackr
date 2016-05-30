@@ -32,13 +32,13 @@ speed <- function(x = X, y = Y, order_by = frame) {
 
 #' @rdname mutate_tr
 #' @export
-acceleration <- function(x, y, order_by) {
+acceleration <- function(x = X, y = Y, order_by = frame) {
   change(speed(y, x, order_by), order_by)
 }
 
 #' @rdname mutate_tr
 #' @export
-heading <- function(x, y, order_by) {
+heading <- function(x = X, y = Y, order_by = frame) {
   ifelse(
     order_by - dplyr::lag(order_by, order_by = order_by) == 1,
     angle(dplyr::lag(x, order_by = order_by),
@@ -50,6 +50,6 @@ heading <- function(x, y, order_by) {
 
 #' @rdname mutate_tr
 #' @export
-turn <- function(x, y, order_by) {
+turn <- function(x = X, y = Y, order_by = frame) {
   change(heading(x, y, order_by), order_by)
 }
