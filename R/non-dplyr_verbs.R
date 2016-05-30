@@ -87,7 +87,7 @@ thin_frame_rate <- function(tracks, n = NULL, new_frame_rate = NULL,
 #'
 #' @return A tbl_df.
 #' @export
-find_sections <- function(tracks, ..., tol = 0, pad = 0, add_times = TRUE) {
+find_sections <- function(tracks, ..., tol = 1, pad = 0, add_times = TRUE) {
   find_sections_(tracks, tol = tol, pad = pad, add_times = add_times,
                  .dots = lazyeval::lazy_dots(...))
 }
