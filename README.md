@@ -64,13 +64,12 @@ tr <- mutate(tr,
              speed = speed(),
              acc = acceleration(),
              turn = turn())
-```
-Summmary statistics work very similar to `dplyr`. We do have add some new tables to our `tracks` object though (see `?as_tracks`).
+````
+Summmary statistics also work very similar to `dplyr`.
 ````{r}
-tr <- tr %>% 
-  expand_tracks() %>%
-  summarize(mean_speed = mean(speed, na.rm = TRUE),
-            sum_abs_turn = sum(abs(turn), na.rm = TRUE))
+tr <- summarize(tr, 
+                mean_speed = mean(speed, na.rm = TRUE),
+                sum_abs_turn = sum(abs(turn), na.rm = TRUE))
 
 tr$animal
 
