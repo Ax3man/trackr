@@ -111,6 +111,8 @@ add_defaults_to_dots <- function(dots) {
 
 #' Convert between frame numbers and human readable time formats.
 #'
+#' \code{t2f} and \code{f2t} provide convinient short-hands.
+#'
 #' @param frames A numerc vector of frame numbers to convert.
 #' @param seconds A character vector of times to convert (see examples).
 #' @param frame_rate The frame rate of the tracking data in frames per second
@@ -146,9 +148,17 @@ frames_to_times <- function(frames, frame_rate) {
 #' @export
 times_to_frames <- function(seconds, frame_rate) {
   date_times <- lubridate::parse_date_time(seconds, c('H!M!S!', 'M!S!', 'S!'))
-  secs <- lubridate::seconds(date_times) + lubridate::seconds(62167219200)
+  secs <- lubridate::seconds(date_times) + lubridate::seconds(62167305600)
   as.numeric(secs * frame_rate)
 }
+
+#' @describeIn frame_time Convert human-readable times to frames.
+#' @export
+f2t <- frames_to_times
+
+#' @describeIn frame_time Convert human-readable times to frames.
+#' @export
+t2f <- times_to_frames
 
 resolve_time_frame <- function(var, frame_rate) {
   if (is.numeric(var) | is.null(var)) {
