@@ -58,10 +58,35 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 #' will use the expected variable names, as are default in \code{tracks}
 #' objects, but they can be overridden.
 #'
-#' Many of these functions rely on parameters that originate from the \code{tr}
-#' table, such as \code{X1} or \code{orientation2}. This usually means you have
-#' to add those variable to the \code{soc} table first, by calling
+#' These functions typically rely on parameters that originate from the
+#' \code{tr} table, such as \code{X1} or \code{orientation2}. If so, that means
+#' you have to add those variable to the \code{soc} table first, by calling
 #' \code{join_tr_to_soc}.
+#'
+#' @section Overview of functions:
+#'
+#' The following functions are currently available for easy use in mutate calls:
+#' \describe{
+#'   \item{\code{pair_dist}}{Calculates the distance between the centroids of
+#'   animal1 and animal2. You need to make x and y coordinates available.}
+#'   \item{\code{nip_dist}}{When ellipse fits are available, calculates the
+#'   distance from the front of the ellipse of animal1 (presumably the head or
+#'   mouth) and the closest point on the ellipse of animal2. This function uses
+#'   a numerical approximation based on n points along the ellipse of animal2.
+#'   You need to make x and y coordinates, orientations, and minor and major
+#'   axis sizes available.} \item{\code{orientation_diff}}{Difference in
+#'   orientations. You need to make orientations available.}
+#'   \item{\code{heading_diff}}{Difference in headings. Calculate heading for
+#'   each animal first (using \code{mutate(tracks, heading = heading())}), then
+#'   add the heading to the \code{soc} table (using \code{join_tr_to_soc(tracks,
+#'   heading)}). Use \code{heading_diff2} when basing it off x and y
+#'   coordinates. You need to make headings available.}
+#'   \item{\code{heading_diff2}}{Difference in headings, based on x and y
+#'   coordinates. You need to make x and y coordinates available.}
+#'   \item{\code{leader}}{Find whether animal1 is in front (TRUE), or in behind
+#'   (FALSE) of animal 2, based on their mean heading. You need to make x and y
+#'   coordinates available.}
+#' }
 #'
 #' @param X1 X-coordinate for animal 1.
 #' @param X2 X-coordinate for animal 2.
@@ -73,9 +98,9 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 #' @param major_axis2 Major axis (*a*) of the ellipse fit of animal 2.
 #' @param orientation1 Angle of ellipse fit with the x-axis for animal 1.
 #' @param orientation2 Angle of ellipse fit with the x-axis for animal 2.
-#' @param heading1 Angle animal 1 is heading based on previous and coming
+#' @param heading1 Angle animal 1 is heading based on previous and current
 #'   coordinates.
-#' @param heading2 Angle animal 2 is heading based on previous and coming
+#' @param heading2 Angle animal 2 is heading based on previous and current
 #'   coordinates.
 #' @param n Number of point used for numerical approximation.
 #'
@@ -85,13 +110,13 @@ NULL
 
 #' @rdname mutate_soc
 #' @export
-pair_dist <- function(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2) {
+pair_dist <- function(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2) {
   sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2)
 }
 
 #' @rdname mutate_soc
 #' @export
-nip_dist <- function(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2,
+nip_dist <- function(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2,
                      minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
                      major_axis1 = major_axis1, major_axis2 = major_axis2,
                      orientation1 = orientation1, orientation2 = orientation2,
@@ -124,4 +149,32 @@ orientation_diff <- function(orientation1 = orientation1,
 #' @export
 heading_diff <- function(heading1 = heading1, heading2 = heading2) {
   abs(angle_diff(heading1, heading2))
+}
+
+#' @rdname mutate_soc
+#' @export
+heading_diff2 <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame) {
+  hd1 <- heading(x1, y1, order_by)
+  hd2 <- heading(x2, y2, order_by)
+  abs(angle_diff(hd1, hd2))
+}
+
+#' @rdname mutate_soc
+#' @export
+leader <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame) {
+  hd1 <- heading(x1, y1, order_by)
+  hd2 <- heading(y2, y2, order_by)
+
+  mhd <- apply(cbind(hd1, hd2), 1, mean_angle)
+  mx <- rowMeans(cbind(x1, x2))
+  my <- rowMeans(cbind(y1, y2))
+
+  a <- -tan(mhd)
+  b <- my - a * mx
+
+  y_check <- a * x1 + b
+
+  r <- ifelse(mhd > 0, y1 > y_check, y1 < y_check)
+  r[mhd == 0 | is.na(mhd)] <- NA
+  return(r)
 }
