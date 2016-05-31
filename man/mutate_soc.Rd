@@ -2,29 +2,34 @@
 % Please edit documentation in R/add_to_soc.R
 \name{mutate_soc}
 \alias{heading_diff}
+\alias{leader}
 \alias{mutate_soc}
 \alias{nip_dist}
 \alias{orientation_diff}
 \alias{pair_dist}
 \title{Conveniently add common new variables to the \code{soc} table.}
 \usage{
-pair_dist(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2)
+pair_dist(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2)
 
-nip_dist(X1 = X1, X2 = X2, Y1 = Y1, Y2 = Y2,
+nip_dist(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2,
   minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
   major_axis1 = major_axis1, major_axis2 = major_axis2,
   orientation1 = orientation1, orientation2 = orientation2, n = 20)
 
 orientation_diff(orientation1 = orientation1, orientation2 = orientation2)
 
-heading_diff(heading1 = heading1, heading2 = heading2)
+heading_diff(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame)
+
+heading_diff(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame)
+
+leader(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame)
 }
 \arguments{
 \item{X1}{X-coordinate for animal 1.}
 
-\item{X2}{X-coordinate for animal 2.}
-
 \item{Y1}{Y-coordinate for animal 1.}
+
+\item{X2}{X-coordinate for animal 2.}
 
 \item{Y2}{Y-coordinate for animal 2.}
 
@@ -42,10 +47,10 @@ heading_diff(heading1 = heading1, heading2 = heading2)
 
 \item{n}{Number of point used for numerical approximation.}
 
-\item{heading1}{Angle animal 1 is heading based on previous and coming
+\item{heading1}{Angle animal 1 is heading based on previous and current
 coordinates.}
 
-\item{heading2}{Angle animal 2 is heading based on previous and coming
+\item{heading2}{Angle animal 2 is heading based on previous and current
 coordinates.}
 }
 \description{
@@ -55,10 +60,36 @@ will use the expected variable names, as are default in \code{tracks}
 objects, but they can be overridden.
 }
 \details{
-Many of these functions rely on parameters that originate from the \code{tr}
-table, such as \code{X1} or \code{orientation2}. This usually means you have
-to add those variable to the \code{soc} table first, by calling
+These functions typically rely on parameters that originate from the
+\code{tr} table, such as \code{X1} or \code{orientation2}. If so, that means
+you have to add those variable to the \code{soc} table first, by calling
 \code{join_tr_to_soc}.
+}
+\section{Overview of functions}{
+
+
+The following functions are currently available for easy use in mutate calls:
+\describe{
+  \item{\code{pair_dist}}{Calculates the distance between the centroids of
+  animal1 and animal2. You need to make x and y coordinates available.}
+  \item{\code{nip_dist}}{When ellipse fits are available, calculates the
+  distance from the front of the ellipse of animal1 (presumably the head or
+  mouth) and the closest point on the ellipse of animal2. This function uses
+  a numerical approximation based on n points along the ellipse of animal2.
+  You need to make x and y coordinates, orientations, and minor and major
+  axis sizes available.} \item{\code{orientation_diff}}{Difference in
+  orientations. You need to make orientations available.}
+  \item{\code{heading_diff}}{Difference in headings. Calculate heading for
+  each animal first (using \code{mutate(tracks, heading = heading())}), then
+  add the heading to the \code{soc} table (using \code{join_tr_to_soc(tracks,
+  heading)}). Use \code{heading_diff2} when basing it off x and y
+  coordinates. You need to make headings available.}
+  \item{\code{heading_diff2}}{Difference in headings, based on x and y
+  coordinates. You need to make x and y coordinates available.}
+  \item{\code{leader}}{Find whether animal1 is in front (TRUE), or in behind
+  (FALSE) of animal 2, based on their mean heading. You need to make x and y
+  coordinates available.}
+}
 }
 \seealso{
 mutate_tr mutate_.tracks

@@ -5,7 +5,7 @@
 \alias{find_sections_}
 \title{Retrieve track sections based on conditions from multiple tables}
 \usage{
-find_sections(tracks, ..., tol = 0, pad = 0, add_times = TRUE)
+find_sections(tracks, ..., tol = 1, pad = 0, add_times = TRUE)
 
 find_sections_(tracks, ..., tol = 1, pad = 0, add_times = TRUE, .dots)
 }
