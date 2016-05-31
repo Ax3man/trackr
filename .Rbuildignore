@@ -6,3 +6,7 @@
 ^data\fixed_trial5-1\.mat$
 ^data\trial5-2\.mat$
 ^R/TESTER\.R$
+^data/a/$
+^data/b/$
+^summarise_diagram\.png$
+^summarise_diagram\.pptx$
