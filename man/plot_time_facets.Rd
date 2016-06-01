@@ -5,8 +5,8 @@
 \title{Facet paths using time bins.}
 \usage{
 plot_time_facets(tracks, x = ~X, y = ~Y, time_bins = 4, color = ~animal,
-  mode = "dual", nrow = NULL, scales = "free_x", facet = trial ~
-  time_bin, coord_boundary = NULL)
+  mode = "single", nrow = NULL, scales = NULL, facet = trial ~ time_bin,
+  coord_boundary = NULL)
 }
 \arguments{
 \item{tracks}{A tracks object.}
@@ -20,8 +20,8 @@ plot_time_facets(tracks, x = ~X, y = ~Y, time_bins = 4, color = ~animal,
 \item{color}{Formula to color the paths.}
 
 \item{mode}{Either dual, which uses both the rows and columns of the facets
-to display time bins, or manual, where you can manually set the formula for
-facet_grid.}
+to display time bins, or single, where you can set the formula for
+\code{facet_grid}. Single mode is the default.}
 
 \item{nrow}{Override the number of rows that should be used in facetting.
 Only used if mode is dual.}
