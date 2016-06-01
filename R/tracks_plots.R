@@ -268,3 +268,29 @@ plot_lag_cor <- function(data) {
     ggplot2::theme_bw() +
     facet
 }
+
+#' ggplot wrapper for tracks objects.
+#'
+#' Instead of using one of the more streamlined plotting functions such as
+#' \code{plot_tracks}, this wrapper gives full control over the visualization.
+#' All it does, is select a table from the tracks object, and pull it from the
+#' nodes if necessary.
+#'
+#' @param tracks A tracks object.
+#' @param table Which table is plotting. Give the name as a character vector,
+#'   e.g. 'tr'.
+#' @param ... Arguments to be passed on to \code{ggplot}.
+#'
+#' @return A ggplot object.
+#' @export
+#'
+#' @examples
+#' if (require(ggplot2)){
+#'   tr <- as_tracks(guppies, 30, 1080)
+#'   ggplot_tracks(tr, 'tr', aes(X, Y, col = animal)) +
+#'     geom_path() + facet_wrap(~trial)
+#' }
+ggplot_tracks <- function(tracks, table, ...) {
+  d <- dplyr::collect(tracks[[table]])
+  ggplot2::ggplot(d, ...)
+}
