@@ -7,8 +7,9 @@
 #'    used as default tracking window (boundary).
 #' @param meta_data Optionally supply a data.frame with meta data about the
 #'   trials, such as treatments. Can include a column named \code{trial} that
-#'   needs to match \code{levels(tr$trial)}. Otherwise this column is created,
-#'   using \code{levels(tr$trial)}, and identical ordering is assumed.
+#'   needs to match the trial names listed in the \code{trial} table. Otherwise
+#'   this column is created, with identical ordering as the \code{trial} table
+#'   assumed.
 #' @param px_per_cm Length scaling factor, optional.
 #' @param minimal When TRUE, the minimum amount of components (see list below)
 #'   are including in the object. When FALSE, the group, pairs and trial
