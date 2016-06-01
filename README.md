@@ -34,29 +34,39 @@ library(trackr)
 library(dplyr)
 
 # Read in data
-tr <- read_idTracker(folder = 'data')
-tr <- as_tracks(tr, frame_rate = 30, resolution = 1080)
-
-# We can get a quick overview by plotting the first ten thousand frames for all four trials
-# (Note that we use the %>% (pipe) operator from margrittr (and dplyr).)
-filter(tr, frame < 10000) %>% plot()
+guppies <- read_idTracker(folder = 'data')
+tr <- as_tracks(guppies, frame_rate = 30, resolution = 1080)
 ````
-![plot1](http://i.imgur.com/zgxRpSz.png)
+We can get a quick overview by plotting the tracks.
+
+````{r}
+plot(tr)
+````
+![plot1](http://i.imgur.com/ISihYqC.png)
+
+It's easy to apply filters to the data before plotting, and we can use the
+pipe operator (`%>%`) to chain commands together:
+
+````{r}
+filter(tr, frame %in% 10000:11000, drop = TRUE) %>% plot()
+````
+![plot1b](http://i.imgur.com/2ehU7o7.png)
 
 All plotting functions output ggplot objects, so they can be easily manipulated:
 ````{r}
-filter(tr, frame < 10000) %>% plot() + ggplot2::scale_color_manual(values = c('purple', 'limegreen'))
+plot(tr) +
+  ggplot2::facet_grid(trial ~ animal) +
+  ggplot2::scale_color_manual(values = c('purple', 'limegreen'))
 ````
-![plot1b](http://i.imgur.com/gbWvcA1.png)
+![plot1c](http://i.imgur.com/XPVNlv2.png)
 
-Since these are quite long trials, I want to look how the behavior changes for one trial, let's say between minutes 20 and 60. We can use filter, just like in `dplyr`.
+If you'd like to see  how the behavior changes over the course of a trial, you can use facet by time instead.
 ````{r}
-filter(tr, trial == 'trial2-1', frame %in% 36000:108000) %>% 
-  plot_time_facets(time_bins = 10, nrow = 2)
+plot_time_facets(tr)
 ````
+![plot2](http://i.imgur.com/PWsmB7F.png)
 It looks like some periods are a bit more active than others.
 
-![plot2](http://i.imgur.com/ABR8siE.png)
 Ok, so we have our trajectories, and most of it seems quite ok. Let's calculate some per frame statistics. We use the `mutate` syntax from `dplyr`.
 
 ````{r}
@@ -71,18 +81,27 @@ tr <- summarize(tr,
                 mean_speed = mean(speed, na.rm = TRUE),
                 sum_abs_turn = sum(abs(turn), na.rm = TRUE))
 
+# See summary statistics per animal:
 tr$animal
 
-Source: local data frame [8 x 4]
+# Source: local data frame [4 x 4]
+# 
+#    trial animal mean_speed sum_abs_turn
+#   (fctr) (fctr)      (dbl)        (dbl)
+# 1      a      1   2.092943     23557.73
+# 2      a      2   2.569784     25572.35
+# 3      b      1   2.675133     15169.35
+# 4      b      2   4.018834     14620.87
 
-     trial animal mean_speed sum_abs_turn
-    (fctr) (fctr)      (dbl)        (dbl)
-1 trial2-2      1 0.15063087     121350.9
-2 trial2-2      2 0.16505333     135011.6
-3 trial2-1      1 0.05598333     287765.2
-4 trial2-1      2 0.07007088     287118.0
-5 trial3-2      1 0.03191847     371926.9
-6 trial3-2      2 0.03815877     392532.3
-7 trial3-1      1 0.10114426     182766.9
-8 trial3-1      2 0.10817431     171243.5
+# See summary statistics per trial:
+tr$trial
+
+# Source: local data frame [4 x 4]
+# Groups: trial [?]
+# 
+#    trial mean_speed sum_abs_turn
+#   (fctr)      (dbl)        (dbl)
+# 1      a   2.331364     49130.07
+# 2      b   3.346984     29790.21
+
 ````
