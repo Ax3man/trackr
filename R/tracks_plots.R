@@ -52,8 +52,8 @@ plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
 #' @param time_bins The number of periods time should be divided in.
 #' @param color Formula to color the paths.
 #' @param mode Either dual, which uses both the rows and columns of the facets
-#'   to display time bins, or manual, where you can manually set the formula for
-#'   facet_grid.
+#'   to display time bins, or single, where you can set the formula for
+#'   \code{facet_grid}. Single mode is the default.
 #' @param nrow Override the number of rows that should be used in facetting.
 #'   Only used if mode is dual.
 #' @param scales Optional setting to facets. See ?ggplot2::facet_grid and
@@ -66,8 +66,8 @@ plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
 #' @return A \code{ggplot} object.
 #' @export
 plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
-                             color = ~animal, mode = 'dual', nrow = NULL,
-                             scales = 'free_x', facet = trial ~ time_bin,
+                             color = ~animal, mode = 'single', nrow = NULL,
+                             scales = NULL, facet = trial ~ time_bin,
                              coord_boundary = NULL) {
   # We need to add a grouping factor in order to create gaps when there are
   # non-subsequent frames.
@@ -75,7 +75,7 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
                               gap = ~ifelse(frame == 1 + lag(frame), 0, 1),
                               .GROUP = ~c(0, cumsum(gap[-1])))
   facet <- switch(mode,
-                  manual = ggplot2::facet_grid(facet, scales = scales),
+                  single = ggplot2::facet_grid(facet, scales = scales),
                   dual = ggplot2::facet_wrap(~time_bin, nrow, scales = scales))
   if (is.null(coord_boundary)) {
     if (x == ~X & y == ~Y)
@@ -101,12 +101,13 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
     ggplot2::theme(axis.title = ggplot2::element_blank(),
                    axis.text  = ggplot2::element_blank(),
                    axis.ticks = ggplot2::element_blank())
-  if (coord_boundary)
+  if (coord_boundary) {
     p + ggplot2::coord_equal(xlim = tracks$params$bounds[1, c(1, 3)],
                              ylim = tracks$params$bounds[2, c(1, 3)],
                              expand = FALSE)
-  else
-    p
+  } else {
+    p + ggplot2::coord_equal()
+  }
 }
 
 #' Plot sparklines for several track variables.
