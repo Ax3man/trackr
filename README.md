@@ -25,7 +25,7 @@ Support for other trackers can be added. Please file an [issue](https://github.c
 
 ### Performance
 
-`R` is not typically known for lightning fast performance. However, `trackr` makes use of several packages in the *Hadleyverse* that greatly speed things up. Specifically, it uses `readr` to read in large data files and `dplyr` for data manipulation. On top of that, the two largest tables in the tracks object (see `?as_tracks`) are kept on worker nodes so all calculations are in parallel. Keeping the tables on the workers minimizes data copying (eliminating the added cost of parallel computations).
+`R` is not typically known for lightning fast performance. However, `trackr` makes use of several packages in the [*Hadleyverse*](http://adolfoalvarez.cl/the-hitchhikers-guide-to-the-hadleyverse/) that greatly speed things up. Specifically, it uses `readr` to read in large data files and `dplyr` for data manipulation. On top of that, the two largest tables in the tracks object (see `?as_tracks`) are kept on worker nodes so all calculations are in parallel. Keeping the tables on the workers minimizes data copying (reducing the added cost of parallel computations).
 
 ### Example code
 As a quick example, let's read in some data of male guppy pairs.
@@ -33,8 +33,9 @@ As a quick example, let's read in some data of male guppy pairs.
 library(trackr)
 library(dplyr)
 
-# Read in data
-guppies <- read_idTracker(folder = 'data')
+# You would read in your data like this:
+# guppies <- read_idTracker(folder = 'data')
+# But 'guppies' is included with the package, so you can now run:
 tr <- as_tracks(guppies, frame_rate = 30, resolution = 1080)
 ````
 We can get a quick overview by plotting the tracks.
