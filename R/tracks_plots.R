@@ -37,7 +37,7 @@ plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
   ggplot2::ggplot(dplyr::collect(tracks$tr),
                   ggplot2::aes_(~X, ~Y, color = color, group = ~.GROUP)) +
     ggplot2::geom_path() +
-    ggplot2::coord_equal(xlim = tracks$params$bounds[1, c(1, 3)],
+    ggplot2::coord_fixed(xlim = tracks$params$bounds[1, c(1, 3)],
                          ylim = tracks$params$bounds[2, c(1, 3)],
                          expand = FALSE) +
     ggplot2::facet_wrap(facet, nrow, ncol) +
@@ -105,11 +105,11 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
                    axis.text  = ggplot2::element_blank(),
                    axis.ticks = ggplot2::element_blank())
   if (coord_boundary) {
-    p + ggplot2::coord_equal(xlim = tracks$params$bounds[1, c(1, 3)],
+    p + ggplot2::coord_fixed(xlim = tracks$params$bounds[1, c(1, 3)],
                              ylim = tracks$params$bounds[2, c(1, 3)],
                              expand = FALSE)
   } else {
-    p + ggplot2::coord_equal()
+    p + ggplot2::coord_fixed()
   }
 }
 
