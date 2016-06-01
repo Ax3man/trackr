@@ -15,10 +15,11 @@
 #' @export
 #'
 #' @examples
-#' plot(guppies)
-#' plot(guppies, color = NULL) # No animal coloring
-#' plot(guppies, facet = ~1) # No facets
-#' plot(guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
+#' Guppies <- as_tracks(guppies, 30, 1080)
+#' plot(Guppies)
+#' plot(Guppies, color = NULL) # No animal coloring
+#' plot(Guppies, color = ~animal:trial,facet = ~1) # Plot trials in the same panel
+#' plot(Guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
 plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
                         ncol = NULL) {
   if ((facet == ~trial) & length(levels(tracks$tr$trial)) == 1)

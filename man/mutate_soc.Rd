@@ -2,6 +2,7 @@
 % Please edit documentation in R/add_to_soc.R
 \name{mutate_soc}
 \alias{heading_diff}
+\alias{heading_diff2}
 \alias{leader}
 \alias{mutate_soc}
 \alias{nip_dist}
@@ -9,29 +10,29 @@
 \alias{pair_dist}
 \title{Conveniently add common new variables to the \code{soc} table.}
 \usage{
-pair_dist(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2)
+pair_dist(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2)
 
-nip_dist(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2,
+nip_dist(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2,
   minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
   major_axis1 = major_axis1, major_axis2 = major_axis2,
   orientation1 = orientation1, orientation2 = orientation2, n = 20)
 
 orientation_diff(orientation1 = orientation1, orientation2 = orientation2)
 
-heading_diff(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame)
+heading_diff(heading1 = heading1, heading2 = heading2)
 
-heading_diff(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame)
+heading_diff2(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame)
 
 leader(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame)
 }
 \arguments{
-\item{X1}{X-coordinate for animal 1.}
+\item{x1}{X-coordinate for animal 1.}
 
-\item{Y1}{Y-coordinate for animal 1.}
+\item{y1}{Y-coordinate for animal 1.}
 
-\item{X2}{X-coordinate for animal 2.}
+\item{x2}{X-coordinate for animal 2.}
 
-\item{Y2}{Y-coordinate for animal 2.}
+\item{y2}{Y-coordinate for animal 2.}
 
 \item{minor_axis1}{Minor axis (*b*) of the ellipse fit of animal 1.}
 
@@ -52,6 +53,9 @@ coordinates.}
 
 \item{heading2}{Angle animal 2 is heading based on previous and current
 coordinates.}
+
+\item{order_by}{Used for making sure only subsequent frames are used for
+time dependent calculatens. You probably want to leave this at default.}
 }
 \description{
 These functions are designed for use within \code{summarise_}, and will
@@ -63,12 +67,13 @@ objects, but they can be overridden.
 These functions typically rely on parameters that originate from the
 \code{tr} table, such as \code{X1} or \code{orientation2}. If so, that means
 you have to add those variable to the \code{soc} table first, by calling
-\code{join_tr_to_soc}.
+\code{\link{join_tr_to_soc}}.
 }
 \section{Overview of functions}{
 
 
-The following functions are currently available for easy use in mutate calls:
+The following functions are currently available for easy use in calls to
+\code{\link[=mutate_.tracks]{mutate}}.
 \describe{
   \item{\code{pair_dist}}{Calculates the distance between the centroids of
   animal1 and animal2. You need to make x and y coordinates available.}

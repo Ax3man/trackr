@@ -80,7 +80,8 @@ find_conds_in_tables <- function(tracks, conds) {
 }
 
 find_max_cross_corr <- function(v1, v2, range) {
-  cross_corr <- ccf(v1, v2, range, na.action = na.pass, plot = FALSE)
+  cross_corr <- stats::ccf(v1, v2, range, na.action = stats::na.pass,
+                           plot = FALSE)
   res <- data.frame(cor = cross_corr$acf[, , 1], lag = cross_corr$lag[, 1, 1])
   res = res[which.max(res$cor), ]
   return(res)
@@ -172,5 +173,5 @@ time_bin_labels <- function(bins, frame_rate) {
   labels <- frames_to_times(bins, frame_rate)
   labels <- gsub("\\s*\\w*$", "", round(labels))
   labels <- tolower(gsub(" ", "", labels, fixed = TRUE))
-  paste(head(labels, -1), 'till', labels[-1])
+  paste(utils::head(labels, -1), 'till', labels[-1])
 }

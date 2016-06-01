@@ -4,7 +4,7 @@
 \alias{sm}
 \title{Smooth a vector using a rolling mean.}
 \usage{
-sm(x, window = 5, weights = dnorm(seq(-3, 3, length.out = 9)))
+sm(x, window = 5, weights = stats::dnorm(seq(-3, 3, length.out = 9)))
 }
 \arguments{
 \item{x}{A vector to smooth.}

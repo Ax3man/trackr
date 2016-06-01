@@ -33,9 +33,10 @@ A \code{ggplot} object.
 Only plots a path between subsequent frames.
 }
 \examples{
-plot(guppies)
-plot(guppies, color = NULL) # No animal coloring
-plot(guppies, facet = ~1) # No facets
-plot(guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
+Guppies <- as_tracks(guppies, 30, 1080)
+plot(Guppies)
+plot(Guppies, color = NULL) # No animal coloring
+plot(Guppies, color = ~animal:trial,facet = ~1) # Plot trials in the same panel
+plot(Guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
 }
 

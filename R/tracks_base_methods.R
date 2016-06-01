@@ -9,18 +9,19 @@ print.tracks <- function(x, ...) {
   # object size (more difficult with)
   multidplyr::cluster_assign_value(x$tr$cluster, name = '.name', x$tr$name)
   tr_size <- multidplyr::cluster_eval(x$tr$cluster,
-                                      object.size(eval(as.name(.name))))
+                                      utils::object.size(eval(as.name(.name))))
   tr_size <- sum(unlist(tr_size))
   if (!is.null(x$soc)) {
     multidplyr::cluster_assign_value(x$soc$cluster, name = '.name',
                                      x$soc$name)
     pairs_size <- multidplyr::cluster_eval(x$soc$cluster,
-                                           object.size(eval(as.name(.name))))
+                                           utils::object.size(
+                                             eval(as.name(.name))))
     pairs_size <- sum(unlist(pairs_size))
   } else {
     pairs_size <- NA
   }
-  tracks_size <- sum(object.size(x), tr_size, pairs_size, na.rm = TRUE)
+  tracks_size <- sum(utils::object.size(x), tr_size, pairs_size, na.rm = TRUE)
   class(tracks_size) <- 'object_size'
 
   # var names

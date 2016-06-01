@@ -9,7 +9,8 @@
 #'
 #' @return A numeric vector.
 #' @export
-sm <- function(x, window = 5, weights = dnorm(seq(-3, 3, length.out = 9))) {
+sm <- function(x, window = 5,
+               weights = stats::dnorm(seq(-3, 3, length.out = 9))) {
   if (is.null(weights)) {
     w <- window
   } else {

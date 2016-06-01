@@ -4,7 +4,9 @@
     indent = 0, exdent = 0))
 }
 
-if (getRversion() >= "2.15.1")  utils::globalVariables(c("."))
-
-# Set some globals to deal with R CMD check and multidplyr.
-globalVariables(c('X', 'Y', 'frame', 'animal', 'trial', 'n', '.name'))
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c(".", 'X', 'Y', 'frame', 'animal', 'trial',
+                           'X1', 'Y1', 'X2', 'Y2', 'orientation1', 'orientation2',
+                           'minor_axis1', 'minor_axis2', 'major_axis1', 'major_axis2',
+                           'n', '.name'))
+}

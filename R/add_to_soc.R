@@ -29,8 +29,8 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
   tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
   multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
 
-  Names1 <- setNames(names(select), paste0(names(select), 1))
-  Names2 <- setNames(names(select), paste0(names(select), 2))
+  Names1 <- stats::setNames(names(select), paste0(names(select), 1))
+  Names2 <- stats::setNames(names(select), paste0(names(select), 2))
   if (any(tracks$pr$soc %in% c(Names1, Names2))) {
     tracks$soc <- dplyr::select_(tracks$soc,
                                  lazyeval::interp(~-one_of(x), x = c(Names1, Names2)))
@@ -61,11 +61,12 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 #' These functions typically rely on parameters that originate from the
 #' \code{tr} table, such as \code{X1} or \code{orientation2}. If so, that means
 #' you have to add those variable to the \code{soc} table first, by calling
-#' \code{join_tr_to_soc}.
+#' \code{\link{join_tr_to_soc}}.
 #'
 #' @section Overview of functions:
 #'
-#' The following functions are currently available for easy use in mutate calls:
+#' The following functions are currently available for easy use in calls to
+#' \code{\link[=mutate_.tracks]{mutate}}.
 #' \describe{
 #'   \item{\code{pair_dist}}{Calculates the distance between the centroids of
 #'   animal1 and animal2. You need to make x and y coordinates available.}
@@ -88,10 +89,10 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 #'   coordinates available.}
 #' }
 #'
-#' @param X1 X-coordinate for animal 1.
-#' @param X2 X-coordinate for animal 2.
-#' @param Y1 Y-coordinate for animal 1.
-#' @param Y2 Y-coordinate for animal 2.
+#' @param x1 X-coordinate for animal 1.
+#' @param x2 X-coordinate for animal 2.
+#' @param y1 Y-coordinate for animal 1.
+#' @param y2 Y-coordinate for animal 2.
 #' @param minor_axis1 Minor axis (*b*) of the ellipse fit of animal 1.
 #' @param minor_axis2 Minor axis (*b*) of the ellipse fit of animal 2.
 #' @param major_axis1 Major axis (*a*) of the ellipse fit of animal 1.
@@ -103,6 +104,8 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 #' @param heading2 Angle animal 2 is heading based on previous and current
 #'   coordinates.
 #' @param n Number of point used for numerical approximation.
+#' @param order_by Used for making sure only subsequent frames are used for
+#'   time dependent calculatens. You probably want to leave this at default.
 #'
 #' @name mutate_soc
 #' @seealso mutate_tr mutate_.tracks
@@ -110,13 +113,13 @@ NULL
 
 #' @rdname mutate_soc
 #' @export
-pair_dist <- function(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2) {
-  sqrt((X1 - X2) ^ 2 + (Y1 - Y2) ^ 2)
+pair_dist <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2) {
+  sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 }
 
 #' @rdname mutate_soc
 #' @export
-nip_dist <- function(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2,
+nip_dist <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2,
                      minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
                      major_axis1 = major_axis1, major_axis2 = major_axis2,
                      orientation1 = orientation1, orientation2 = orientation2,
@@ -124,14 +127,14 @@ nip_dist <- function(X1 = X1, Y1 = Y1, X2 = X2, Y2 = Y2,
   # Vector of angles that need to be tested.
   theta <- seq(0, 2 * pi, length.out = n + 1)
   # Find the head position of fish1.
-  head_X <- major_axis1 * cos(orientation1) + X1
-  head_Y <- major_axis1 * sin(orientation1) + Y1
+  head_X <- major_axis1 * cos(orientation1) + x1
+  head_Y <- major_axis1 * sin(orientation1) + y1
   # Create matrices of all x and y coordinates on the ellipse (at origin)
   x <- major_axis2 %o% cos(theta)
   y <- minor_axis2 %o% sin(theta)
   # Rotate around origin and add offset
-  x <- x * cos(orientation2) + y * sin(orientation2) + X2
-  y <- y * cos(orientation2) + y * sin(orientation2) + Y2
+  x <- x * cos(orientation2) + y * sin(orientation2) + x2
+  y <- y * cos(orientation2) + y * sin(orientation2) + y2
 
   # Find the minimal distances
   res <- apply((x - head_X) ^ 2 + (y - head_Y) ^ 2, 1, min)

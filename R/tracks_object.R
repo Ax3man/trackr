@@ -228,7 +228,7 @@ expand_tracks <- function(tracks,
 #' @param x An object.
 #' @export
 is.tracks <- function(x) {
-  is(x, 'tracks')
+  methods::is(x, 'tracks')
 }
 
 #' Report track completeness per trial.
@@ -258,7 +258,8 @@ is.tracks <- function(x) {
 #' @export
 check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95) {
   tr <- tracks$tr
-  tr <- do.call(dplyr::select_,c(list(tr), c('trial', 'frame', 'animal', vars)))
+  tr <- do.call(dplyr::select_,
+                c(list(tr), c('trial', 'frame', 'animal', vars)))
   multidplyr::cluster_assign_value(tr$cluster, 'vars', vars)
   # We left_join a data.frame with the complete range of frames for every animal
   tr <- dplyr::do(tr,
@@ -273,13 +274,14 @@ check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95) {
   tr <- dplyr::collect(tr)
   tr <- dplyr::group_by_(tr, ~trial)
   tab <- dplyr::do(tr,
-                   complete = nrow(.[complete.cases(.), vars]) / nrow(.))
+                   complete = nrow(.[stats::complete.cases(.), vars]) / nrow(.))
   tab <- dplyr::collect(tab)
   tab <- dplyr::arrange(tab, trial)
-  tr <- dplyr::group_by_(tr,~trial, ~frame)
+  tr <- dplyr::group_by_(tr, ~trial, ~frame)
 
   f <- function(dat, var) {
-    dots <- setNames(list(lazyeval::interp(~anyNA(v), v = as.name(var))), 'na')
+    dots <- stats::setNames(list(lazyeval::interp(~anyNA(v), v = as.name(var))),
+                            'na')
     dplyr::summarize_(dat, .dots = dots)
   }
   l <- lapply(vars, f, dat = tr)
