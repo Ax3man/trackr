@@ -193,7 +193,8 @@ expand_tracks <- function(tracks,
 
   #Build trial object ----------------------------------------------------------
   if (trial & is.null(tracks$trial)) {
-    Trial <- dplyr::summarize(tracks$tr)
+    Trial <- dplyr::group_by(tracks$tr)
+    Trial <- dplyr::summarize(Trial)
     Trial <- dplyr::collect(Trial)
   }
 
