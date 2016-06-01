@@ -35,8 +35,11 @@ Only plots a path between subsequent frames.
 \examples{
 Guppies <- as_tracks(guppies, 30, 1080)
 plot(Guppies)
-plot(Guppies, color = NULL) # No animal coloring
-plot(Guppies, color = ~animal:trial,facet = ~1) # Plot trials in the same panel
-plot(Guppies, facet = ~trial + animal, ncol = 8) # more complex facetting
+# No animal coloring
+plot(Guppies, color = NULL)
+# Plot trials in the same panel
+plot(Guppies, color = ~animal:trial,facet = ~1)
+# more complex facetting
+plot(Guppies, facet = ~trial + animal, ncol = 8)
 }
 

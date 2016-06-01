@@ -297,3 +297,32 @@ ggplot_tracks <- function(tracks, table, ...) {
   d <- dplyr::collect(tracks[[table]])
   ggplot2::ggplot(d, ...)
 }
+
+#' Quickly plot a tracks object.
+#'
+#' No facetting available.
+#'
+#' @param tracks A tracks object.
+#' @param ... Other arguments passed on to \code{plot}.
+#'
+#' @return Nothing.
+#' @export
+#'
+#' @examples
+#' Guppies <- as_tracks(guppies, 30, 1080)
+#' plot_tracks_quick(Guppies)
+plot_tracks_quick <- function(tracks, ...) {
+  tracks$tr <- tracks$tr %>%
+    dplyr::group_by_(~trial, ~animal) %>%
+    dplyr::mutate_(gap = ~ifelse(frame == 1 + dplyr::lag(frame), 0, 1),
+                   .GROUP = ~c(0, cumsum(gap[-1]))) %>%
+    dplyr::collect()
+  graphics::plot(NA, type = 'n', xlim = c(0, 1920), ylim = c(0, 1080),
+                 xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', ...)
+  invisible(
+    lapply(split(tracks$tr, interaction(tracks$tr$.GROUP, tracks$tr$animal)),
+           function(x) {
+             graphics::lines(x$X, x$Y, col = as.numeric(x$animal) + 1)
+           } )
+  )
+}
