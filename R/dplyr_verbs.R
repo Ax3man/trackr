@@ -225,22 +225,22 @@ NULL
 #'
 #' @return A tracks object.
 #' @export
-mutate_.tracks <- function(.data, ..., .dots) {
+mutate_.tracks <- function(tracks, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   conds <- add_defaults_to_dots(conds)
-  conds <- interp_params(conds, .data$params)
-  tables <- find_conds_in_tables(.data, conds)
+  conds <- interp_params(conds, tracks$params)
+  tables <- find_conds_in_tables(tracks, conds)
 
   for (i in seq_along(conds)) {
-    .data[tables[[i]]] <- lapply(.data[tables[[i]]], dplyr::mutate_,
+    .data[tables[[i]]] <- lapply(tracks[tables[[i]]], dplyr::mutate_,
                                  .dots = conds[i])
-    if (tables[[i]] %in% names(.data$pr)) {
-      .data$pr[tables[[i]] == names(.data$pr)][[1]] <-
-        c(.data$pr[tables[[i]] == names(.data$pr)][[1]],
+    if (tables[[i]] %in% names(tracks$pr)) {
+      tracks$pr[tables[[i]] == names(tracks$pr)][[1]] <-
+        c(tracks$pr[tables[[i]] == names(tracks$pr)][[1]],
           names(conds[i]))
     }
   }
-  return(.data)
+  return(tracks)
 }
 
 #' @importFrom dplyr select
