@@ -112,6 +112,8 @@ add_defaults_to_dots <- function(dots) {
 
 #' Convert between frame numbers and human readable time formats.
 #'
+#' NOTE: see examples for correct usage of \code{times_to_frames}.
+#'
 #' \code{t2f} and \code{f2t} provide convinient short-hands.
 #'
 #' @param frames A numerc vector of frame numbers to convert.

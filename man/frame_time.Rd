@@ -25,6 +25,9 @@ t2f(seconds, frame_rate)
 \item{seconds}{A character vector of times to convert (see examples).}
 }
 \description{
+NOTE: see examples for correct usage of \code{times_to_frames}.
+}
+\details{
 \code{t2f} and \code{f2t} provide convinient short-hands.
 }
 \section{Functions}{
