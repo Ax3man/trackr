@@ -134,6 +134,14 @@ plot_time_facets <- function(tracks, x = ~X, y = ~Y, time_bins = 4,
 #'
 #' @return A \code{ggplot} object.
 #' @export
+#'
+#' @examples
+#' Guppies <- guppies %>%
+#'   as_tracks(30, 1080) %>%
+#'   mutate(sp = speed(), acc = acceleration(), turn = turn())
+#'
+#' plot_tracks_sparklines(Guppies, 'a', point_events = 12000)
+#'
 plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
                                    vars = NULL, point_events = NULL,
                                    window = 600, quantiles = c(0.025, 0.975)) {
