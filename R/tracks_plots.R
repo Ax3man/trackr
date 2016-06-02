@@ -178,15 +178,18 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
                        names(tr)[!(names(tr) %in% c('animal', 'frame'))])
   tr$animal <- as.character(tr$animal)
 
-  soc <- dplyr::collect(tracks$soc)
-  soc <- dplyr::ungroup(soc)
-  soc <- dplyr::mutate_(soc, animal = ~paste(animal1, animal2, sep = '-'))
-  soc <- dplyr::select_(soc, .dots = c('animal', 'frame',
-                                       vars[vars %in% names(soc)]))
-  soc <- tidyr::gather_(soc, 'var', 'value',
-                        names(soc)[!(names(soc) %in% c('animal', 'frame'))])
-
-  pdat <- dplyr::bind_rows(tr, soc)
+  if (!is.null(tracks$soc)) {
+    soc <- dplyr::collect(tracks$soc)
+    soc <- dplyr::ungroup(soc)
+    soc <- dplyr::mutate_(soc, animal = ~paste(animal1, animal2, sep = '-'))
+    soc <- dplyr::select_(soc, .dots = c('animal', 'frame',
+                                         vars[vars %in% names(soc)]))
+    soc <- tidyr::gather_(soc, 'var', 'value',
+                          names(soc)[!(names(soc) %in% c('animal', 'frame'))])
+    pdat <- dplyr::bind_rows(tr, soc)
+  } else {
+    pdat <- tr
+  }
   pdat <- dplyr::group_by_(pdat, ~animal, ~var)
   pdat$animal <- factor(pdat$animal, unique(pdat$animal))
   pdat$var <- factor(pdat$var, vars)
