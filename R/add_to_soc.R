@@ -38,9 +38,13 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 
   Names1 <- stats::setNames(names(select), paste0(names(select), 1))
   Names2 <- stats::setNames(names(select), paste0(names(select), 2))
-  if (any(tracks$pr$soc %in% c(Names1, Names2))) {
+  if (any(tracks$pr$soc %in% c(names(Names1), names(Names2)))) {
     tracks$soc <- dplyr::select_(tracks$soc,
-                                 lazyeval::interp(~-one_of(x), x = c(Names1, Names2)))
+                                 lazyeval::interp(~-one_of(x),
+                                                  x = c(names(Names1),
+                                                        names(Names2))))
+    tracks$pr$soc <- tracks$pr$soc[!(tracks$pr$soc %in%
+                                       c(names(Names1), names(Names2)))]
   }
   tracks$soc <- dplyr::do_(tracks$soc,
                            ~dplyr::left_join(
