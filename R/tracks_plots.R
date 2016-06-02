@@ -153,6 +153,8 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
 
   if (is.null(vars)) {
     vars <- c(tracks$pr$tr, tracks$pr$soc)
+    vars <- vars[!(vars %in% c('trial', 'animal', 'frame', 'X', 'Y',
+                               'reliability'))]
   }
 
   sel <- list(trial = trial, start = start, end = end)
