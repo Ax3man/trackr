@@ -115,6 +115,43 @@ add_defaults_to_dots <- function(dots) {
   Map(function(x, y) { x$env <- y; return(x) }, dots, envrs)
 }
 
+# dots <- lazyeval::lazy_dots(speed = speed(), av = angular_velocity()) %>%
+#   add_defaults_to_dots
+# Use lazyeval::interp to fill in any values gives as tracks$params$...
+interp_params <- function(dots, params) {
+  calls <- lapply(dots, `[[`, 'expr')
+  fun_calls <- calls[sapply(calls, class) == 'call']
+  funs <- lapply(fun_calls, `[[`, 1)
+
+  matched_calls <- Map(function(x, y) match.call(match.fun(x), y),
+                       funs, fun_calls)
+  calls_list <- lapply(matched_calls, as.list)
+  arguments <- lapply(calls_list, `[`, -1)
+  envrs <- lapply(dots, `[[`, 'env')
+
+  with_params <- lapply(arguments, function(x) {
+    lapply(x, function(y) {
+      y <- as.character(y)
+      all(y[1:2] == c('$', 'tracks$params'))
+    } )
+  } )
+  with_params2 <- sapply(with_params, function(x) any(unlist(x)))
+
+  new_arguments <- arguments
+  new_arguments[with_params2] <- Map(function(a, w) {
+    a[unlist(w)] <- lapply(a[unlist(w)], function(x) as.character(x)[3])
+    return(a)
+  }, arguments[with_params2], with_params[with_params2])
+
+  new_calls <- Map(function(x, y) {
+    lazyeval::make_call(x, y)},
+    funs, new_arguments)
+  new_calls <- lapply(new_calls, lazyeval::interp, .values = params)
+
+  dots[sapply(calls, class) == 'call'] <- new_calls
+  Map(function(x, y) { x$env <- y; return(x) }, dots, envrs)
+}
+
 #' Convert between frame numbers and human readable time formats.
 #'
 #' NOTE: see examples for correct usage of \code{times_to_frames}.
