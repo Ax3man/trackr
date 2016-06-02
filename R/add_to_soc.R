@@ -19,7 +19,7 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
   if (is.null(tracks$soc)) {
     stop('soc table was not found or is empty.', call. = FALSE)
   }
-  cl <- tracks$tr$cluster
+  cl <- tracks$soc$cluster
 
   tr <- dplyr::select_(tracks$tr, .dots = c(~trial, ~animal, ~frame, select))
   tr <- dplyr::collect(tr)
