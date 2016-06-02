@@ -190,6 +190,9 @@ plot_tracks_sparklines <- function(tracks, trial, start = NULL, end = NULL,
   } else {
     pdat <- tr
   }
+  if (!('var' %in% names(pdat))) {
+    stop('None of the variables found in tr or soc tables.', call. = FALSE)
+  }
   pdat <- dplyr::group_by_(pdat, ~animal, ~var)
   pdat$animal <- factor(pdat$animal, unique(pdat$animal))
   pdat$var <- factor(pdat$var, vars)
