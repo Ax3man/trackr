@@ -6,12 +6,10 @@
 \alias{filter_.tracks}
 \title{Return a subset of a tracks object with matching conditions.}
 \usage{
-\method{filter_}{tracks}(.data, ..., drop = FALSE, .dots,
-  .repartition = FALSE)
+\method{filter_}{tracks}(tracks, ..., drop = TRUE, .dots,
+  repartition = FALSE)
 }
 \arguments{
-\item{.data}{A tracks object.}
-
 \item{...}{The filtering conditions (logical statements).}
 
 \item{drop}{Whether to drop conflicting aggregate data. If the tracks object
@@ -24,11 +22,13 @@ expensive.}
 \item{.dots}{Used to work around non-standard evaluation. See
 \code{vignette("nse")} for details.}
 
-\item{.repartition}{If TRUE, will collect and reassign the \code{tr} and
-\code{soc} tables. Useful if workers become unbalanced.}
+\item{repartition}{If TRUE, will collect and reassign the \code{tr} and
+\code{soc} tables. Useful if worker nodes become empty or unbalanced.}
+
+\item{.data}{A tracks object.}
 }
 \value{
-The subsetted tracks object
+The subsetted tracks object.
 }
 \description{
 Method for the dplyr verb \code{filter}. Filters the tracks object according
@@ -46,10 +46,9 @@ strategy, see \code{find_sections} and \code{summarize_sections}.
   crucial in order to maintain internal consistency in the tracks object. For
   example, if you select a sequence of frames, any data that was aggregated
   over time (such as in the \code{trial} table) will now no longer match. If
-  conflicts are found, by default, an error will be raised. By setting
-  \code{drop = TRUE}, you can allow for any conflicting data to be deleted
-  from the tracks object. The \code{pr}, \code{params} and \code{meta_data}
-  will be always be maintained in the tracks object.
+  conflicts are found, by default, conflicted tables will be deleted from
+  the tracks object, with a message. By setting \code{drop = FALSE}, you can
+  have the function error instead.
 }
 \seealso{
 \link[dplyr]{filter}, \link{find_sections},

@@ -31,11 +31,11 @@ NULL
 #'   that can not be filtered (i.e. it does not contain the variable used to
 #'   filter) will be dropped. Have to opt in, since aggregation may have been
 #'   expensive.
-#' @param .repartition If TRUE, will collect and reassign the \code{tr} and
-#'   \code{soc} tables. Useful if workers become unbalanced.
+#' @param repartition If TRUE, will collect and reassign the \code{tr} and
+#'   \code{soc} tables. Useful if worker nodes become empty or unbalanced.
 #' @inheritParams dplyr::filter
 #'
-#' @return The subsetted tracks object
+#' @return The subsetted tracks object.
 #'
 #' @section Strategy on conflicting dependecies:
 #'
@@ -44,35 +44,37 @@ NULL
 #'   crucial in order to maintain internal consistency in the tracks object. For
 #'   example, if you select a sequence of frames, any data that was aggregated
 #'   over time (such as in the \code{trial} table) will now no longer match. If
-#'   conflicts are found, by default, an error will be raised. By setting
-#'   \code{drop = TRUE}, you can allow for any conflicting data to be deleted
-#'   from the tracks object. The \code{pr}, \code{params} and \code{meta_data}
-#'   will be always be maintained in the tracks object.
+#'   conflicts are found, by default, conflicted tables will be deleted from
+#'   the tracks object, with a message. By setting \code{drop = FALSE}, you can
+#'   have the function error instead.
 #'
 #' @export
 #' @seealso \link[dplyr]{filter}, \link{find_sections},
 #'   \link{summarise_sections}
-filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
-                           .repartition = FALSE) {
+filter_.tracks <- function(tracks, ..., drop = TRUE, .dots,
+                           repartition = FALSE) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   # Extract special arguments from ...
   if (any(names(conds) == 'drop')) {
     drop <- lazyeval::lazy_eval(conds$drop)
     conds <- conds[-which(names(conds) == 'drop')]
   }
-  if (any(names(conds) == '.repartition')) {
-    drop <- lazyeval::lazy_eval(conds[['.repartition']])
-    conds <- conds[-which(names(conds) == '.repartition')]
+  if (any(names(conds) == 'repartition')) {
+    repartition <- lazyeval::lazy_eval(conds[['repartition']])
+    conds <- conds[-which(names(conds) == 'repartition')]
   }
   # extract which things those conditions apply to
-  tables <- find_conds_in_tables(.data, conds)
+  tables <- find_conds_in_tables(tracks, conds)
   to_be_kept <- c(Reduce(intersect, tables), 'pr', 'params', 'meta_data')
   tables <- lapply(tables, function(x) x <- x[x %in% to_be_kept])
 
-  if (!(all(names(.data) %in% to_be_kept))) {
+  if (!(all(names(tracks) %in% to_be_kept))) {
     if (drop) {
-      .data <- .data[to_be_kept]
-      class(.data) <- c('tracks', class(.data))
+      message('The following tables were dropped:\n',
+              paste(names(tracks)[!(names(tracks) %in% to_be_kept)],
+                    collapse = ', '))
+      tracks <- tracks[to_be_kept]
+      class(tracks) <- c('tracks', class(tracks))
     } else {
       stop('This filter cannot be applied to all tables present.
            Set drop to TRUE if you want to drop the tables that can\'t be filtered',
@@ -81,14 +83,14 @@ filter_.tracks <- function(.data, ..., drop = FALSE, .dots,
   }
 
   for (i in seq_along(conds)) {
-    .data[tables[[i]]] <- lapply(.data[tables[[i]]], dplyr::filter_,
-                                 .dots = conds[i])
+    tracks[tables[[i]]] <- lapply(tracks[tables[[i]]], dplyr::filter_,
+                                  .dots = conds[i])
   }
 
-  if (.repartition) {
-    .data <- repartition(.data)
+  if (repartition) {
+    tracks <- repartition(tracks)
   }
-  return(.data)
+  return(tracks)
 }
 
 #' @importFrom dplyr summarise
