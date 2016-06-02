@@ -7,18 +7,17 @@
 \alias{heading}
 \alias{mutate_tr}
 \alias{speed}
-\alias{turn}
 \title{Conveniently add common new variables to the \code{soc} table.}
 \usage{
-change(x, order_by = frame, n = 1)
+change(x, order_by = frame, frame_rate = tracks$params$frame_rate, n = 1)
 
-speed(x = X, y = Y, order_by = frame)
+speed(x = X, y = Y, order_by = frame,
+  frame_rate = tracks$params$frame_rate)
 
-acceleration(x = X, y = Y, order_by = frame)
+acceleration(x = X, y = Y, order_by = frame,
+  frame_rate = tracks$params$frame_rate)
 
 heading(x = X, y = Y, order_by = frame)
-
-turn(x = X, y = Y, order_by = frame)
 
 angular_velocity(x = X, y = Y, order_by = frame,
   frame_rate = tracks$params$frame_rate)
@@ -29,6 +28,10 @@ angular_velocity(x = X, y = Y, order_by = frame,
 \item{order_by}{This parameter controls the ordering of \code{dplyr::lag} and
 \code{dplyr::lead} and it is strongly advised to leave it at it's default
 (\code{frame}).}
+
+\item{frame_rate}{All variables with a time dimension, will be calculated
+based on seconds (not frames). By default this is read from the tracks
+object.}
 
 \item{n}{Offset for change. See \code{\link[dplyr]{lag}}.}
 
