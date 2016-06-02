@@ -10,6 +10,13 @@
 #'
 #' @return A tracks object.
 #' @export
+#'
+#' @examples
+#' Guppies <- guppies %>%
+#'   as_tracks(30, 1080) %>%
+#'   expand_tracks()
+#'
+#' join_tr_to_soc(Guppies, X, Y)
 join_tr_to_soc <- function(tracks, ...) {
   join_tr_to_soc_(tracks, .dots = lazyeval::lazy_dots(...))
 }
