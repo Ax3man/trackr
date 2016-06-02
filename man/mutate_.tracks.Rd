@@ -6,16 +6,16 @@
 \alias{mutate_.tracks}
 \title{Add new variables to a tracks object.}
 \usage{
-\method{mutate_}{tracks}(.data, ..., .dots)
+\method{mutate_}{tracks}(tracks, ..., .dots)
 }
 \arguments{
-\item{.data}{A tracks object}
-
 \item{...}{Name-value pairs of expressions. Use \code{NULL} to drop
 a variable.}
 
 \item{.dots}{Used to work around non-standard evaluation. See
 \code{vignette("nse")} for details.}
+
+\item{.data}{A tracks object}
 }
 \value{
 A tracks object.

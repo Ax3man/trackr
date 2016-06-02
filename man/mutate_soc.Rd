@@ -55,7 +55,7 @@ coordinates.}
 coordinates.}
 
 \item{order_by}{Used for making sure only subsequent frames are used for
-time dependent calculatens. You probably want to leave this at default.}
+time dependent calculations. You probably want to leave this at default.}
 }
 \description{
 These functions are designed for use within \code{summarise_}, and will

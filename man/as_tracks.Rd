@@ -6,7 +6,7 @@
 \alias{tracks}
 \title{The \code{tracks} object}
 \usage{
-as_tracks(tr, frame_rate, resolution, meta_data = NULL, px_per_cm = NULL,
+as_tracks(tr, frame_rate, resolution, meta_data = NULL, px_per_cm = 1,
   minimal = TRUE)
 
 is.tracks(x)
@@ -26,7 +26,8 @@ needs to match the trial names listed in the \code{trial} table. Otherwise
 this column is created, with identical ordering as the \code{trial} table
 assumed.}
 
-\item{px_per_cm}{Length scaling factor, optional.}
+\item{px_per_cm}{Length scaling factor. When left at 1, all measurements will
+be per pixel.}
 
 \item{minimal}{When TRUE, the minimum amount of components (see list below)
 are including in the object. When FALSE, the group, pairs and trial

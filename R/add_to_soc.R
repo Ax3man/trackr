@@ -116,7 +116,7 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 #'   coordinates.
 #' @param n Number of point used for numerical approximation.
 #' @param order_by Used for making sure only subsequent frames are used for
-#'   time dependent calculatens. You probably want to leave this at default.
+#'   time dependent calculations. You probably want to leave this at default.
 #'
 #' @name mutate_soc
 #' @seealso mutate_tr mutate_.tracks
