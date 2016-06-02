@@ -20,4 +20,11 @@ social variables. Each variable will be split into two columns, for fish1 and
 fish2, with the numbers 1 and 2 amended. E.g. joining X and Y will generate
 four new columns in \code{soc}, X1, X2, Y1, Y2.
 }
+\examples{
+Guppies <- guppies \%>\%
+  as_tracks(30, 1080) \%>\%
+  expand_tracks()
+
+join_tr_to_soc(Guppies, X, Y)
+}
 

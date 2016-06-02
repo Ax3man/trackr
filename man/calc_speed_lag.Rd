@@ -29,4 +29,10 @@ This function returns two variables per animal pair per trial;
 \code{lag} is the delay where the correlation was maximal (positive means),
 and \code{cor} is the magnitude of the correlation.
 }
+\examples{
+Guppies <- guppies \%>\%
+  as_tracks(30, 1080) \%>\%
+  mutate(speed = speed())
+spl <- calc_speed_lag(Guppies)
+}
 

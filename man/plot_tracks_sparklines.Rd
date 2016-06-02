@@ -39,4 +39,12 @@ A \code{ggplot} object.
 \description{
 Plot sparklines for several track variables.
 }
+\examples{
+Guppies <- guppies \%>\%
+  as_tracks(30, 1080) \%>\%
+  mutate(sp = speed(), acc = acceleration(), turn = turn())
+
+plot_tracks_sparklines(Guppies, 'a', point_events = 12000)
+
+}
 
