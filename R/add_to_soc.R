@@ -176,19 +176,23 @@ heading_diff2 <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame) 
 #' @rdname mutate_soc
 #' @export
 leader <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame) {
+  # mean heading
   hd1 <- heading(x1, y1, order_by)
   hd2 <- heading(y2, y2, order_by)
-
   mhd <- apply(cbind(hd1, hd2), 1, mean_angle)
+
+  # mean position
   mx <- rowMeans(cbind(x1, x2))
   my <- rowMeans(cbind(y1, y2))
 
+  # the line through the mean position, perpendicular to the mean heading
   a <- -tan(mhd)
   b <- my - a * mx
 
+  # if the mean heading is up, the leader is above the line (and vice versa)
   y_check <- a * x1 + b
-
   r <- ifelse(mhd > 0, y1 > y_check, y1 < y_check)
   r[mhd == 0 | is.na(mhd)] <- NA
+
   return(r)
 }
