@@ -87,27 +87,32 @@ find_max_cross_corr <- function(v1, v2, range) {
   return(res)
 }
 
+#dots <- lazyeval::all_dots(~speed(), ~acceleration(y = bleh), ~1, ~x,
+#                           all_named = TRUE)
 add_defaults_to_dots <- function(dots) {
   calls <- lapply(dots, `[[`, 'expr')
-  funs <- lapply(dots, function(.) .$expr[[1]])
-  matched_calls <- mapply(function(x, y) match.call(match.fun(x), y), funs, calls)
+  fun_calls <- calls[sapply(calls, class) == 'call']
+  funs <- lapply(fun_calls, `[[`, 1)
+
+  matched_calls <- Map(function(x, y) match.call(match.fun(x), y),
+                       funs, fun_calls)
   envrs <- lapply(dots, `[[`, 'env')
   calls_list <- lapply(matched_calls, as.list)
 
   defaults <- lapply(funs, function(.) formals(eval(.)))
   given <- lapply(calls_list, `[`, -1)
 
-  arguments <- mapply(function(def, giv) {
+  arguments <- Map(function(def, giv) {
     def[names(giv)] <- giv
     return(def)
-  }, defaults, given, SIMPLIFY = FALSE)
+  }, defaults, given)
 
-  new_calls <- mapply(function(x, y) {
-    l <- c(as.character(x), y)
-    do.call(call, l, quote = TRUE) },
-    funs, arguments, SIMPLIFY = FALSE)
+  new_calls <- Map(function(x, y) {
+    lazyeval::make_call(x, y)},
+    funs, arguments)
 
-  mapply(lazyeval::as.lazy, new_calls, envrs, SIMPLIFY = FALSE)
+  dots[sapply(calls, class) == 'call'] <- new_calls
+  Map(function(x, y) x$env <- y, dots, envrs)
 }
 
 #' Convert between frame numbers and human readable time formats.
