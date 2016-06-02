@@ -53,3 +53,10 @@ heading <- function(x = X, y = Y, order_by = frame) {
 turn <- function(x = X, y = Y, order_by = frame) {
   change(heading(x, y, order_by), order_by)
 }
+
+#' @rdname mutate_tr
+#' @export
+angular_velocity <- function(x = X, y = Y, order_by = frame,
+                             frame_rate = tracks$params$frame_rate) {
+  change(heading(x, y, order_by), order_by) / frame_rate
+}

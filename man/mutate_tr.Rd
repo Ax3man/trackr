@@ -2,6 +2,7 @@
 % Please edit documentation in R/add_to_tr.R
 \name{mutate_tr}
 \alias{acceleration}
+\alias{angular_velocity}
 \alias{change}
 \alias{heading}
 \alias{mutate_tr}
@@ -18,6 +19,9 @@ acceleration(x = X, y = Y, order_by = frame)
 heading(x = X, y = Y, order_by = frame)
 
 turn(x = X, y = Y, order_by = frame)
+
+angular_velocity(x = X, y = Y, order_by = frame,
+  frame_rate = tracks$params$frame_rate)
 }
 \arguments{
 \item{x}{X-coordinate.}
