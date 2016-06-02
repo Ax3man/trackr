@@ -19,7 +19,9 @@
 #' @export
 #'
 #' @examples
-#' Guppies <- as_tracks(guppies, 30, 1080)
+#' Guppies <- guppies %>%
+#'   as_tracks(30, 1080) %>%
+#'   mutate(speed = speed())
 #' spl <- calc_speed_lag(Guppies)
 calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
   if (!is.tracks(tracks)) {
