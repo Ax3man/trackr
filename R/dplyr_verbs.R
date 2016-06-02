@@ -228,6 +228,7 @@ NULL
 mutate_.tracks <- function(.data, ..., .dots) {
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   conds <- add_defaults_to_dots(conds)
+  conds <- interp_params(conds, .data$params)
   tables <- find_conds_in_tables(.data, conds)
 
   for (i in seq_along(conds)) {
