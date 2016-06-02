@@ -17,7 +17,14 @@
 #'
 #' @return A data.frame.
 #' @export
+#'
+#' @examples
+#' Guppies <- as_tracks(guppies, 30, 1080)
+#' spl <- calc_speed_lag(Guppies)
 calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
+  if (!is.tracks(tracks)) {
+    stop('tracks should be a tracks object.', call. = FALSE)
+  }
   if (!('speed' %in% tracks$pr$tr)) {
     stop('Speed not found in tr table.', call. = FALSE)
   }
