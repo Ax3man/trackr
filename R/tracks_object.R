@@ -10,7 +10,8 @@
 #'   needs to match the trial names listed in the \code{trial} table. Otherwise
 #'   this column is created, with identical ordering as the \code{trial} table
 #'   assumed.
-#' @param px_per_cm Length scaling factor, optional.
+#' @param px_per_cm Length scaling factor. When left at 1, all measurements will
+#'   be per pixel.
 #' @param minimal When TRUE, the minimum amount of components (see list below)
 #'   are including in the object. When FALSE, the group, pairs and trial
 #'   components will already be generated.
@@ -66,7 +67,7 @@
 #' @export
 #' @aliases tracks
 as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
-                      px_per_cm = NULL, minimal = TRUE) {
+                      px_per_cm = 1, minimal = TRUE) {
   # Input handling -------------------------------------------------------------
   if (!is.data.frame(tr))
     stop('tr has to be a data.frame.', call. = FALSE)
