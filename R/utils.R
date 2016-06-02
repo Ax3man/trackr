@@ -112,7 +112,7 @@ add_defaults_to_dots <- function(dots) {
     funs, arguments)
 
   dots[sapply(calls, class) == 'call'] <- new_calls
-  Map(function(x, y) x$env <- y, dots, envrs)
+  Map(function(x, y) { x$env <- y; return(x) }, dots, envrs)
 }
 
 #' Convert between frame numbers and human readable time formats.
