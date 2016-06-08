@@ -20,7 +20,6 @@
 NULL
 
 #' @rdname mutate_tr
-#' @export
 change <- function(x, order_by = frame,
                    frame_rate = tracks$params$frame_rate, n = 1) {
   ifelse(order_by - dplyr::lag(order_by, n = n, order_by = order_by) == n,
@@ -29,21 +28,18 @@ change <- function(x, order_by = frame,
 }
 
 #' @rdname mutate_tr
-#' @export
 speed <- function(x = X, y = Y, order_by = frame,
                   frame_rate = tracks$params$frame_rate) {
   sqrt(change(x, order_by, frame_rate) ^ 2 + change(y, order_by, frame_rate) ^ 2)
 }
 
 #' @rdname mutate_tr
-#' @export
 acceleration <- function(x = X, y = Y, order_by = frame,
                          frame_rate = tracks$params$frame_rate) {
   change(speed(y, x, order_by, frame_rate), order_by, frame_rate)
 }
 
 #' @rdname mutate_tr
-#' @export
 heading <- function(x = X, y = Y, order_by = frame) {
   ifelse(
     order_by - dplyr::lag(order_by, order_by = order_by) == 1,
@@ -55,7 +51,6 @@ heading <- function(x = X, y = Y, order_by = frame) {
 }
 
 #' @rdname mutate_tr
-#' @export
 angular_velocity <- function(x = X, y = Y, order_by = frame,
                              frame_rate = tracks$params$frame_rate) {
   change(heading(x, y, order_by), order_by) / frame_rate
