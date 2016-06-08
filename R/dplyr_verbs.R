@@ -237,7 +237,7 @@ mutate_.tracks <- function(.data, ..., .dots) {
   tables <- find_conds_in_tables(tracks, conds)
 
   for (i in seq_along(conds)) {
-    .data[tables[[i]]] <- lapply(tracks[tables[[i]]], dplyr::mutate_,
+    tracks[tables[[i]]] <- lapply(tracks[tables[[i]]], dplyr::mutate_,
                                  .dots = conds[i])
     if (tables[[i]] %in% names(tracks$pr)) {
       tracks$pr[tables[[i]] == names(tracks$pr)][[1]] <-
