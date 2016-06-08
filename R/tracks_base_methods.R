@@ -1,12 +1,40 @@
+#' Selecting a table from a tracks object.
+#'
+#' @param tracks A tracks object.
+#' @param table The name of a table.
+#' @param collect Whether the table should be collected from the cluster, if
+#'   applicable.
+#'
+#' @return A \code{tbl_df} or a \code{party_df}.
+#' @export
+#'
+#' @examples
+#' Guppies <- as_tracks(guppies, 30, 1080)
+#'
+#' # Select and collect:
+#' Guppies[['tr']]
+#'
+#' # Only select:
+#' Guppies[['tr', FALSE]]
+#' Guppies$tr
+`[[.tracks` <- function(tracks, table, collect = TRUE) {
+  class(tracks) <- 'list'
+  if (collect) {
+    return(dplyr::collect(tracks[[table]]))
+  }
+  return(tracks[[table]])
+}
+
 #' @export
 print.tracks <- function(x, ...) {
   # Precalculations ------------------------------------------------------------
   # frame range
-  fr <- dplyr::summarise_(x$tr, ~min(frame), ~max(frame))
+  fr <- dplyr::summarise_(x$tr, min = ~min(frame), max = ~max(frame))
   fr <- dplyr::collect(fr)
-  frame_range <- list(min = min(fr$`min(frame)`), max = max(fr$`max(frame)`))
+  fr <- dplyr::ungroup(fr)
+  frame_range <- dplyr::summarise_(fr, min = ~min(min), max = ~max(max))
 
-  # object size (more difficult with)
+  # object size (more difficult with party_dfs)
   multidplyr::cluster_assign_value(x$tr$cluster, name = '.name', x$tr$name)
   tr_size <- multidplyr::cluster_eval(x$tr$cluster,
                                       utils::object.size(eval(as.name(.name))))
