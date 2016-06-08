@@ -29,6 +29,6 @@ retain the tr and meta_data tables, as well as internal components.
 You can drop a table by writing it as a negative.
 
 You can use dplyr's special functions inside of select calls, such as
-starts_with().
+\code{starts_with()}.
 }
 
