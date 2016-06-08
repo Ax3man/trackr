@@ -52,69 +52,35 @@ print.tracks <- function(x, ...) {
   tracks_size <- sum(utils::object.size(x), tr_size, pairs_size, na.rm = TRUE)
   class(tracks_size) <- 'object_size'
 
-  # var names
-  tr_names <- names(multidplyr::cluster_get(x$tr$cluster, x$tr$name)[[1]])
-  if (!is.null(x$soc))
-    soc_names <- names(multidplyr::cluster_get(x$soc$cluster,
-                                               x$soc$name)[[1]])
   # trial names
-  trials <- unique(multidplyr::cluster_get(x$tr$cluster,
-                                           x$tr$name)[[1]]$trial)
+  trials <- levels(x$trial$trial)
 
   # Printing of info  ----------------------------------------------------------
-  cat('Tracks object conaining the following elements:\n\n')
-
-  cat('Tracks:\n')
+  cat('tracks object (see ?tracks):\n')
   if (length(trials) > 1) {
-    cat('  Containing data from:\n')
-    cat('    Trials:', trials, '\n')
+    cat('  Containing data from:\n    Trials:', trials, '\n')
   }
-
-  cat('    Frames:', frame_range$min, 'to',
-      frame_range$max, '\n')
-  cat('  With these variables stored:\n')
-  cat('    ', tr_names, '\n\n')
-
+  cat('    Frames:', frame_range[[1]], 'to', frame_range[[2]], '\n\n',
+      'With these tables and variables:\n    Table:\t Variables:\n    tr\t\t',
+      x$pr$tr, '\n')
   if (!is.null(x$soc)) {
-    cat('Social:\n')
-    cat('  Has these variables stored:\n')
-    cat('  ', soc_names, '\n\n')
+    cat('    soc\t\t', x$pr$soc, '\n')
   }
-
   if (!is.null(x$group)) {
-    cat('Group:\n')
-    cat('  Has these variables stored:\n')
-    cat('  ', names(x$group), '\n\n')
+    cat('    group\t', names(x$group), '\n')
   }
-
   if (!is.null(x$pair)) {
-    cat('Pair:\n')
-    cat('  Has these variables stored:\n')
-    cat('  ', names(x$pair), '\n\n')
+    cat('    pair\t', names(x$pair), '\n')
   }
-
   if (!is.null(x$animal)) {
-    cat('Animal:\n')
-    cat('  Has these variables stored:\n')
-    cat('  ', names(x$animal), '\n\n')
+    cat('    animal\t', names(x$animal), '\n')
   }
+  cat('    trial\t', names(x$trial), '\n')
+  cat('    meta_data\t', names(x$meta_data), '\n\n')
 
-  if (!is.null(x$trial)) {
-    cat('Trial:\n')
-    cat('  Has these variables stored:\n')
-    cat('  ', names(x$trial), '\n\n')
-  }
-
-  cat('Meta data:\n')
-  cat('  Has these variables stored:\n')
-  cat('  ', names(x$meta_data), '\n\n')
-
-  cat('Global parameters:\n')
-  cat('  Frame rate:', x$params$frame_rate, 'fps.\n')
-  if (!is.null(x$params$px_per_cm))
-    cat('  Scale:', x$params$px_per_cm, 'pixels per cm.\n')
-  if (!is.null(x$params$source))
-    cat('  Source: ', x$params$source, '.\n\n', sep = '')
+  cat('Global parameters:\n  Frame rate:', x$params$frame_rate,
+      'fps.\n  Scale:', x$params$px_per_cm, 'pixels per cm.\n  Source:',
+      x$params$source, '\n\n')
 
   cat('The size of this tracks object is ')
   print(tracks_size, units = "auto")
