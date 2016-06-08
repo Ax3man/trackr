@@ -6,10 +6,12 @@
 \alias{filter_.tracks}
 \title{Return a subset of a tracks object with matching conditions.}
 \usage{
-\method{filter_}{tracks}(tracks, ..., drop = TRUE, .dots,
+\method{filter_}{tracks}(.data, ..., drop = TRUE, .dots,
   repartition = FALSE)
 }
 \arguments{
+\item{.data}{A tracks object.}
+
 \item{...}{The filtering conditions (logical statements).}
 
 \item{drop}{Whether to drop conflicting aggregate data. If the tracks object
@@ -24,8 +26,6 @@ expensive.}
 
 \item{repartition}{If TRUE, will collect and reassign the \code{tr} and
 \code{soc} tables. Useful if worker nodes become empty or unbalanced.}
-
-\item{.data}{A tracks object.}
 }
 \value{
 The subsetted tracks object.

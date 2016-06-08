@@ -51,8 +51,9 @@ NULL
 #' @export
 #' @seealso \link[dplyr]{filter}, \link{find_sections},
 #'   \link{summarise_sections}
-filter_.tracks <- function(tracks, ..., drop = TRUE, .dots,
+filter_.tracks <- function(.data, ..., drop = TRUE, .dots,
                            repartition = FALSE) {
+  tracks <- .data
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   # Extract special arguments from ...
   if (any(names(conds) == 'drop')) {
@@ -227,7 +228,9 @@ NULL
 #'
 #' @return A tracks object.
 #' @export
-mutate_.tracks <- function(tracks, ..., .dots) {
+mutate_.tracks <- function(.data, ..., .dots) {
+  tracks <- .data
+
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
   conds <- add_defaults_to_dots(conds)
   conds <- interp_params(conds, tracks$params)
