@@ -269,7 +269,7 @@ NULL
 #' You can drop a table by writing it as a negative.
 #'
 #' You can use dplyr's special functions inside of select calls, such as
-#' starts_with().
+#' \code{starts_with()}.
 #'
 #' @param .data A tracks object
 #' @param ... Comma seperated list of tables to select. Use \code{-table} to
