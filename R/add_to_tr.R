@@ -1,4 +1,4 @@
-#' Conveniently add common new variables to the \code{soc} table.
+#' Conveniently add common new variables to the \code{tr} table.
 #'
 #' These functions are designed for use within \code{summarise_}, and will
 #' compute common derived parameters for tracks. By default, these functions

@@ -7,7 +7,7 @@
 \alias{heading}
 \alias{mutate_tr}
 \alias{speed}
-\title{Conveniently add common new variables to the \code{soc} table.}
+\title{Conveniently add common new variables to the \code{tr} table.}
 \usage{
 change(x, order_by = frame, frame_rate = tracks$params$frame_rate, n = 1)
 
