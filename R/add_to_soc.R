@@ -57,6 +57,7 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
                              ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
   multidplyr::cluster_rm(cl, '.tr')
   tracks$soc <- dplyr::rename_(tracks$soc, .dots = Names2)
+  tracks$soc <- dplyr::group_by_(tracks$soc, ~animal1, ~animal2)
 
   tracks$pr$soc <- c(tracks$pr$soc, names(Names1), names(Names2))
   return(tracks)
