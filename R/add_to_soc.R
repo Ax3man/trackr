@@ -123,11 +123,13 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
 NULL
 
 #' @rdname mutate_soc
+#' @export
 pair_dist <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2) {
   sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2)
 }
 
 #' @rdname mutate_soc
+#' @export
 nip_dist <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2,
                      minor_axis1 = minor_axis1, minor_axis2 = minor_axis2,
                      major_axis1 = major_axis1, major_axis2 = major_axis2,
@@ -151,17 +153,20 @@ nip_dist <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2,
 }
 
 #' @rdname mutate_soc
+#' @export
 orientation_diff <- function(orientation1 = orientation1,
                              orientation2 = orientation2) {
   abs(angle_diff(orientation1, orientation2))
 }
 
 #' @rdname mutate_soc
+#' @export
 heading_diff <- function(heading1 = heading1, heading2 = heading2) {
   abs(angle_diff(heading1, heading2))
 }
 
 #' @rdname mutate_soc
+#' @export
 heading_diff2 <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame) {
   hd1 <- heading(x1, y1, order_by)
   hd2 <- heading(x2, y2, order_by)
@@ -169,6 +174,7 @@ heading_diff2 <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame) 
 }
 
 #' @rdname mutate_soc
+#' @export
 leader <- function(x1 = X1, y1 = Y1, x2 = X2, y2 = Y2, order_by = frame) {
   # mean heading
   hd1 <- heading(x1, y1, order_by)
