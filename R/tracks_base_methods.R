@@ -61,7 +61,7 @@ print.tracks <- function(x, ...) {
     cat('  Containing data from:\n    Trials:', trials, '\n')
   }
   cat('    Frames:', frame_range[[1]], 'to', frame_range[[2]], '\n\n',
-      'With these tables and variables:\n    Table:\t Variables:\n    tr\t\t',
+      ' With these tables and variables:\n    Table:\t Variables:\n    tr\t\t',
       x$pr$tr, '\n')
   if (!is.null(x$soc)) {
     cat('    soc\t\t', x$pr$soc, '\n')
@@ -78,8 +78,8 @@ print.tracks <- function(x, ...) {
   cat('    trial\t', names(x$trial), '\n')
   cat('    meta_data\t', names(x$meta_data), '\n\n')
 
-  cat('Global parameters:\n  Frame rate:', x$params$frame_rate,
-      'fps.\n  Scale:', x$params$px_per_cm, 'pixels per cm.\n  Source:',
+  cat('  Global parameters:\n    Frame rate:', x$params$frame_rate,
+      'fps.\n    Scale:', x$params$px_per_cm, 'pixels per cm.\n    Source:',
       x$params$source, '\n\n')
 
   cat('The size of this tracks object is ')
