@@ -152,6 +152,16 @@ interp_params <- function(dots, params) {
   Map(function(x, y) { x$env <- y; return(x) }, dots, envrs)
 }
 
+default_summarize_targets <- function(tables) {
+  .target <- vector('list', length(tables))
+  .target[tables == 'tr'] <- 'animal'
+  .target[tables == 'soc'] <- 'pair'
+  .target[tables == 'animal'] <- 'trial'
+  .target[tables == 'group'] <- 'trial'
+  .target[tables == 'pair'] <- 'trial'
+  return(.target)
+}
+
 #' Convert between frame numbers and human readable time formats.
 #'
 #' NOTE: see examples for correct usage of \code{times_to_frames}.
