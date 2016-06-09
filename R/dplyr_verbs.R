@@ -118,15 +118,14 @@ NULL
 #' @export
 NULL
 
-#' Summarize a tracks variable into higher tables.
+#' Summarise a tracks variable to a higher table.
 #'
 #' @param .data A tracks object.
 #' @param ... Summary expressions, such as \code{mean(speed, na.rm = TRUE)}, or
-#'   \code{var_nnd = var(nearest_neighbour_dist, na.rm = TRUE)}.
-#' @param .source Which table those variables come from (\code{tr} or
-#'   \code{pairs}).
-#' @param .tables To which tables you want to summarize them. By default
-#'   \code{group}, \code{animal} and \code{trial}, when present.
+#'   \code{var_pd = var(pair_dist, na.rm = TRUE)}.
+#' @param .target To which tables you want to summarize them. By default loses
+#'   the last grouping, and follows the lines
+#'   \href{https://raw.githubusercontent.com/Ax3man/trackr/master/summarise_diagram.png}{in this diagram}.
 #'
 #' @return A tracks object.
 #' @export
@@ -134,77 +133,47 @@ NULL
 #' @inheritParams dplyr::summarise
 #' @seealso dplyr::summarise
 #' @importFrom dplyr '%>%'
+#'
+#' @examples
+#' Guppies <- as_tracks(guppies, 30,  1080) %>%
+#'   expand_tracks() %>%
+#'   join_tr_to_soc(X, Y) %>%
+#'   mutate(d = pair_dist())
+#'
+#' summ <- summarise(Guppies, mx = mean(X, na.rm = TRUE), s = sum(d, na.rm = TRUE))
+#'
+#' summ$animal #now has mx column
+#' summ$pair   #now has s column
+#'
+#' summ2 <- summarize(summ, mx2 = mean(mx), s2 = sum(s))
+#'
+#' summ2$trial #now has mx2 and s2 columns
 summarise_.tracks <- function(.data,
                               ...,
-                              .source = 'tr',
-                              .tables = c('group', 'animal', 'pair', 'trial'),
+                              .target = NULL,
                               .dots) {
-  # rename the .data argument (we need it for correct passing from the general).
   tracks <- .data
   rm(.data)
-  # collect conditions
+
   conds <- lazyeval::all_dots(.dots, ..., all_named = TRUE)
-  # check if .source or .tables happen to be in the .dots (coming from filter
-  # dispatching to filter_), if so then extract them out
-  if (any(names(conds) == '.source')) {
-    .source <- lazyeval::lazy_eval(conds$.source)
-    conds <- conds[-which(names(conds) == '.source')]
-  }
-  if (any(names(conds) == '.tables')) {
-    .source <- lazyeval::lazy_eval(conds$.tables)
+  if (any(names(conds) == '.target')) {
+    .target <- lazyeval::lazy_eval(conds$.tables)
     conds <- conds[-which(names(conds) == '.tables')]
   }
-  Source <- switch(.source,
-                   'tr' = tracks$tr,
-                   'soc' = tracks$pairs)
   vars <- names(conds)
-
-  if ('group' %in% .tables & !is.null(tracks$group)) {
-    if (any(names(tracks$group) %in% vars)) {
-      tracks$group <- tracks$group[-which(names(tracks$group) %in% vars)]
-    }
-    Group <- dplyr::group_by_(Source, ~trial, ~frame)
-    Group <- dplyr::summarize_(Group, .dots = conds)
-    Group <- dplyr::collect(Group)
-    tracks$group <- dplyr::full_join(Group, tracks$group, c('trial', 'frame'))
-    rm(Group)
-    tracks$group <- dplyr::ungroup(tracks$group)
+  tables <- find_conds_in_tables(tracks, conds)
+  if (is.null(.target)) {
+    .target <- default_summarize_targets(tables)
   }
-
-  if ('animal' %in% .tables & !is.null(tracks$animal) & .source == 'tr') {
-    if (any(names(tracks$animal) %in% vars)) {
-      tracks$animal <- tracks$animal[-which(names(tracks$animal) %in% vars)]
+  for (i in seq_along(.target)) {
+    d <- summarise_(tracks[[tables[[i]], FALSE]], .dots = conds[i])
+    if ('party_df' %in% class(tracks[[tables[[i]], FALSE]])) {
+      grps <- as.character(tracks[[tables[[i]], FALSE]]$groups)
+    } else {
+      grps <- as.character(attributes(tracks[[tables[[i]], FALSE]])$vars)
     }
-    Animal <- dplyr::group_by_(Source, ~trial, ~animal)
-    Animal <- dplyr::summarize_(Animal, .dots = conds)
-    Animal <- dplyr::collect(Animal)
-    tracks$animal <- dplyr::full_join(Animal, tracks$animal,
-                                      c('trial', 'animal'))
-    rm(Animal)
-    tracks$animal <- dplyr::ungroup(tracks$animal)
-  }
-
-  if ('pair' %in% .tables & !is.null(tracks$pair) & .source == 'soc') {
-    if (any(names(tracks$pair) %in% vars)) {
-      tracks$pair <- tracks$pair[-which(names(tracks$pair) %in% vars)]
-    }
-    Pair <- dplyr::group_by_(Source, ~trial, ~animal1, ~animal2)
-    Pair <- dplyr::summarize_(Pair, .dots = conds)
-    Pair <- dplyr::collect(Pair)
-    tracks$pair <- dplyr::full_join(Pair, tracks$animal,
-                                    c('trial', 'animal1', 'animal2'))
-    rm(Pair)
-    tracks$pair <- dplyr::ungroup(tracks$pair)
-  }
-
-  if ('trial' %in% .tables & !is.null(tracks$trial)) {
-    if (any(names(tracks$trial) %in% vars)) {
-      tracks$trial <- tracks$trial[-which(names(tracks$trial) %in% vars)]
-    }
-    Trial <- dplyr::group_by_(Source, ~trial)
-    Trial <- dplyr::summarize_(Trial, .dots = conds)
-    Trial <- dplyr::collect(Trial)
-    tracks$trial <- dplyr::full_join(Trial, tracks$trial, 'trial')
+    tracks[[.target[[i]]]] <-
+      dplyr::left_join(tracks[[.target[[i]]]], dplyr::collect(d), by = grps)
   }
   return(tracks)
 }

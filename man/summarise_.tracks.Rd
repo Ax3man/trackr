@@ -6,22 +6,19 @@
 \alias{summarise_.tracks}
 \alias{summarize}
 \alias{summarize_}
-\title{Summarize a tracks variable into higher tables.}
+\title{Summarise a tracks variable to a higher table.}
 \usage{
-\method{summarise_}{tracks}(.data, ..., .source = "tr", .tables = c("group",
-  "animal", "pair", "trial"), .dots)
+\method{summarise_}{tracks}(.data, ..., .target = NULL, .dots)
 }
 \arguments{
 \item{.data}{A tracks object.}
 
 \item{...}{Summary expressions, such as \code{mean(speed, na.rm = TRUE)}, or
-\code{var_nnd = var(nearest_neighbour_dist, na.rm = TRUE)}.}
+\code{var_pd = var(pair_dist, na.rm = TRUE)}.}
 
-\item{.source}{Which table those variables come from (\code{tr} or
-\code{pairs}).}
-
-\item{.tables}{To which tables you want to summarize them. By default
-\code{group}, \code{animal} and \code{trial}, when present.}
+\item{.target}{To which tables you want to summarize them. By default loses
+the last grouping, and follows the lines
+\href{https://raw.githubusercontent.com/Ax3man/trackr/master/summarise_diagram.png}{in this diagram}.}
 
 \item{.dots}{Used to work around non-standard evaluation. See
 \code{vignette("nse")} for details.}
@@ -30,7 +27,22 @@
 A tracks object.
 }
 \description{
-Summarize a tracks variable into higher tables.
+Summarise a tracks variable to a higher table.
+}
+\examples{
+Guppies <- as_tracks(guppies, 30,  1080) \%>\%
+  expand_tracks() \%>\%
+  join_tr_to_soc(X, Y) \%>\%
+  mutate(d = pair_dist())
+
+summ <- summarise(Guppies, mx = mean(X, na.rm = TRUE), s = sum(d, na.rm = TRUE))
+
+summ$animal #now has mx column
+summ$pair   #now has s column
+
+summ2 <- summarize(summ, mx2 = mean(mx), s2 = sum(s))
+
+summ2$trial #now has mx2 and s2 columns
 }
 \seealso{
 dplyr::summarise
