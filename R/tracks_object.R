@@ -264,15 +264,20 @@ check_complete <- function(tracks, vars = c('X', 'Y'), lower_limit = 95) {
   tr <- tracks$tr
   tr <- do.call(dplyr::select_,
                 c(list(tr), c('trial', 'frame', 'animal', vars)))
+  fr <- multidplyr::cluster_eval_(tr, lazyeval::interp(quote(range(x$frame)),
+                                                       x = as.name(tr$name)))
+  fr <- range(unlist(fr))
+
   multidplyr::cluster_assign_value(tr$cluster, 'vars', vars)
+  multidplyr::cluster_assign_value(tr$cluster, 'fr', fr)
   # We left_join a data.frame with the complete range of frames for every animal
   tr <- dplyr::do(tr,
                   dplyr::left_join(
                     data.frame(trial = .$trial[1],
-                               frame = min(.$frame):max(.$frame),
+                               frame = fr[1]:fr[2],
                                animal =
                                  rep(unique(.$animal),
-                                     max(.$frame) - min(.$frame) + 1)),
+                                     fr[2] - fr[1] + 1)),
                     ., by = c('frame', 'animal', 'trial')))
   # Count the NA's in vars
   tr <- dplyr::collect(tr)
