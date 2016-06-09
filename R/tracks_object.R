@@ -212,6 +212,7 @@ expand_tracks <- function(tracks,
     Pair <- dplyr::group_by_(Soc, ~animal1, ~animal2)
     Pair <- dplyr::summarize(Pair)
     Pair <- dplyr::collect(Pair)
+    Pair <- dplyr::group_by_(Pair, ~trial)
   }
 
   # Build object and return ----------------------------------------------------
