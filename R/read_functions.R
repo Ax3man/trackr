@@ -28,7 +28,7 @@ read_idTracker <- function(file = NULL,
     stop("Supply either `file` or `folder`.", call. = FALSE)
   }
 
-  if (!is.null(file) & is.character(file)) {
+  if (!is.null(file) & is.character(file) & length(file) == 1) {
     file <- list(file)
   }
 
