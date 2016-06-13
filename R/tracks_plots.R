@@ -31,7 +31,8 @@ plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
   # We need to add a grouping factor in order to create gaps when there are
   # non-subsequent frames.
   tracks$tr <- dplyr::mutate_(tracks$tr,
-                              gap = ~ifelse(frame == 1 + dplyr::lag(frame), 0, 1),
+                              gap = ~as.numeric(
+                                ifelse(frame == 1 + dplyr::lag(frame), 0, 1)),
                               .GROUP = ~c(0, cumsum(gap[-1])))
 
   ggplot2::ggplot(dplyr::collect(tracks$tr),
