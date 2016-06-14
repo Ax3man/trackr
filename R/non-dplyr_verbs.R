@@ -288,3 +288,29 @@ summarise_sections_ <- function(sections, ..., .dots) {
   return(sections)
 }
 
+#' Collapse multiple identies in fewer.
+#'
+#' This function allows one to assign several duplicated identities over time
+#' to a fewer number of actual animals. When more identities exist within a
+#' frame than there is animals, data is filtered out.
+#'
+#' @param tracks A \code{tracks} object.
+#' @param n The number of animals. Currently only 1 is supported.
+#'
+#' @return A \code{tracks} object.
+#' @export
+collapse_identities <- function(tracks, n = 1) {
+  tracks <- tracks[c('tr', 'meta_data', 'params', 'pr')]
+  class(tracks) <- 'tracks'
+  if (n != 1) {
+    stop('Only n = 1 supporter for now.', call. = FALSE)
+  }
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~frame)
+  tracks$tr <- dplyr::mutate_(tracks$tr, n = ~n())
+  tracks$pr$tr <- c(tracks$pr$tr, 'n')
+  tracks <- dplyr::filter_(tracks, ~n == 1)
+  tracks$tr <- dplyr::select_(tracks$tr, ~-n)
+  tracks$tr <- dplyr::mutate_(tracks$tr, animal = ~factor(1))
+  tracks$tr <- dplyr::group_by_(tracks$tr, ~animal)
+  return(tracks)
+}
