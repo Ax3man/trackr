@@ -160,7 +160,6 @@ summarise_.tracks <- function(.data,
     .target <- lazyeval::lazy_eval(conds$.tables)
     conds <- conds[-which(names(conds) == '.tables')]
   }
-  vars <- names(conds)
   tables <- find_conds_in_tables(tracks, conds)
   if (is.null(.target)) {
     .target <- default_summarize_targets(tables)
@@ -171,6 +170,9 @@ summarise_.tracks <- function(.data,
       grps <- as.character(tracks[[tables[[i]], FALSE]]$groups)
     } else {
       grps <- as.character(attributes(tracks[[tables[[i]], FALSE]])$vars)
+    }
+    if (is.null(tracks[[.target[[i]], FALSE]])) {
+      tracks <- expand_tracks2(tracks, .target[[i]])
     }
     tracks[[.target[[i]]]] <-
       dplyr::left_join(tracks[[.target[[i]]]], dplyr::collect(d), by = grps)

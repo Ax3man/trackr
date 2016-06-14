@@ -229,6 +229,25 @@ expand_tracks <- function(tracks,
   return(tracks)
 }
 
+expand_tracks2 <- function(tracks, tbl) {
+  if ('soc' %in% tbl) {
+    tracks <- expand_tracks(tracks, TRUE, FALSE, FALSE, FALSE, FALSE)
+  }
+  if ('group' %in% tbl) {
+    tracks <- expand_tracks(tracks, FALSE, TRUE, FALSE, FALSE, FALSE)
+  }
+  if ('trial' %in% tbl) {
+    tracks <- expand_tracks(tracks, FALSE, FALSE, TRUE, FALSE, FALSE)
+  }
+  if ('animal' %in% tbl) {
+    tracks <- expand_tracks(tracks, FALSE, FALSE, FALSE, TRUE, FALSE)
+  }
+  if ('pair' %in% tbl) {
+    tracks <- expand_tracks(tracks, FALSE, FALSE, FALSE, FALSE, TRUE)
+  }
+  return(tracks)
+}
+
 #' @describeIn as_tracks Test if object is of class tracks.
 #' @param x An object.
 #' @export
