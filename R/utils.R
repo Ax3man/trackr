@@ -57,12 +57,12 @@ find_conds_in_tables <- function(tracks, conds) {
       next
     }
     for (j in seq_along(vars)) {
-      if ('party_df' %in% class(tracks[[i]])) {
+      if ('party_df' %in% class(tracks[[i, FALSE]])) {
         if (all(vars[[j]] %in% tracks$pr[[tbl]])) {
           tables[[j]] <- c(tables[[j]], tbl)
         }
       } else {
-        if (all(vars[[j]] %in% names(tracks[[tbl]]))) {
+        if (all(vars[[j]] %in% names(tracks[[tbl, FALSE]]))) {
           tables[[j]] <- c(tables[[j]], tbl)
         }
       }
