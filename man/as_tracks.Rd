@@ -7,7 +7,7 @@
 \title{The \code{tracks} object}
 \usage{
 as_tracks(tr, frame_rate, resolution, meta_data = NULL, px_per_cm = 1,
-  minimal = TRUE)
+  minimal = TRUE, cluster = NULL)
 
 is.tracks(x)
 }
@@ -32,6 +32,8 @@ be per pixel.}
 \item{minimal}{When TRUE, the minimum amount of components (see list below)
 are including in the object. When FALSE, the group, pairs and trial
 components will already be generated.}
+
+\item{cluster}{Optionally supply a cluster to used.}
 
 \item{x}{An object.}
 }

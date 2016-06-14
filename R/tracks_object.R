@@ -15,6 +15,7 @@
 #' @param minimal When TRUE, the minimum amount of components (see list below)
 #'   are including in the object. When FALSE, the group, pairs and trial
 #'   components will already be generated.
+#' @param cluster Optionally supply a cluster to used.
 #' @return A tracks object.
 #'
 #' @section Object structure:
@@ -67,7 +68,7 @@
 #' @export
 #' @aliases tracks
 as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
-                      px_per_cm = 1, minimal = TRUE) {
+                      px_per_cm = 1, minimal = TRUE, cluster = NULL) {
   # Input handling -------------------------------------------------------------
   if (!is.data.frame(tr))
     stop('tr has to be a data.frame.', call. = FALSE)
@@ -120,7 +121,7 @@ as_tracks <- function(tr, frame_rate, resolution, meta_data = NULL,
 
   # Parallel -------------------------------------------------------------------
   pr_tr <- names(tr)
-  tr <- multidplyr::partition(tr, trial)
+  tr <- multidplyr::partition(tr, trial, cluster = cluster)
   tr <- dplyr::group_by_(tr, ~animal)
   multidplyr::cluster_library(tr$cluster, 'trackr')
 
