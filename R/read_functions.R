@@ -193,22 +193,16 @@ read_Ctrax <- function(file = NULL,
               csv = read_Ctrax_csv(file, animals),
               mat = read_Ctrax_mat(file, animals))
 
-  # Add file names as trial names, if applicable
-  if (length(file) > 1) {
-    file.names <- strsplit(basename(file), split = '.', fixed = TRUE)
-    file.names <- mapply('[', file.names, -sapply(file.names, length))
-    if (any(substr(file.names, 1, 6) == 'fixed_'))
-      file.names[substr(file.names, 1, 6) == 'fixed_'] <-
-      substr(file.names[substr(file.names, 1, 6) == 'fixed_'], 7, 100L)
-    names(d) <- file.names
-  }
+  # Add file names as trial names
+  file.names <- strsplit(basename(file), split = '.', fixed = TRUE)
+  file.names <- mapply('[', file.names, -sapply(file.names, length))
+  if (any(substr(file.names, 1, 6) == 'fixed_'))
+    file.names[substr(file.names, 1, 6) == 'fixed_'] <-
+    substr(file.names[substr(file.names, 1, 6) == 'fixed_'], 7, 100L)
 
-  if (length(d) == 1) {
-    d <- d[[1]]
-  } else {
-    d <- dplyr::bind_rows(d, .id = 'trial')
-    d$trial <- as.factor(d$trial)
-  }
+  d <- dplyr::bind_rows(d, .id = 'trial')
+  d$trial <- factor(d$trial, labels = file.names)
+
   d$animal <- as.factor(d$animal)
 
   # Get rid of (0, 0) and (1, 1) detections.
