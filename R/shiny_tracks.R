@@ -10,7 +10,9 @@ shiny_tracks <- function(tracks, min = NULL, max = NULL, ...) {
     stop('Install the shiny package to use this function.', call. = FALSE)
   }
 
-  tr <- collect(tracks$tr)
+  tr <- dplyr::collect(tracks$tr)
+  tr <- dplyr::filter_(tr, ~frame %in% min:max)
+
   LEVELS <- levels(tr$trial)
   if (is.null(min)) {
     min <- min(tr$frame)
@@ -18,31 +20,62 @@ shiny_tracks <- function(tracks, min = NULL, max = NULL, ...) {
   }
   fps <- tracks$params$frame_rate
 
+  steady_ranges <- rbind(range(tr$X, na.rm = TRUE),
+                         range(tr$Y, na.rm = TRUE))
+
   server <- function(input, output) {
-    time_dilute <- shiny::reactive(input$dilute_in * input$playback_speed)
-    time_step <- shiny::reactive(1000 / fps * time_dilute() / input$playback_speed)
+    time_step <- shiny::reactive(1000 / fps * input$dilute_in / input$playback_speed)
 
     output$ui <-
       shiny::renderUI({
-        shiny::sliderInput('FR', 'Frame', min, max, mean(c(min, max)), step = 1,
+        shiny::sliderInput('FR', 'Frame', min, max, min, max,
+                           step = input$dilute_in,
                            animate = shiny::animationOptions(time_step(),
                                                              loop = FALSE))
       } )
 
-    d <- shiny::reactive(
+    D <- reactive(
       dplyr::filter_(tr,
                      lazyeval::interp(~trial == TR, TR = input$TR),
-                     lazyeval::interp(~frame == FR, FR = input$FR))
-    )
+                     lazyeval::interp(~frame %in% a:b,
+                                      a = input$FR - input$trail_length,
+                                      b = input$FR)) %>%
+        dplyr::group_by_(~animal)
+      )
 
-    ranges <- rbind(range(tr$X, na.rm = TRUE),
-                    range(tr$Y, na.rm = TRUE))
-
-    output$tr_plot <- shiny::renderPlot(
-      graphics::plot(d()$X, d()$Y, col = d()$animal, pch = 16, cex = 3,
-                     xlim = ranges[1, ], ylim = ranges[2, ])
-    )
-
+    output$tr_plot <- shiny::renderPlot( {
+      if (input$zoom) {
+        graphics::plot(NA, xlim = range(D()$X, na.rm = TRUE),
+                       ylim = range(D()$Y, na.rm = TRUE),
+                       xlab = '', ylab = '', asp = 1)
+      } else {
+        graphics::plot(NA, xlim = steady_ranges[1, ], ylim = steady_ranges[2, ],
+                       xlab = '', ylab = '', asp = 1)
+      }
+      if ('Ctrax' %in% tracks$params$source) {
+        if (!requireNamespace('plotrix')) {
+          stop('Install the plotrix package to plot Ctrax data.', call. = FALSE)
+        }
+        D() %>% dplyr::slice_(~n()) %>%
+        {
+          plotrix::draw.ellipse(x = .$X, y = .$Y, a = .$major_axis,
+                                b = .$minor_axis, angle = .$orientation,
+                                border = .$animal, deg = FALSE, nv = 20,
+                                segment = c(0, 2 * pi))
+        }
+      } else {
+        D() %>% dplyr::slice_(~n()) %>%
+        {
+          graphics::points(x = .$X, y = .$Y, col = .$animal, cex = 3, pch = 16)
+        }
+      }
+      graphics::segments(
+        D() %>% dplyr::slice_(~1:(n() - 1)) %>% magrittr::extract2('X'),
+        D() %>% dplyr::slice_(~1:(n() - 1)) %>% magrittr::extract2('Y'),
+        D() %>% dplyr::slice_(~2:n()) %>% magrittr::extract2('X'),
+        D() %>% dplyr::slice_(~2:n()) %>% magrittr::extract2('Y'),
+        col = D()$animal)
+    }, height = 800, width = 800)
     # { d %>%
     #   ggvis::ggvis(~X, ~Y, fill = ~animal) %>%
     #   ggvis::layer_points(size := 100) } %>%
@@ -54,12 +87,17 @@ shiny_tracks <- function(tracks, min = NULL, max = NULL, ...) {
   ui <- shiny::fluidPage(
     shiny::sidebarLayout(
       shiny::sidebarPanel(
+        tags$body(shiny::h1('trackr'),
+                  shiny::p('Use dilution to lower the frame rate if playback is choppy.')
+        ),
         shiny::selectInput('TR', 'trial', choices = LEVELS),
         shiny::uiOutput('ui'),
-        shiny::sliderInput('dilute_in', 'Dilution factor', 1, 10, 4),
-        shiny::sliderInput('playback_speed', 'Playback speed', 1, 10, 1)
+        shiny::sliderInput('dilute_in', 'Dilution factor', 1, 10, 2),
+        shiny::sliderInput('playback_speed', 'Playback speed', 1, 10, 1),
+        shiny::checkboxInput("zoom", "Zoom to animals", value = TRUE),
+        shiny::numericInput('trail_length', 'Trail length', 50, 0)
       ),
-      shiny::mainPanel(shiny::plotOutput('tr_plot'))
+      shiny::mainPanel(shiny::plotOutput('tr_plot', width = "100%"))
       #ggvis::ggvisOutput('tr_plot'))
     )
   )
