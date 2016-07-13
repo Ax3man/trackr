@@ -1,24 +1,23 @@
 #' Animate tracks obejct in shiny app.
 #'
 #' @param tracks A tracks object.
-#' @param min Minimum range of frame.
-#' @param max Maximum range of frame.
+#' @param start Starting time or frame.
+#' @param end End time or frame.
 #' @param ... Other parameters to be passed on to \code{\link[shiny]{runApp}}
 #' @export
-shiny_tracks <- function(tracks, min = NULL, max = NULL, ...) {
+shiny_tracks <- function(tracks, start = NULL, end = NULL, ...) {
   if (!requireNamespace('shiny')) {
     stop('Install the shiny package to use this function.', call. = FALSE)
   }
 
   tr <- dplyr::collect(tracks$tr)
-  tr <- dplyr::filter_(tr, ~frame %in% min:max)
 
-  LEVELS <- levels(tr$trial)
-  if (is.null(min)) {
-    min <- min(tr$frame)
-    max <- max(tr$frame)
-  }
+  start <- max(start, min(tr$frame))
+  end <- min(end, max(tr$frame))
   fps <- tracks$params$frame_rate
+
+  tr <- dplyr::filter_(tr, ~frame %in% start:end)
+  LEVELS <- levels(tr$trial)
 
   steady_ranges <- rbind(range(tr$X, na.rm = TRUE),
                          range(tr$Y, na.rm = TRUE))
@@ -28,7 +27,7 @@ shiny_tracks <- function(tracks, min = NULL, max = NULL, ...) {
 
     output$ui <-
       shiny::renderUI({
-        shiny::sliderInput('FR', 'Frame', min, max, min, max,
+        shiny::sliderInput('FR', 'Frame', start, end, start,
                            step = input$dilute_in,
                            animate = shiny::animationOptions(time_step(),
                                                              loop = FALSE))
@@ -93,7 +92,7 @@ shiny_tracks <- function(tracks, min = NULL, max = NULL, ...) {
         shiny::selectInput('TR', 'trial', choices = LEVELS),
         shiny::uiOutput('ui'),
         shiny::sliderInput('dilute_in', 'Dilution factor', 1, 10, 2),
-        shiny::sliderInput('playback_speed', 'Playback speed', 1, 10, 1),
+        shiny::sliderInput('playback_speed', 'Playback speed', 0.2, 10, 1, 0.2),
         shiny::checkboxInput("zoom", "Zoom to animals", value = TRUE),
         shiny::numericInput('trail_length', 'Trail length', 50, 0)
       ),
