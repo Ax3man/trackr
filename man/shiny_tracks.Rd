@@ -2,20 +2,29 @@
 % Please edit documentation in R/shiny_tracks.R
 \name{shiny_tracks}
 \alias{shiny_tracks}
-\title{Animate tracks obejct in shiny app.}
+\title{Animate tracks object in shiny app.}
 \usage{
-shiny_tracks(tracks, min = NULL, max = NULL, ...)
+shiny_tracks(tracks, start = NULL, end = NULL, ...)
 }
 \arguments{
 \item{tracks}{A tracks object.}
 
-\item{min}{Minimum range of frame.}
+\item{start}{Starting time or frame.}
 
-\item{max}{Maximum range of frame.}
+\item{end}{End time or frame.}
 
 \item{...}{Other parameters to be passed on to \code{\link[shiny]{runApp}}}
 }
 \description{
-Animate tracks obejct in shiny app.
+This function lauches a shiny app that can allows for the viewing of animated
+tracks. It relies simply on the fast updating of a base plotting window.
+Performance depends on hardware, but can improved by: decreasing the playback
+speed, increasing the dilution factor, and by selecting a smaller portion of
+the tracks using \code{start} and \code{end}.
+}
+\details{
+The dilution factor determines how many of the frames are actually animated.
+For example, when it is set to 3, only at every third frame the plot is
+updated. The full trial is always shown.
 }
 

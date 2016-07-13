@@ -1,4 +1,14 @@
-#' Animate tracks obejct in shiny app.
+#' Animate tracks object in shiny app.
+#'
+#' This function lauches a shiny app that can allows for the viewing of animated
+#' tracks. It relies simply on the fast updating of a base plotting window.
+#' Performance depends on hardware, but can improved by: decreasing the playback
+#' speed, increasing the dilution factor, and by selecting a smaller portion of
+#' the tracks using \code{start} and \code{end}.
+#'
+#' The dilution factor determines how many of the frames are actually animated.
+#' For example, when it is set to 3, only at every third frame the plot is
+#' updated. The full trial is always shown.
 #'
 #' @param tracks A tracks object.
 #' @param start Starting time or frame.
@@ -33,7 +43,7 @@ shiny_tracks <- function(tracks, start = NULL, end = NULL, ...) {
                                                              loop = FALSE))
       } )
 
-    D <- reactive(
+    D <- shiny::reactive(
       dplyr::filter_(tr,
                      lazyeval::interp(~trial == TR, TR = input$TR),
                      lazyeval::interp(~frame %in% a:b,
@@ -86,7 +96,7 @@ shiny_tracks <- function(tracks, start = NULL, end = NULL, ...) {
   ui <- shiny::fluidPage(
     shiny::sidebarLayout(
       shiny::sidebarPanel(
-        tags$body(shiny::h1('trackr'),
+        shiny::tags$body(shiny::h1('trackr'),
                   shiny::p('Use dilution to lower the frame rate if playback is choppy.')
         ),
         shiny::selectInput('TR', 'trial', choices = LEVELS),

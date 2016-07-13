@@ -32,6 +32,7 @@ Imports:
 Suggests:
     geometry,
     knitr,
+    plotrix,
     shiny (>= 0.13.2)
 SystemRequirements: This package typically uses a lot of memory.
 RoxygenNote: 5.0.1
