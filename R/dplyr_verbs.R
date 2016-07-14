@@ -85,7 +85,7 @@ filter_.tracks <- function(.data, ..., drop = TRUE, .dots,
 
   for (i in seq_along(conds)) {
     tracks[tables[[i]]] <- lapply(tracks[tables[[i]]], dplyr::filter_,
-                                  .dots = conds[i])
+                                  .dots = conds[[i]])
   }
 
   if (repartition) {
