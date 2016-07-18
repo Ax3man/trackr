@@ -334,8 +334,10 @@ plot_tracks_quick <- function(tracks, ...) {
     dplyr::mutate_(gap = ~ifelse(frame == 1 + dplyr::lag(frame), 0, 1),
                    .GROUP = ~c(0, cumsum(gap[-1]))) %>%
     dplyr::collect()
-  graphics::plot(NA, type = 'n', xlim = c(0, 1920), ylim = c(0, 1080),
-                 xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', ...)
+  graphics::plot(
+    NA, type = 'n', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', asp = 1,
+    xlim = c(tracks$params$bounds[1, 1], tracks$params$bounds[1, 4]),
+    ylim = c(tracks$params$bounds[2, 1], tracks$params$bounds[2, 2]), ...)
   invisible(
     lapply(split(tracks$tr, interaction(tracks$tr$.GROUP, tracks$tr$animal)),
            function(x) {
