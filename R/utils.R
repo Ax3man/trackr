@@ -91,11 +91,17 @@ find_max_cross_corr <- function(v1, v2, range) {
 #                           all_named = TRUE)
 add_defaults_to_dots <- function(dots) {
   calls <- lapply(dots, `[[`, 'expr')
+  new_calls <- calls
+
   fun_calls <- calls[sapply(calls, class) == 'call']
   funs <- lapply(fun_calls, `[[`, 1)
+  primitives <- sapply(funs, function(x) is.primitive(match.fun(x)))
 
+  fun_calls <- fun_calls[!primitives]
+  funs <- funs[!primitives]
   matched_calls <- Map(function(x, y) match.call(match.fun(x), y),
                        funs, fun_calls)
+
   envrs <- lapply(dots, `[[`, 'env')
   calls_list <- lapply(matched_calls, as.list)
 
@@ -107,7 +113,7 @@ add_defaults_to_dots <- function(dots) {
     return(def)
   }, defaults, given)
 
-  new_calls <- Map(function(x, y) {
+  new_calls[!primitives] <- Map(function(x, y) {
     lazyeval::make_call(x, y)},
     funs, arguments)
 
@@ -120,11 +126,17 @@ add_defaults_to_dots <- function(dots) {
 # Use lazyeval::interp to fill in any values gives as tracks$params$...
 interp_params <- function(dots, params) {
   calls <- lapply(dots, `[[`, 'expr')
+  new_calls <- calls
+
   fun_calls <- calls[sapply(calls, class) == 'call']
   funs <- lapply(fun_calls, `[[`, 1)
+  primitives <- sapply(funs, function(x) is.primitive(match.fun(x)))
 
+  fun_calls <- fun_calls[!primitives]
+  funs <- funs[!primitives]
   matched_calls <- Map(function(x, y) match.call(match.fun(x), y),
                        funs, fun_calls)
+
   calls_list <- lapply(matched_calls, as.list)
   arguments <- lapply(calls_list, `[`, -1)
   envrs <- lapply(dots, `[[`, 'env')
@@ -143,10 +155,11 @@ interp_params <- function(dots, params) {
     return(a)
   }, arguments[with_params2], with_params[with_params2])
 
-  new_calls <- Map(function(x, y) {
+  new_calls[!primitives] <- Map(function(x, y) {
     lazyeval::make_call(x, y)},
     funs, new_arguments)
-  new_calls <- lapply(new_calls, lazyeval::interp, .values = params)
+  new_calls[!primitives] <- lapply(new_calls[!primitives], lazyeval::interp,
+                                   .values = params)
 
   dots[sapply(calls, class) == 'call'] <- new_calls
   Map(function(x, y) { x$env <- y; return(x) }, dots, envrs)
