@@ -13,7 +13,7 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
   if (shape != 'circle') {
     stop('Currently only circular arenas are implemented.')
   }
-  if (is.null(grouping) & is.na(grouping)) {
+  if (is.null(grouping)) {
     tr <- dplyr::group_by(tracks$tr)
     tr <- dplyr::select_(tr, ~X, ~Y)
     tr <- dplyr::collect(tr)
@@ -25,33 +25,39 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
     arena <- dplyr::do_(tr,
                         qq = ~find_smallest_enclosing_circle(.[, c('X', 'Y')]))
     arena <- dplyr::collect(arena)
-    arena <- dplyr::bind_cols(arena, as.data.frame(do.call(rbind, arena$qq)))
+    suppressWarnings(
+      arena <- dplyr::bind_cols(arena, as.data.frame(do.call(rbind, arena$qq)))
+    )
     arena$qq <- NULL
 
     multidplyr::cluster_assign_value(tracks$tr$cluster, 'arena', arena)
     multidplyr::cluster_assign_value(tracks$tr$cluster, 'radius', radius)
 
-    if (is.null(grouping) & is.na(grouping)) {
+    if (is.null(grouping)) {
       tracks$tr <- dplyr::mutate_(tracks$tr,
                                   x = arena$x, y = arena$y, r = arena$r)
     } else {
-      tracks$tr <- multidplyr::cluster_eval_(
+      multidplyr::cluster_eval_(
         tracks$tr$cluster,
         lazyeval::interp(quote(dplyr::left_join(name, arena)),
-                         name = as.name(tracks$tr$name)))
+                         name = as.name(tracks$tr$name))) %>%
+        {
+          multidplyr::cluster_assign_each(cluster = tracks$tr$cluster,
+                                          name = tracks$tr$name, values = .)
+        }
     }
     tracks$tr <- dplyr::mutate_(tracks$tr,
-                                X = lazyeval::interp(~(X - x) * (r / R), R = radius),
-                                Y = lazyeval::interp(~(Y - y) * (r / R), R = radius))
+                                X = lazyeval::interp(~(X - x) * (R / r), R = radius),
+                                Y = lazyeval::interp(~(Y - y) * (R / r), R = radius))
     if ('minor_axis' %in% tracks$pr$tr) {
       tracks$tr <- dplyr::mutate_(
         tracks$tr,
-        minor_axis = lazyeval::interp(~minor_axis * (r / R), R = radius))
+        minor_axis = lazyeval::interp(~minor_axis * (R / r), R = radius))
     }
     if ('major_axis' %in% tracks$pr$tr) {
       tracks$tr <- dplyr::mutate_(
         tracks$tr,
-        major_axis = lazyeval::interp(~major_axis * (r / R), R = radius))
+        major_axis = lazyeval::interp(~major_axis * (R / r), R = radius))
     }
     tracks$params$bounds <-
       matrix(
