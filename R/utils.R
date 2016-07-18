@@ -131,6 +131,10 @@ interp_params <- function(dots, params) {
   funs <- lapply(fun_calls, `[[`, 1)
   primitives <- sapply(funs, function(x) is.primitive(match.fun(x)))
 
+  if (all(primitives)) {
+    return(dots)
+  }
+
   fun_calls <- fun_calls[!primitives]
   funs <- funs[!primitives]
   matched_calls <- Map(function(x, y) match.call(match.fun(x), y),
