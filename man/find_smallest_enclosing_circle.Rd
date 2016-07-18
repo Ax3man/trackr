@@ -4,16 +4,16 @@
 \alias{find_smallest_enclosing_circle}
 \title{Find smalles enclosing circle.}
 \usage{
-find_smallest_enclosing_circle(points)
+find_smallest_enclosing_circle(S)
 }
 \arguments{
-\item{points}{A matrix or data.frame with the first column being x and the
-second being y.}
+\item{S}{A matrix or data.frame of point coordinates with the first column
+being x and the second being y.}
 }
 \value{
 A vector of lenght three, center x and y, and radius.
 }
 \description{
-Find smalles enclosing circle.
+Algorithm by Sven Skyum, from http://dx.doi.org/10.7146/dpb.v19i314.6704.
 }
 
