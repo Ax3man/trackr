@@ -71,58 +71,48 @@ find_smallest_enclosing_rect <- function(points) {
 
 #' Find smalles enclosing circle.
 #'
-#' @param points A matrix or data.frame with the first column being x and the
-#'  second being y.
+#' Algorithm by Sven Skyum, from http://dx.doi.org/10.7146/dpb.v19i314.6704.
+#'
+#' @param S A matrix or data.frame of point coordinates with the first column
+#'   being x and the second being y.
 #'
 #' @return A vector of lenght three, center x and y, and radius.
 #' @export
-find_smallest_enclosing_circle <- function(points) {
-  H <- as.matrix(points[chull(points), ])
-
-  # Option 1: circle through two opposite points
-  indices <- expand.grid(one = 1:nrow(H), two = 1:nrow(H),
-                         KEEP.OUT.ATTRS = FALSE)
-  indices <- dplyr::filter(indices, one != two)
-  circles <- apply(indices, 1, function(i) {
-    find_circle_from_two_points(H[i, ])
-  } )
-  row.names(circles) <- c('x', 'y', 'r')
-  tests <- apply(circles, 2, function(x) {
-    all(check_if_in_circle(H, x['x'], x['y'], x['r']))
-  } )
-  good <- circles[, !is.na(tests) & tests]
-  if (length(good) > 0) {
-    best2 <- good[, which.min(good['r', ])]
-  } else {
-    best2 <- NA
+find_smallest_enclosing_circle <- function(S) {
+  S <- as.matrix(S[chull(S), ])
+  if (nrow(S) == 1) {
+    return(c(x = S[1, 1], y = S[1, 2], r = NA))
   }
-
-  # Option 2: there is a solution of a circle that goes through three points
-  indices <- expand.grid(one = 1:nrow(H), two = 1:nrow(H), three = 1:nrow(H),
-                         KEEP.OUT.ATTRS = FALSE)
-  indices <- dplyr::filter(indices, one != two, one != three, two != three)
-  circles <- apply(indices, 1, function(i) {
-    find_circle_from_three_points(H[i, ])
-  } )
-  row.names(circles) <- c('x', 'y', 'r')
-  tests <- apply(circles, 2, function(x) {
-    all(check_if_in_circle(H, x['x'], x['y'], x['r']))
-  } )
-  good <- circles[, !is.na(tests) & tests]
-  if (length(good) > 0) {
-    best3 <- good[, which.min(good['r', ])]
-  } else {
-    best3 <- NA
+  finished <- FALSE
+  while (!finished) {
+    if (nrow(S) == 1) {
+      finished <- TRUE
+    }
+    S2 <- rbind(S[nrow(S), ], S, S[1, ])
+    radii <- sapply(1:nrow(S), function(i) {
+      find_circle_from_three_points(S2[i:(i + 2), ])[3]
+    } )
+    angles <- sapply(1:nrow(S), function(i) {
+      angle_diff(angle(S2[i, 1], S2[i, 2], S2[i + 1, 1], S2[i + 1, 2]),
+                 angle(S2[i + 1, 1], S2[i + 1, 2], S2[i + 2, 1], S2[i + 2, 2]))
+    } )
+    index <- order(radii, angles, decreasing = TRUE)[1]
+    angle <- angles[index]
+    if (angle <= -pi / 2 | angle >= pi / 2) {
+      if (nrow(S) == 2) {
+        circle <- find_circle_from_two_points(S)
+      } else {
+        circle <- find_circle_from_three_points(S2[index:(index + 2), ])
+      }
+      finished <- TRUE
+    } else {
+      S <- S[-index, ]
+    }
   }
-
-  if (is.na(best2)) {
-    return(best3)
-  }
-  if (is.na(best3)) {
-    return(best2)
-  }
-  return(ifelse(best2['r'] < best3['r'], best2, best3))
+  names(circle) <- c('x', 'y', 'r')
+  return(circle)
 }
+
 
 find_circle_from_two_points <- function(points) {
   cx <- mean(points[, 1])
