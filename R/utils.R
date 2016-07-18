@@ -126,7 +126,6 @@ add_defaults_to_dots <- function(dots) {
 # Use lazyeval::interp to fill in any values gives as tracks$params$...
 interp_params <- function(dots, params) {
   calls <- lapply(dots, `[[`, 'expr')
-  new_calls <- calls
 
   fun_calls <- calls[sapply(calls, class) == 'call']
   funs <- lapply(fun_calls, `[[`, 1)
@@ -155,14 +154,16 @@ interp_params <- function(dots, params) {
     return(a)
   }, arguments[with_params2], with_params[with_params2])
 
-  new_calls[!primitives] <- Map(function(x, y) {
+  new_calls <- Map(function(x, y) {
     lazyeval::make_call(x, y)},
     funs, new_arguments)
-  new_calls[!primitives] <- lapply(new_calls[!primitives], lazyeval::interp,
+  new_calls <- lapply(new_calls[!primitives], lazyeval::interp,
                                    .values = params)
 
-  dots[sapply(calls, class) == 'call'] <- new_calls
-  Map(function(x, y) { x$env <- y; return(x) }, dots, envrs)
+  dots[sapply(calls, class) == 'call'][!primitives] <- new_calls
+  dots[!primitives] <- Map(function(x, y) { x$env <- y; return(x) },
+      dots[!primitives], envrs[!primitives])
+  return(dots)
 }
 
 default_summarize_targets <- function(tables) {
