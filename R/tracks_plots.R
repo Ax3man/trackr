@@ -23,11 +23,11 @@
 #' plot(Guppies, color = ~animal:trial,facet = ~1)
 #' # more complex facetting
 #' plot(Guppies, facet = ~trial + animal, ncol = 8)
-plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
+plot_tracks <- function(tracks, color = ~animal, facet = ~trial, nrow = NULL,
                         ncol = NULL) {
-  if ((facet == ~trial) & length(levels(tracks$tr$trial)) == 1)
+  if ((facet == ~trial) & length(levels(tracks$tr$trial)) == 1) {
     facet <- ~1
-
+  }
   # We need to add a grouping factor in order to create gaps when there are
   # non-subsequent frames.
   tracks$tr <- dplyr::mutate_(tracks$tr,
@@ -36,7 +36,8 @@ plot_tracks <- function(tracks, color = ~animal, facet = ~trial,  nrow = NULL,
                               .GROUP = ~c(0, cumsum(gap[-1])))
 
   ggplot2::ggplot(dplyr::collect(tracks$tr),
-                  ggplot2::aes_(~X, ~Y, color = color, group = ~.GROUP)) +
+                  ggplot2::aes_(~X, ~Y, color = color,
+                                group = ~interaction(animal, .GROUP))) +
     ggplot2::geom_path() +
     ggplot2::coord_fixed(xlim = tracks$params$bounds[1, c(1, 3)],
                          ylim = tracks$params$bounds[2, c(1, 3)],
