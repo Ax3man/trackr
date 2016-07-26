@@ -247,3 +247,4 @@ time_bin_labels <- function(bins, frame_rate) {
   labels <- tolower(gsub(" ", "", labels, fixed = TRUE))
   paste(utils::head(labels, -1), 'till', labels[-1])
 }
+

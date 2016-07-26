@@ -9,8 +9,8 @@
 #' @return A tracks object.
 #' @export
 estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
-                           radius = NULL) {
-  if (shape != 'circle') {
+                           radius = NULL, height = NULL, width = NULL) {
+  if (!(shape %in% c('circle', 'rectangle'))) {
     stop('Currently only circular arenas are implemented.')
   }
   if (is.null(grouping)) {
@@ -24,10 +24,10 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
   if (shape == 'circle') {
     arena <- dplyr::do_(tr,
                         qq = ~find_smallest_enclosing_circle(.[, c('X', 'Y')]))
-    arena <- dplyr::collect(arena)
     suppressWarnings(
-      arena <- dplyr::bind_cols(arena, as.data.frame(do.call(rbind, arena$qq)))
+      arena <- dplyr::collect(arena)
     )
+    arena <- dplyr::bind_cols(arena, as.data.frame(do.call(rbind, arena$qq)))
     arena$qq <- NULL
 
     multidplyr::cluster_assign_value(tracks$tr$cluster, 'arena', arena)
@@ -47,8 +47,10 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
         }
     }
     tracks$tr <- dplyr::mutate_(tracks$tr,
-                                X = lazyeval::interp(~(X - x) * (R / r), R = radius),
-                                Y = lazyeval::interp(~(Y - y) * (R / r), R = radius))
+                                X = lazyeval::interp(~(X - x) * (R / r),
+                                                     R = radius),
+                                Y = lazyeval::interp(~(Y - y) * (R / r),
+                                                     R = radius))
     if ('minor_axis' %in% tracks$pr$tr) {
       tracks$tr <- dplyr::mutate_(
         tracks$tr,
@@ -64,6 +66,26 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
         c(-radius, -radius, -radius, radius, radius, radius, radius, -radius), 2,
         dimnames = list(c('x', 'y'), c('ll', 'ul', 'ur', 'lr')))
     tracks$params$arena <- 'circle'
+  }
+  if (shape == 'rectangle') {
+    if (!is.null(grouping)) {
+      stop('No grouping implemented for method `rectangle`')
+    }
+    tr <- dplyr::collect(tr)
+    arena <- find_smallest_enclosing_rect(tr[, c('X', 'Y')])
+
+    tr[, c('X', 'Y')] <- rect_transform(tr[, c('X', 'Y')],
+                                        arena[, 'x'], arena[, 'y'],
+                                        c(0, width, width, 0),
+                                        c(0, 0, height, height))
+    a <- angle(arena[1, 'x'], arena[1, 'y'], arena[2, 'x'], arena[2, 'y'])
+    tr <- dplyr::mutate_(orientation = ~orienation - a)
+    warning('Minor and major axes are not adjusted at this time.')
+    tracks$params$bounds <-
+      matrix(
+        c(0, 0, width, width, 0, height, height, 0), 2, byrow = TRUE,
+        dimnames = list(c('x', 'y'), c('ll', 'ul', 'ur', 'lr')))
+    tracks$params$arena <- 'rectangle'
   }
   return(tracks)
 }

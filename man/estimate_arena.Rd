@@ -4,7 +4,8 @@
 \alias{estimate_arena}
 \title{Estimate arena from tracks and reallign.}
 \usage{
-estimate_arena(tracks, grouping = ~trial, shape = "circle", radius = NULL)
+estimate_arena(tracks, grouping = ~trial, shape = "circle", radius = NULL,
+  height = NULL, width = NULL)
 }
 \arguments{
 \item{tracks}{A tracks object.}

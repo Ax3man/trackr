@@ -43,9 +43,17 @@ res_vec <- function(angles, lengths = NULL) {
          sum(lengths * cos(angles), na.rm = T) ^ 2)
 }
 
+#' Find smalles enclosing rectangle.
+#'
+#' Algorithm from William Huber (http://gis.stackexchange.com/a/22934) and
+# @Bangyou (http://gis.stackexchange.com/a/174577).
+#'
+#' @param points A matrix or data.frame of point coordinates with the first
+#'   column being x and the second being y.
+#'
+#' @return A vector of lenght three, center x and y, and radius.
+#' @export
 find_smallest_enclosing_rect <- function(points) {
-  # Authored by William A. Huber (http://gis.stackexchange.com/a/22934) and
-  # @Bangyou (http://gis.stackexchange.com/a/174577).
   if (!requireNamespace('geometry', quietly = TRUE))
     stop("Package \'geometry\' needs to be installed to use this function.")
   a2 <- geometry::convhulln(points, options = 'FA')
@@ -61,7 +69,7 @@ find_smallest_enclosing_rect <- function(points) {
   areas <- (y[1, ] - y[2, ]) * (x[1, ] - x[2, ])
   k <- which.min(areas)
 
-  rect <- cbind(x[c(1, 2, 2, 1, 1), k], y[c(1, 1, 2, 2, 1), k]) %*%
+  rect <- cbind(x[c(1, 2, 2, 1), k], y[c(1, 1, 2, 2), k]) %*%
     rbind(v[k, ], w[k, ])
   rect <- as.data.frame(rect)
   names(rect) <- c('x', 'y')
@@ -134,4 +142,48 @@ find_circle_from_three_points <- function(points) {
 
 check_if_in_circle <- function(points, x, y, r) {
   (points[, 1] - x) ^ 2 + (points[, 2] - y) ^ 2 < r ^ 2
+}
+
+#' Geometric transform of xy coordinates between arbitrary quadrilaterals.
+#'
+#' Function that transformis xy coordinates from any quadrilateral system to any
+#' other quadrilateral system. This is a perspective transform, useful for
+#' transforming data from a camera perspective to a known coordinate system. x
+#' and y should be vectors (of any length) of points that need to be translated.
+#' x.old and y.old should give the four corner coordinates of the old
+#' quadrilateral, while x.new and y.new do the same for the new quadrilateral.
+#' Does not preserves names.
+#'
+#' Strongly inspired by: http://alumni.media.mit.edu/~cwren/interpolator/
+#' Original math from:
+#' http://www.robots.ox.ac.uk/~vgg/presentations/bmvc97/criminispaper/planedev.html
+#'
+#' @param points Two column matrix with xy coordinates.
+#' @param x.old Vector of length four with x coordinates of old quadrilateral.
+#' @param y.old Vector of length four with y coordinates of old quadrilateral.
+#' @param x.new Vector of length four with x coordinates of new quadrilateral.
+#' @param y.new Vector of length four with y coordinates of new quadrilateral.
+#'
+#' @export
+rect_transform <- function(points, x.old, y.old, x.new, y.new){
+  # unname to prevent an annoying warning
+  row.names(x.old) <- row.names(y.old) <- NULL
+
+  B <- cbind(x.old, y.old, rep(1, 4), rep(0, 4), rep(0, 4), rep(0, 4),
+             -x.old * x.new, -y.old * x.new, rep(0, 4), rep(0, 4), rep(0, 4),
+             x.old, y.old, rep(1, 4), -x.old * y.new, -y.old * y.new)
+  B <- matrix(as.vector(t(B)), nrow = 8, ncol = 8, byrow = T)
+  D <- cbind(x.new, y.new)
+  D <- c(t(D))
+  l <- solve(t(B) %*% B) %*% t(B) %*% D
+  A <- matrix(c(l[1:6], 0, 0, 1), nrow = 3, ncol = 3, byrow = T)
+  C <- c(l[7:8], 1)
+  n <- matrix(NA, nrow = length(x), ncol = 2)
+
+  n <- apply(points, 1, function(x) pracma::mrdivide(A %*% c(x[1], x[2], 1),
+                                                     (C %*% c(x[1], x[2], 1))))
+  n <- t(n)
+  n <- n[, 1:2]
+
+  return(n)
 }
