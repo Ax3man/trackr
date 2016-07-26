@@ -16,7 +16,9 @@ A \code{tracks} object.
 }
 \description{
 This function allows one to assign several duplicated identities over time
-to a fewer number of actual animals. When more identities exist within a
-frame than there is animals, data is filtered out.
+to a fewer number of actual animals. This is useful when tracking software
+does not keep track of consisent identities, and it occasionally loses and
+rediscovers animals. When more identities exist within a frame than there is
+animals, those frames are lost.
 }
 

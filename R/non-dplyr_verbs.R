@@ -291,8 +291,10 @@ summarise_sections_ <- function(sections, ..., .dots) {
 #' Collapse multiple identies in fewer.
 #'
 #' This function allows one to assign several duplicated identities over time
-#' to a fewer number of actual animals. When more identities exist within a
-#' frame than there is animals, data is filtered out.
+#' to a fewer number of actual animals. This is useful when tracking software
+#' does not keep track of consisent identities, and it occasionally loses and
+#' rediscovers animals. When more identities exist within a frame than there is
+#' animals, those frames are lost.
 #'
 #' @param tracks A \code{tracks} object.
 #' @param n The number of animals. Currently only 1 is supported.
@@ -303,14 +305,44 @@ collapse_identities <- function(tracks, n = 1) {
   tracks <- tracks[c('tr', 'meta_data', 'params', 'pr')]
   class(tracks) <- 'tracks'
   if (n != 1) {
-    stop('Only n = 1 supporter for now.', call. = FALSE)
+    stop('Only n = 1 supported for now.', call. = FALSE)
   }
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~frame)
-  tracks$tr <- dplyr::mutate_(tracks$tr, n = ~n())
-  tracks$pr$tr <- c(tracks$pr$tr, 'n')
-  tracks <- dplyr::filter_(tracks, ~n == 1)
-  tracks$tr <- dplyr::select_(tracks$tr, ~-n)
+  r <- dplyr::summarize_(tracks$tr, start = ~min(frame), end = ~max(frame))
+  r <- dplyr::collect(r)
+  r <- dplyr::arrange_(r, ~trial, ~start)
+  r <- invisible(dplyr::mutate_(r,
+                      end_overlap = ~end - dplyr::lead(start) > 0,
+                      start_new = ~dplyr::if_else(dplyr::lag(end_overlap),
+                                                  dplyr::lag(end), start),
+                      r = ~row_number(),
+                      start_new = ~dplyr::if_else(r == 1, start,
+                                                  start_new),
+                      end_new = ~dplyr::if_else(end_overlap,
+                                                dplyr::lead(start), end)))
+  r <- dplyr::select_(r, ~-start, ~-end, ~-end_overlap, ~-r)
+  r <- dplyr::filter_(r, ~start_new < end_new)
+  multidplyr::cluster_assign_value(tracks$tr$cluster, 'r', r)
+
+  multidplyr::cluster_eval_(
+    tracks$tr$cluster,
+    lazyeval::interp(quote(
+      assign(x, dplyr::left_join(x2, r))),
+      x = tracks$tr$name, x2 = as.name(tracks$tr$name)))
+  multidplyr::cluster_rm(tracks$tr$cluster, 'r')
+
+  multidplyr::cluster_eval_(
+    tracks$tr$cluster,
+    lazyeval::interp(quote(
+      assign(x, dplyr::filter_(x2, ~frame > start_new, ~frame < end_new))),
+      x = tracks$tr$name, x2 = as.name(tracks$tr$name)))
+
+  multidplyr::cluster_eval_(
+    tracks$tr$cluster,
+    lazyeval::interp(quote(
+      assign(x, dplyr::select_(x2, ~-start_new, ~-end_new))),
+      x = tracks$tr$name, x2 = as.name(tracks$tr$name)))
+
   tracks$tr <- dplyr::mutate_(tracks$tr, animal = ~factor(1))
-  tracks$tr <- dplyr::group_by_(tracks$tr, ~animal)
+
   return(tracks)
 }
