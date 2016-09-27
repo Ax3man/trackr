@@ -2,8 +2,12 @@
 #'
 #' @param tracks A tracks object.
 #' @param grouping On what level the arena should be estimated.
-#' @param shape The shape of the arena. Currently has to be a circle.
+#' @param shape The shape of the arena. Either a circle or a rectangle.
 #' @param radius The true radius of the circle, used for rescaling the track
+#'   coordinates.
+#' @param height The true height of the rectangle., used for rescaling the track
+#'   coordinates.
+#' @param width The true width of the rectangle., used for rescaling the track
 #'   coordinates.
 #'
 #' @return A tracks object.
@@ -61,6 +65,7 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
         tracks$tr,
         major_axis = lazyeval::interp(~major_axis * (R / r), R = radius))
     }
+    tracks$tr <- dplyr::select_(tracks$tr, ~-x, ~-y, ~-r)
     tracks$params$bounds <-
       matrix(
         c(-radius, -radius, -radius, radius, radius, radius, radius, -radius), 2,
