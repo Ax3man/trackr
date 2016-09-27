@@ -342,6 +342,7 @@ collapse_identities <- function(tracks, n = 1) {
       assign(x, dplyr::select_(x2, ~-start_new, ~-end_new))),
       x = tracks$tr$name, x2 = as.name(tracks$tr$name)))
 
+  tracks$tr <- dplyr::group_by(tracks$tr)
   tracks$tr <- dplyr::mutate_(tracks$tr, animal = ~factor(1))
 
   return(tracks)
