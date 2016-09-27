@@ -201,7 +201,7 @@ read_Ctrax <- function(file = NULL,
     substr(file.names[substr(file.names, 1, 6) == 'fixed_'], 7, 100L)
 
   d <- dplyr::bind_rows(d, .id = 'trial')
-  d$trial <- factor(d$trial, labels = file.names)
+  d$trial <- factor(d$trial, levels = seq_along(file.names), labels = file.names)
 
   d$animal <- as.factor(d$animal)
 
