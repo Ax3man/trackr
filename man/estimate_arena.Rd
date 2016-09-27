@@ -12,9 +12,15 @@ estimate_arena(tracks, grouping = ~trial, shape = "circle", radius = NULL,
 
 \item{grouping}{On what level the arena should be estimated.}
 
-\item{shape}{The shape of the arena. Currently has to be a circle.}
+\item{shape}{The shape of the arena. Either a circle or a rectangle.}
 
 \item{radius}{The true radius of the circle, used for rescaling the track
+coordinates.}
+
+\item{height}{The true height of the rectangle., used for rescaling the track
+coordinates.}
+
+\item{width}{The true width of the rectangle., used for rescaling the track
 coordinates.}
 }
 \value{
