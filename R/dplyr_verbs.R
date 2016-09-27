@@ -174,6 +174,12 @@ summarise_.tracks <- function(.data,
     if (is.null(tracks[[.target[[i]], FALSE]])) {
       tracks <- expand_tracks2(tracks, .target[[i]])
     }
+    # Drop any variables from the target that have the same name of a cond
+    dupl <- any(names(conds)[i] %in% names(tracks[[.target[[i]]]]))
+    if (dupl) {
+      tracks[[.target[[i]]]] <-
+        dplyr::select_(tracks[[.target[[i]]]], paste0('-', names(conds)[i]))
+    }
     tracks[[.target[[i]]]] <-
       dplyr::left_join(tracks[[.target[[i]]]], dplyr::collect(d), by = grps)
   }
