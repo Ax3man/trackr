@@ -15,7 +15,7 @@
 estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
                            radius = NULL, height = NULL, width = NULL) {
   if (!(shape %in% c('circle', 'rectangle'))) {
-    stop('Currently only circular arenas are implemented.')
+    stop('Currently only circular and rectangluar arenas are implemented.')
   }
   if (is.null(grouping)) {
     tr <- dplyr::group_by(tracks$tr)
@@ -76,6 +76,9 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
     if (!is.null(grouping)) {
       stop('No grouping implemented for method `rectangle`')
     }
+    if (is.null(height) | is.null(width)) {
+      stop('You need to supply height and width if estimating rectangels.')
+    }
     tr <- dplyr::collect(tr)
     arena <- find_smallest_enclosing_rect(tr[, c('X', 'Y')])
 
@@ -84,7 +87,7 @@ estimate_arena <- function(tracks, grouping = ~trial, shape = 'circle',
                                         c(0, width, width, 0),
                                         c(0, 0, height, height))
     a <- angle(arena[1, 'x'], arena[1, 'y'], arena[2, 'x'], arena[2, 'y'])
-    tr <- dplyr::mutate_(orientation = ~orienation - a)
+    tr <- dplyr::mutate_(tr, orientation = ~orienation - a)
     warning('Minor and major axes are not adjusted at this time.')
     tracks$params$bounds <-
       matrix(
