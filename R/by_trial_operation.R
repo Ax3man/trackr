@@ -38,7 +38,7 @@ set_start_frame <- function(tracks, value = NULL, tab = NULL, frame = 'frame',
     call_ <- list(frame = lazyeval::interp(~frame - x, x = value))
     tracks <- dplyr::mutate_(tracks, .dots = call_)
   } else {
-    tracks <- by_trial_operation(tracks, table = tab, var = frame,
+    tracks <- by_trial_operation(tracks, tab = tab, var = frame,
                                  operation = `-`, trial = trial)
   }
   filter(tracks, frame > 0)
@@ -47,7 +47,7 @@ set_start_frame <- function(tracks, value = NULL, tab = NULL, frame = 'frame',
 #' Title
 #'
 #' @param tracks
-#' @param table
+#' @param tab
 #' @param operation
 #' @param var
 #' @param trial
@@ -56,7 +56,7 @@ set_start_frame <- function(tracks, value = NULL, tab = NULL, frame = 'frame',
 #' @export
 #'
 #' @examples
-by_trial_operation <- function(tracks, table, var, operation = `+`, trial = 'trial') {
+by_trial_operation <- function(tracks, tab, var, operation = `+`, trial = 'trial') {
   # make tab nice
   tab <- dplyr::select_(tab, var, trial)
   names(tab)[1] <- c('..to_use_var..')
