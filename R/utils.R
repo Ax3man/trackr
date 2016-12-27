@@ -87,38 +87,53 @@ find_max_cross_corr <- function(v1, v2, range) {
   return(res)
 }
 
-#dots <- lazyeval::all_dots(~speed(), ~acceleration(y = bleh), ~1, ~x,
+# dots <- lazyeval::all_dots(~speed(), ~acceleration(y = bleh), ~1, ~x, ~speed(a) > speed(),
 #                           all_named = TRUE)
 add_defaults_to_dots <- function(dots) {
-  calls <- lapply(dots, `[[`, 'expr')
-  new_calls <- calls
-
-  fun_calls <- calls[sapply(calls, class) == 'call']
-  funs <- lapply(fun_calls, `[[`, 1)
-  primitives <- sapply(funs, function(x) is.primitive(match.fun(x)))
-
-  fun_calls <- fun_calls[!primitives]
-  funs <- funs[!primitives]
-  matched_calls <- Map(function(x, y) match.call(match.fun(x), y),
-                       funs, fun_calls)
-
+  # A recursive function that continues to add defaults to lower and lower levels.
+  add_defaults_to_expr <- function(expr) {
+    # First, if a call is a symbol or vector, there is nothing left to do but
+    # return the value (since it is not a function call).
+    if (is.symbol(expr) | is.vector(expr) | class(expr) == "formula") {
+      return(expr)
+    }
+    # If it is a function however, we need to extract it.
+    fun <- expr[[1]]
+    # If it is a primitive function (like `+`) there are no defaults, and we
+    # should not manipulate that call, but we do need to use recursion for cases
+    # like a + f(b).
+    if (is.primitive(match.fun(fun))) {
+      new_expr <- expr
+    } else {
+      # If we have an actual non-primitve function call, we formally match the
+      # call, so abbreviated arguments and order reliance work.
+      matched_expr <- match.call(match.fun(fun), expr, expand.dots = TRUE)
+      expr_list <- as.list(matched_expr)
+      # Then we find the defualt arguments:
+      arguments <- formals(eval(fun))
+      # And overwrite the defaults for which other values were supplied:
+      given <- expr_list[-1]
+      arguments[names(given)] <- given
+      # And finally build the new call:
+      new_expr <- as.call(c(fun, arguments))
+    }
+    # Then, for all function arguments we run the function recursively.
+    new_arguments <- as.list(new_expr)[-1]
+    null <- sapply(new_arguments, is.null)
+    new_arguments[!null] <- lapply(new_arguments[!null], add_defaults_to_expr)
+    new_expr <- as.call(c(fun, new_arguments))
+    return(new_expr)
+  }
+  # For lazy dots supplied, seperate the expression and environments.
+  exprs <- lapply(dots, `[[`, 'expr')
   envrs <- lapply(dots, `[[`, 'env')
-  calls_list <- lapply(matched_calls, as.list)
-
-  defaults <- lapply(funs, function(.) formals(eval(.)))
-  given <- lapply(calls_list, `[`, -1)
-
-  arguments <- Map(function(def, giv) {
-    def[names(giv)] <- giv
-    return(def)
-  }, defaults, given)
-
-  new_calls[!primitives] <- Map(function(x, y) {
-    lazyeval::make_call(x, y)},
-    funs, arguments)
-
-  dots[sapply(calls, class) == 'call'] <- new_calls
-  Map(function(x, y) { x$env <- y; return(x) }, dots, envrs)
+  # Add the defaults to the expressions.
+  new_exprs <- lapply(exprs, add_defaults_to_expr)
+  # Add back the correct environments.
+  new_calls <- Map(function(x, y) {
+    lazyeval::as.lazy(x, y)
+  }, new_exprs, envrs)
+  return(new_calls)
 }
 
 # dots <- lazyeval::lazy_dots(speed = speed(), av = angular_velocity()) %>%
