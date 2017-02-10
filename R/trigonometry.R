@@ -178,7 +178,7 @@ rect_transform <- function(points, x.old, y.old, x.new, y.new){
   l <- solve(t(B) %*% B) %*% t(B) %*% D
   A <- matrix(c(l[1:6], 0, 0, 1), nrow = 3, ncol = 3, byrow = T)
 
-  n <- apply(points, 1, function(x) pracma::mrdivide(A %*% c(x[1], x[2], 1), 1))
+  n <- apply(points, 1, function(x) { A %*% c(x, 1) } )
 
   n <- t(n)
   n <- n[, 1:2]
