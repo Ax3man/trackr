@@ -194,7 +194,7 @@ read_Ctrax <- function(file = NULL,
               mat = read_Ctrax_mat(file, animals))
 
   # Add file names as trial names
-  file.names <- strsplit(basename(file), split = '.', fixed = TRUE)
+  file.names <- basename(tools::file_path_sans_ext(file))
   file.names <- mapply('[', file.names, -sapply(file.names, length))
   if (any(substr(file.names, 1, 6) == 'fixed_'))
     file.names[substr(file.names, 1, 6) == 'fixed_'] <-
