@@ -195,7 +195,6 @@ read_Ctrax <- function(file = NULL,
 
   # Add file names as trial names
   file.names <- basename(tools::file_path_sans_ext(file))
-  file.names <- mapply('[', file.names, -sapply(file.names, length))
   if (any(substr(file.names, 1, 6) == 'fixed_'))
     file.names[substr(file.names, 1, 6) == 'fixed_'] <-
     substr(file.names[substr(file.names, 1, 6) == 'fixed_'], 7, 100L)
