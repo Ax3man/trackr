@@ -43,10 +43,10 @@ res_vec <- function(angles, lengths = NULL) {
          sum(lengths * cos(angles), na.rm = T) ^ 2)
 }
 
-#' Find smalles enclosing rectangle.
+#' Find smallest enclosing rectangle.
 #'
 #' Algorithm from William Huber (http://gis.stackexchange.com/a/22934) and
-# @Bangyou (http://gis.stackexchange.com/a/174577).
+#' Bangyou (http://gis.stackexchange.com/a/174577).
 #'
 #' @param points A matrix or data.frame of point coordinates with the first
 #'   column being x and the second being y.

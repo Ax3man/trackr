@@ -2,12 +2,12 @@
 % Please edit documentation in R/tracks_object.R
 \name{as_tracks}
 \alias{as_tracks}
-\alias{is.tracks}
 \alias{tracks}
+\alias{is.tracks}
 \title{The \code{tracks} object}
 \usage{
 as_tracks(tr, frame_rate, resolution, meta_data = NULL, px_per_cm = 1,
-  minimal = TRUE, cluster = NULL)
+  minimal = TRUE)
 
 is.tracks(x)
 }
@@ -33,8 +33,6 @@ be per pixel.}
 are including in the object. When FALSE, the group, pairs and trial
 components will already be generated.}
 
-\item{cluster}{Optionally supply a cluster to used.}
-
 \item{x}{An object.}
 }
 \value{
@@ -47,6 +45,7 @@ The \code{tracks} object
 \itemize{
 \item \code{is.tracks}: Test if object is of class tracks.
 }}
+
 \section{Object structure}{
 
 
@@ -75,28 +74,14 @@ The tracks object is a \code{list} with the following tables:
   level measurements, such as average speed.}
   \item{\code{params}}{A \code{list} with general experiment parameters, such
   as frame_rate, scale, resolution etc.}
-  \item{\code{pr}}{A \code{list} with vectors indicating what calculated
-  variables are present in the parallelized tables, for internal purposes.}
 }
- \code{tracks}, \code{meta_data}, \code{params} and \code{pr} are always
- present, others may not be. This is to preserve memory space when they are
- not needed. Order is not garantueed, refer by name if you need to access
- them.
+ \code{tracks}, \code{meta_data}, and \code{params} are always present,
+ others may not be. This is to preserve memory space when they are not
+ needed. Order is not garantueed, refer by name if you need to access them.
 
  Methods for common generics may be available.
 }
 
-\section{Parallel computing}{
-
-
-Trackr utilizes parallel computing as implemented by the multidplyr package.
-This means both the \code{$tr} and \code{$soc} tables are always split by
-trial, and kept on seperate worker nodes as so called 'party_df's'. The other
-tables are typically small enough not to warrant the use of a cluster. If
-necessary, the tables that are split can be combined again using
-\code{dplyr::collect()}.
-}
 \seealso{
 \code{\link{read_idTracker}}, \code{\link{read_Ctrax}}
 }
-

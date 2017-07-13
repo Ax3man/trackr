@@ -33,6 +33,5 @@ This function generally assumes that each file is in it's own folder. If not,
 build a list of file paths beforehand and supply that as file.
 }
 \seealso{
-Other trackr.read.functions: \code{\link{read_Ctrax}}
+Other trackr read functions: \code{\link{read_Ctrax}}
 }
-

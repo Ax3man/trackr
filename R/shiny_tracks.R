@@ -20,14 +20,12 @@ shiny_tracks <- function(tracks, start = NULL, end = NULL, ...) {
     stop('Install the shiny package to use this function.', call. = FALSE)
   }
 
-  tr <- dplyr::collect(tracks$tr)
-
-  start <- max(start, min(tr$frame))
-  end <- min(end, max(tr$frame))
+  start <- max(start, min(tracks$tr$frame))
+  end <- min(end, max(tracks$tr$frame))
   fps <- tracks$params$frame_rate
 
-  tr <- dplyr::filter_(tr, ~frame %in% start:end)
-  LEVELS <- levels(tr$trial)
+  tr <- dplyr::filter_(tracks$tr, ~frame %in% start:end)
+  LEVELS <- levels(droplevels(tr$trial))
 
   steady_ranges <- rbind(range(tr$X, na.rm = TRUE),
                          range(tr$Y, na.rm = TRUE))

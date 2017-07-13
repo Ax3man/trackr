@@ -44,4 +44,3 @@ All values below the start frame will be filtered out.
   # Since some frames were fropper,
 
 }
-

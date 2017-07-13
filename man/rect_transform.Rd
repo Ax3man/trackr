@@ -31,4 +31,3 @@ Strongly inspired by: http://alumni.media.mit.edu/~cwren/interpolator/
 Original math from:
 http://www.robots.ox.ac.uk/~vgg/presentations/bmvc97/criminispaper/planedev.html
 }
-

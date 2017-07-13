@@ -41,4 +41,3 @@ A \code{ggplot} object.
 \description{
 Facet paths using time bins.
 }
-

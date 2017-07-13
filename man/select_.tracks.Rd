@@ -31,4 +31,3 @@ You can drop a table by writing it as a negative.
 You can use dplyr's special functions inside of select calls, such as
 \code{starts_with()}.
 }
-

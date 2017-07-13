@@ -23,4 +23,3 @@ A tracks object.
 \description{
 Add new variables to a tracks object.
 }
-

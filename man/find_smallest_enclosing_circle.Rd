@@ -16,4 +16,3 @@ A vector of lenght three, center x and y, and radius.
 \description{
 Algorithm by Sven Skyum, from http://dx.doi.org/10.7146/dpb.v19i314.6704.
 }
-

@@ -60,13 +60,9 @@ filter_.tracks <- function(.data, ..., drop = TRUE, .dots,
     drop <- lazyeval::lazy_eval(conds$drop)
     conds <- conds[-which(names(conds) == 'drop')]
   }
-  if (any(names(conds) == 'repartition')) {
-    repartition <- lazyeval::lazy_eval(conds[['repartition']])
-    conds <- conds[-which(names(conds) == 'repartition')]
-  }
   # extract which things those conditions apply to
   tables <- find_conds_in_tables(tracks, conds)
-  to_be_kept <- c(Reduce(intersect, tables), 'pr', 'params', 'meta_data')
+  to_be_kept <- c(Reduce(intersect, tables), 'params', 'meta_data')
   tables <- lapply(tables, function(x) x <- x[x %in% to_be_kept])
 
   if (!(all(names(tracks) %in% to_be_kept))) {
@@ -86,10 +82,6 @@ filter_.tracks <- function(.data, ..., drop = TRUE, .dots,
   for (i in seq_along(conds)) {
     tracks[tables[[i]]] <- lapply(tracks[tables[[i]]], dplyr::filter_,
                                   .dots = conds[[i]])
-  }
-
-  if (repartition) {
-    tracks <- repartition(tracks)
   }
   return(tracks)
 }
@@ -216,11 +208,6 @@ mutate_.tracks <- function(.data, ..., .dots) {
   for (i in seq_along(conds)) {
     tracks[tables[[i]]] <- lapply(tracks[tables[[i]]], dplyr::mutate_,
                                  .dots = conds[i])
-    if (tables[[i]] %in% names(tracks$pr)) {
-      tracks$pr[tables[[i]] == names(tracks$pr)][[1]] <-
-        c(tracks$pr[tables[[i]] == names(tracks$pr)][[1]],
-          names(conds[i]))
-    }
   }
   return(tracks)
 }

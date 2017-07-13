@@ -2,9 +2,9 @@
 % Please edit documentation in R/non-dplyr_verbs.R
 \name{summarise_sections}
 \alias{summarise_sections}
-\alias{summarise_sections_}
 \alias{summarize_sections}
 \alias{summarize_sections_}
+\alias{summarise_sections_}
 \title{Summarize track sections.}
 \usage{
 summarise_sections(sections, ...)

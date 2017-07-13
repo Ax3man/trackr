@@ -5,6 +5,7 @@
 #' will use the expected variable names, as are default in \code{tracks}
 #' objects, but they can be overridden.
 #'
+#' @param var A variable for which to calculate the first order differential.
 #' @param x X-coordinate.
 #' @param y Y-coordinate.
 #' @param n Offset for change. See \code{\link[dplyr]{lag}}.
@@ -21,10 +22,10 @@ NULL
 
 #' @rdname mutate_tr
 #' @export
-change <- function(x, order_by = frame,
+change <- function(var, order_by = frame,
                    frame_rate = tracks$params$frame_rate, n = 1) {
   ifelse(order_by - dplyr::lag(order_by, n = n, order_by = order_by) == n,
-         x - dplyr::lag(x, n = n, order_by = order_by),
+         var - dplyr::lag(var, n = n, order_by = order_by),
          NA)
 }
 
@@ -32,7 +33,8 @@ change <- function(x, order_by = frame,
 #' @export
 speed <- function(x = X, y = Y, order_by = frame,
                   frame_rate = tracks$params$frame_rate) {
-  sqrt(change(x, order_by, frame_rate) ^ 2 + change(y, order_by, frame_rate) ^ 2)
+  sqrt(change(x, order_by, frame_rate) ^ 2 +
+         change(y, order_by, frame_rate) ^ 2)
 }
 
 #' @rdname mutate_tr

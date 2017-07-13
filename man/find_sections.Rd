@@ -54,6 +54,7 @@ Any variables used as conditions will be looked up in the \code{tr},
 \item \code{find_sections_}: Retrieve the timestamps for track section based on
 conditions.
 }}
+
 \section{Example use case}{
 
 

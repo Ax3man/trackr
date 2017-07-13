@@ -38,4 +38,3 @@ If group, pairs and trial are all false, it will return tracks.
 \seealso{
 \link{as_tracks}
 }
-

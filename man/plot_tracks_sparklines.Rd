@@ -47,4 +47,3 @@ Guppies <- guppies \%>\%
 plot_tracks_sparklines(Guppies, 'a', point_events = 12000)
 
 }
-

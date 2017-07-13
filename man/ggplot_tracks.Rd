@@ -30,4 +30,3 @@ if (require(ggplot2)){
     geom_path() + facet_wrap(~trial)
 }
 }
-

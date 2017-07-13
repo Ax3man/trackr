@@ -42,4 +42,3 @@ plot(Guppies, color = ~animal:trial,facet = ~1)
 # more complex facetting
 plot(Guppies, facet = ~trial + animal, ncol = 8)
 }
-

@@ -23,4 +23,3 @@ model that mimics a natural predator. Data has been severely limited to
 accmodate the restriction of distributed packages.
 }
 \keyword{datasets}
-

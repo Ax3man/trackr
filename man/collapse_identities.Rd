@@ -21,4 +21,3 @@ does not keep track of consisent identities, and it occasionally loses and
 rediscovers animals. When more identities exist within a frame than there is
 animals, those frames are lost.
 }
-

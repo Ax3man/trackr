@@ -28,12 +28,14 @@
 #' @param err_cutoff Hard limit for error (squared distance), that is deemed
 #'   unreliable as a match. The default is 25 ^ 2, which means the centroids
 #'   estimated are allowed to be 25 pixels apart.
+#' @param id_reliability Minimum estimated reliability of the id source, if
+#'   available.
 #' @param report Whether a small report should be printed to the console.
 #'
 #' @return A tracks object.
 #' @export
 combine_sources <- function(tracks1, tracks2, err_cutoff = 25 ^ 2,
-                            report = TRUE) {
+                            id_reliability = 1, report = TRUE) {
   # Check compatibility
   if (tracks1$params$frame_rate != tracks2$params$frame_rate) {
     stop('Frame rates do not match.', call. = FALSE)
@@ -56,7 +58,8 @@ combine_sources <- function(tracks1, tracks2, err_cutoff = 25 ^ 2,
   # Find correct combine.
   sources <- c(tracks1$params$source, tracks2$params$source)
   if (any(sources == 'Ctrax') & any(sources == 'idTracker'))
-    tr <- combine_Ctrax_idTracker(tracks1, tracks2, err_cutoff, report)
+    tr <- combine_Ctrax_idTracker(tracks1, tracks2, err_cutoff, id_reliability,
+                                  report)
   else
     stop('Can currently only combine Ctrax and idTracker sources.',
          call. = FALSE)
@@ -68,7 +71,8 @@ combine_sources <- function(tracks1, tracks2, err_cutoff = 25 ^ 2,
   return(tracks)
 }
 
-combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
+combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff,
+                                    id_reliability, report) {
   # This version will assume that ctrax is golden, it's just the id's
   # that are off.
 
@@ -83,26 +87,14 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
   id <- idtracker$tr
 
   # Before we do anything, we make sure we only use _reliable_ idtracker id's
-  id <- dplyr::filter_(id, ~prob_id == 1)
-  # We'll also need to pull id of the workers
-  id <- dplyr::collect(id)
+  id <- dplyr::filter_(id, ~prob_id >= id_reliability)
 
-  res <- dplyr::group_by_(ct, ~animal)
-  # In order to do efficient parallelisation, we should be careful to only
-  # assign the needed parts of the idtracker data to each node
-  cl <- res$cluster
-  reg_trials <- lapply(multidplyr::cluster_get(cl, res$name),
-                       function(x) names(table(x$trial)[table(x$trial) > 0]))
-  id_cl <- lapply(reg_trials, function(trs) dplyr::filter(id, trial %in% trs))
-  multidplyr::cluster_assign_each(cl, 'id', id_cl)               # tbl_df's
-  multidplyr::cluster_assign_value(cl, 'err_cutoff', err_cutoff) # var
-  multidplyr::cluster_assign_value(cl, 'match_ids', match_ids)   # fun
+  res <- dplyr::group_by_(ct, ~trial, ~animal)
 
   cat('Matching id\'s...\n')
   # I have to do some weird stuff here, because NULL's aren't ignored by do
   res <- dplyr::do(res, temp = match_ids(., id, err_cutoff))
   res <- dplyr::filter_(res, ~length(temp) > 1)
-  res <- dplyr::collect(res)
   res <- dplyr::bind_rows(res$temp)
 
   res <- dplyr::select_(res, ~trial, ~animal.y, ~frame, ~X.x, ~Y.x,
@@ -111,16 +103,12 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
   # All that is left is to filter out frames above cut-off and duplicate matches
   res <- dplyr::filter_(res, ~!is.na(animal))
 
-
   res <- dplyr::group_by_(res, ~trial, ~animal, ~frame)
   if (attributes(res)$biggest_group_size > 1) {
-    res <- multidplyr::partition(res, trial, animal, frame)
-    multidplyr::cluster_assign_value(res$cluster, 'err_cutoff', err_cutoff)
-    multidplyr::cluster_assign_value(res$cluster, 'mean_angle',
-                                     mean_angle)
-    cat('Finding duplicates...\n')
-    res_ok <- dplyr::filter(res, n() == 1)
-    res_dups <- dplyr::filter(res, n() > 1)
+    cat('\nFinding duplicates...\n')
+    res <- dplyr::mutate(res, n = n())
+    res_ok <- dplyr::filter_(res, ~n == 1)
+    res_dups <- dplyr::filter_(res, ~n > 1)
     cat(nrow(res_dups), 'duplicate detections found. Merging...\n')
     res_dups <-
       dplyr::summarize_(res_dups,
@@ -135,10 +123,10 @@ combine_Ctrax_idTracker <- function(tracks1, tracks2, err_cutoff, report) {
                             orientation[combine_err < err_cutoff]),
                         combine_err =
                           ~mean(combine_err[combine_err < err_cutoff]))
-    res_ok <- dplyr::collect(res_ok)
-    res_dups <- dplyr::collect(res_dups)
     res <- dplyr::bind_rows(res_ok, res_dups)
+    res <- dplyr::select_(res, ~-n)
   }
+  res <- dplyr::group_by_(res, ~trial, ~animal)
   res <- dplyr::arrange_(res, ~trial, ~animal, ~frame)
   return(res)
 }

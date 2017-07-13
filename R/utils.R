@@ -2,44 +2,6 @@
 #' @export
 magrittr::`%>%`
 
-get_party_df_names <- function(d) {
-  fun <- function(x) names(eval(x))
-  multidplyr::cluster_call(d$cluster, fun, as.name(d$name))[[1]]
-}
-
-remove_empty_shards <- function(tracks) {
-  fun <- function(x) nrow(eval(x))
-  empty_shards_tr <- any(multidplyr::cluster_call(tracks$tr$cluster, fun,
-                                                  as.name(tracks$tr$name))
-                         == 0)
-
-  if (!is.null(tracks$soc)) {
-    empty_shards_soc <- any(multidplyr::cluster_call(tracks$soc$cluster, fun,
-                                                     as.name(tracks$soc$name))
-                            == 0)
-  } else {
-    empty_shards_soc <- FALSE
-  }
-
-  if (empty_shards_tr | empty_shards_soc) {
-    repartition(tracks)
-  }
-  return(tracks)
-}
-
-repartition <- function(tracks) {
-  tracks$tr <- dplyr::collect(tracks$tr)
-  if (!is.null(tracks$soc)) {
-    tracks$soc <- dplyr::collect(tracks$soc)
-  }
-
-  tracks$tr <- multidplyr::partition(tracks$tr, trial)
-  if (!is.null(tracks$soc)) {
-    tracks$soc <- multidplyr::partition(tracks$soc, trial,
-                                        cluster = tracks$tr$cluster)
-  }
-}
-
 find_conds_in_tables <- function(tracks, conds) {
   vars <- lapply(conds, function(x) all.vars(x$expr))
   tables <- vector("list", length(vars))
@@ -53,18 +15,12 @@ find_conds_in_tables <- function(tracks, conds) {
 
   for (i in seq_along(tracks)) {
     tbl <- names(tracks)[i]
-    if (tbl %in% c('pr', 'params', 'meta_data')) {
+    if (tbl %in% c('params', 'meta_data')) {
       next
     }
     for (j in seq_along(vars)) {
-      if ('party_df' %in% class(tracks[[i, FALSE]])) {
-        if (all(vars[[j]] %in% tracks$pr[[tbl]])) {
-          tables[[j]] <- c(tables[[j]], tbl)
-        }
-      } else {
-        if (all(vars[[j]] %in% names(tracks[[tbl, FALSE]]))) {
-          tables[[j]] <- c(tables[[j]], tbl)
-        }
+      if (all(vars[[j]] %in% names(tracks[[tbl]]))) {
+        tables[[j]] <- c(tables[[j]], tbl)
       }
     }
   }

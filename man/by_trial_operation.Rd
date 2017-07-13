@@ -12,4 +12,3 @@ by_trial_operation(tracks, tab, var, operation = `+`, trial = "trial")
 \description{
 Title
 }
-

@@ -24,4 +24,3 @@ The y-axis shows time bins (top to bottom), the x-axis shows the lag in
 frames and the size (area) of the dots denotes strength of the correlation
 (*r*).
 }
-

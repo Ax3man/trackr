@@ -65,10 +65,8 @@ read_idTracker <- function(file = NULL,
   # confusion. Doesn't seem to be easily fixable at this point?
   # I use cols(.default) here in case ProbId is 1 for the first 1000 rows, which
   # will cause readr to guess that it is an integer column.
-  d <- lapply(file, readr::read_tsv,
-              col_names = FALSE,
-              col_types = readr::cols(.default = "d"),
-              skip = 1)
+  d <- lapply(file, data.table::fread, skip = 1)
+  d <- lapply(d, tibble::as_tibble)
   # Create the column names
   d <- lapply(d, function(x) {
     new.names <- expand.grid(c('X', 'Y', 'ProbId'), 1:(ncol(x)/3))
@@ -175,8 +173,8 @@ read_Ctrax <- function(file = NULL,
     if (type == "raw" & recursive) {
       file <- file.path(folder, list.files(folder, paste0('*\\.', file_type),
                                            recursive = TRUE))
-      if (length(grep('fixed_', file) > 0))
-        file <- file[-grep('fixed_', file)]
+      if (length(grep('fixed_', file)) > 0)
+        file <- file[-dplyr::starts_with('fixed_', ignore.case = FALSE, file)]
       if (length(file) == 0)
         stop("No files of this type found in this folder, or its subfolders.",
              call. = FALSE)
@@ -215,12 +213,9 @@ read_Ctrax <- function(file = NULL,
 
 read_Ctrax_csv <- function(file, animals) {
   # Read file ------------------------------------------------------------------
-  d <- lapply(file, readr::read_table, col_names = FALSE)
-  # Check for alternate column seperators
-  if (any(sapply(d, ncol) == 1)) {
-    d[any(sapply(d, ncol) == 1)] <-
-      lapply(file[any(sapply(d, ncol) == 1)], readr::read_csv, col_names = FALSE)
-  }
+  d <- lapply(file, data.table::fread)
+  d <- lapply(d, tibble::as_tibble)
+
   # Create the column names
   d <- lapply(d, function(x) {
     new.names <- expand.grid(c('ID', 'X', 'Y', 'major_axis', 'minor_axis',

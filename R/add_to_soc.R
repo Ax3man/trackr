@@ -26,15 +26,8 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
   if (is.null(tracks$soc)) {
     stop('soc table was not found or is empty.', call. = FALSE)
   }
-  cl <- tracks$soc$cluster
 
   tr <- dplyr::select_(tracks$tr, .dots = c(~trial, ~animal, ~frame, select))
-  tr <- dplyr::collect(tr)
-
-  reg_trials <- lapply(multidplyr::cluster_get(cl, tracks$soc$name),
-                       function(x) names(table(x$trial)[table(x$trial) > 0]))
-  tr_cl <- lapply(reg_trials, function(trs) dplyr::filter(tr, trial %in% trs))
-  multidplyr::cluster_assign_each(cl, 'tr', tr_cl)
 
   Names1 <- stats::setNames(names(select), paste0(names(select), 1))
   Names2 <- stats::setNames(names(select), paste0(names(select), 2))
@@ -46,20 +39,14 @@ join_tr_to_soc_ <- function(tracks, ..., .dots) {
     tracks$pr$soc <- tracks$pr$soc[!(tracks$pr$soc %in%
                                        c(names(Names1), names(Names2)))]
   }
-  tracks$soc <- dplyr::do_(tracks$soc,
-                           ~dplyr::left_join(
-                             ., tr, by = c('trial', 'frame', 'animal1' = 'animal')))
-
+  tracks$soc <- dplyr::left_join(tracks$soc, tr,
+                                 by = c('trial', 'frame', 'animal1' = 'animal'))
   tracks$soc <- dplyr::rename_(tracks$soc, .dots = Names1)
-
-  tracks$soc <- dplyr::do_(tracks$soc,
-                           ~dplyr::left_join(
-                             ., tr, by = c('trial', 'frame', 'animal2' = 'animal')))
-  multidplyr::cluster_rm(cl, '.tr')
+  tracks$soc <- dplyr::left_join(tracks$soc, tr,
+                                 by = c('trial', 'frame', 'animal2' = 'animal'))
   tracks$soc <- dplyr::rename_(tracks$soc, .dots = Names2)
-  tracks$soc <- dplyr::group_by_(tracks$soc, ~animal1, ~animal2)
+  tracks$soc <- dplyr::group_by_(tracks$soc, ~trial,  ~animal1, ~animal2)
 
-  tracks$pr$soc <- c(tracks$pr$soc, names(Names1), names(Names2))
   return(tracks)
 }
 

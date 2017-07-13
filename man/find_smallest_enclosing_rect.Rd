@@ -2,7 +2,7 @@
 % Please edit documentation in R/trigonometry.R
 \name{find_smallest_enclosing_rect}
 \alias{find_smallest_enclosing_rect}
-\title{Find smalles enclosing rectangle.}
+\title{Find smallest enclosing rectangle.}
 \usage{
 find_smallest_enclosing_rect(points)
 }
@@ -15,5 +15,5 @@ A vector of lenght three, center x and y, and radius.
 }
 \description{
 Algorithm from William Huber (http://gis.stackexchange.com/a/22934) and
+Bangyou (http://gis.stackexchange.com/a/174577).
 }
-

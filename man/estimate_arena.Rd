@@ -17,10 +17,10 @@ estimate_arena(tracks, grouping = ~trial, shape = "circle", radius = NULL,
 \item{radius}{The true radius of the circle, used for rescaling the track
 coordinates.}
 
-\item{height}{The true height of the rectangle., used for rescaling the track
+\item{height}{The true height of the rectangle, used for rescaling the track
 coordinates.}
 
-\item{width}{The true width of the rectangle., used for rescaling the track
+\item{width}{The true width of the rectangle, used for rescaling the track
 coordinates.}
 }
 \value{
@@ -29,4 +29,3 @@ A tracks object.
 \description{
 Estimate arena from tracks and reallign.
 }
-

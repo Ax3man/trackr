@@ -50,8 +50,8 @@ strategy, see \code{find_sections} and \code{summarize_sections}.
   the tracks object, with a message. By setting \code{drop = FALSE}, you can
   have the function error instead.
 }
+
 \seealso{
 \link[dplyr]{filter}, \link{find_sections},
   \link{summarise_sections}
 }
-

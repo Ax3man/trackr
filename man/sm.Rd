@@ -20,4 +20,3 @@ A numeric vector.
 \description{
 By default, smoothing is done by averaging over a Gaussian kernel.
 }
-

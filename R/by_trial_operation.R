@@ -56,22 +56,20 @@ set_start_frame <- function(tracks, value = NULL, tab = NULL, frame = 'frame',
 #' @export
 #'
 #' @examples
-by_trial_operation <- function(tracks, tab, var, operation = `+`, trial = 'trial') {
+by_trial_operation <- function(tracks, tab, var, operation = `+`,
+                               trial = 'trial') {
   # make tab nice
   tab <- dplyr::select_(tab, var, trial)
   names(tab)[1] <- c('..to_use_var..')
 
   # load required vars to cluster
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'tab', tab)
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'operation', operation)
-
   call2 <- list(lazyeval::interp(~operation(a, ..to_use_var..),
                                  a = as.name(var)))
   names(call2) <- var
   ### TR
   # use a join to get the require varialbe on the cluster
   call1 <- lazyeval::interp(quote(dplyr::left_join(a, tab, by = b)),
-                            a = as.name(tracks$tr$name), b = trial)
+                            a = tracks$tr, b = trial)
   multidplyr::cluster_assign_expr(tracks$tr$cluster, tracks$tr$name, call1)
   # evaluate the operation on the cluster
   tracks$tr <- dplyr::mutate_(tracks$tr, .dots = call2)
@@ -81,8 +79,7 @@ by_trial_operation <- function(tracks, tab, var, operation = `+`, trial = 'trial
   if (!is.null(tracks$soc)) {
     # use a join to get the require varialbe on the cluster
     call1 <- lazyeval::interp(quote(dplyr::left_join(a, tab, by = b)),
-                              a = as.name(tracks$soc$name), b = trial)
-    multidplyr::cluster_assign_expr(tracks$soc$cluster, tracks$soc$name, call1)
+                              a = tracks$soc, b = trial)
     # evaluate the operation on the cluster
     tracks$soc <- dplyr::mutate_(tracks$soc, .dots = call2)
     tracks$soc <- dplyr::select_(tracks$soc, ~-..to_use_var..)
@@ -93,9 +90,5 @@ by_trial_operation <- function(tracks, tab, var, operation = `+`, trial = 'trial
     tracks$group <- dplyr::mutate_(tracks$group, .dots = call2)
     tracks$group <- dplyr::select_(tracks$group, ~-..to_use_var..)
   }
-
-  #cleanup
-  multidplyr::cluster_rm(tracks$tr$cluster, c('tab', 'operation'))
-
   return(tracks)
 }

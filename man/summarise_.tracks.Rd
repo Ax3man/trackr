@@ -3,9 +3,9 @@
 \name{summarise}
 \alias{summarise}
 \alias{summarise_}
-\alias{summarise_.tracks}
 \alias{summarize}
 \alias{summarize_}
+\alias{summarise_.tracks}
 \title{Summarise a tracks variable to a higher table.}
 \usage{
 \method{summarise_}{tracks}(.data, ..., .target = NULL, .dots)
@@ -47,4 +47,3 @@ summ2$trial #now has mx2 and s2 columns
 \seealso{
 dplyr::summarise
 }
-

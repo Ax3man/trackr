@@ -27,4 +27,3 @@ The dilution factor determines how many of the frames are actually animated.
 For example, when it is set to 3, only at every third frame the plot is
 updated. The full trial is always shown.
 }
-

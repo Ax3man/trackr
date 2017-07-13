@@ -25,7 +25,6 @@ Imports:
     lubridate (>= 1.5.0),
     magrittr,
     methods,
-    multidplyr,
     RcppRoll (>= 0.2.2),
     R.matlab (>= 3.3.0),
     tidyr (>= 0.3.1)
@@ -35,4 +34,4 @@ Suggests:
     plotrix,
     shiny (>= 0.13.2)
 SystemRequirements: This package typically uses a lot of memory.
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.0

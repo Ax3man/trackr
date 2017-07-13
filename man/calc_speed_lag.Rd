@@ -35,4 +35,3 @@ Guppies <- guppies \%>\%
   mutate(speed = speed())
 spl <- calc_speed_lag(Guppies)
 }
-

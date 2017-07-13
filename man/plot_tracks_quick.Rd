@@ -21,4 +21,3 @@ No facetting available.
 Guppies <- as_tracks(guppies, 30, 1080)
 plot_tracks_quick(Guppies)
 }
-

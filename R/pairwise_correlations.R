@@ -27,40 +27,32 @@ calc_speed_lag <- function(tracks, range = 100, time_bin = NULL) {
   if (!is.tracks(tracks)) {
     stop('tracks should be a tracks object.', call. = FALSE)
   }
-  if (!('speed' %in% tracks$pr$tr)) {
+  if (!('speed' %in% names(tracks$tr))) {
     stop('Speed not found in tr table.', call. = FALSE)
   }
   if (is.null(tracks$soc)) {
-    tracks <- expand_tracks(tracks, group = FALSE, trial = FALSE,
-                            animal = FALSE, pair = FALSE)
+    tracks <- expand_tracks2(tracks, 'soc')
   }
-  multidplyr::cluster_assign_value(tracks$soc$cluster, 'range', range)
-  multidplyr::cluster_assign_value(tracks$soc$cluster, 'find_max_cross_corr',
-                                   find_max_cross_corr)
   tracks <- join_tr_to_soc_(tracks, ~speed)
 
   if (is.null(time_bin)) {
     tracks$soc <- dplyr::mutate_(tracks$soc, time_bin = ~1)
   } else {
-    f <- dplyr::collect(dplyr::do(tracks$soc, data.frame(a = range(.$frame))))
+    f <- dplyr::do(tracks$soc, data.frame(a = range(.$frame)))
     br <- seq(min(f$a), max(f$a), by = time_bin)
-    multidplyr::cluster_assign_value(tracks$soc$cluster, 'br', br)
     tracks$soc <- dplyr::mutate_(tracks$soc, time_bin = ~cut(frame, br))
   }
-  tracks$soc <- dplyr::group_by_(tracks$soc, ~animal1, ~animal2, ~time_bin)
+  tracks$soc <- dplyr::group_by_(tracks$soc, ~time_bin, add = TRUE)
 
   res <- dplyr::do_(tracks$soc, ~find_max_cross_corr(.$speed1, .$speed2, range))
   if (!is.null(time_bin)) {
     res <- dplyr::filter_(res, ~!is.na(time_bin))
-  }
-  res <- dplyr::collect(res)
-  if (is.null(time_bin)) {
+  } else {
     res <- dplyr::select_(res, ~-time_bin)
   }
 
   return(res)
 }
-
 
 #' #' Calculate pairwise vector correlation.
 #' #'
