@@ -19,9 +19,6 @@
 \item{.target}{To which tables you want to summarize them. By default loses
 the last grouping, and follows the lines
 \href{https://raw.githubusercontent.com/Ax3man/trackr/master/summarise_diagram.png}{in this diagram}.}
-
-\item{.dots}{Used to work around non-standard evaluation. See
-\code{vignette("nse")} for details.}
 }
 \value{
 A tracks object.

@@ -12,10 +12,13 @@
 \item{.data}{A tracks object}
 
 \item{...}{Name-value pairs of expressions. Use \code{NULL} to drop
-a variable.}
+a variable.
 
-\item{.dots}{Used to work around non-standard evaluation. See
-\code{vignette("nse")} for details.}
+These arguments are automatically \link[rlang:quo]{quoted} and
+\link[rlang:eval_tidy]{evaluated} in the context of the data
+frame. They support \link[rlang:quasiquotation]{unquoting} and
+splicing. See \code{vignette("programming")} for an introduction to
+these concepts.}
 }
 \value{
 A tracks object.

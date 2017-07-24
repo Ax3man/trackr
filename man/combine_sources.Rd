@@ -4,7 +4,8 @@
 \alias{combine_sources}
 \title{Integrate data from multiple tracking sources}
 \usage{
-combine_sources(tracks1, tracks2, err_cutoff = 25^2, report = TRUE)
+combine_sources(tracks1, tracks2, err_cutoff = 25^2, id_reliability = 1,
+  report = TRUE)
 }
 \arguments{
 \item{tracks1}{Tracks object to be combined.}
@@ -14,6 +15,9 @@ combine_sources(tracks1, tracks2, err_cutoff = 25^2, report = TRUE)
 \item{err_cutoff}{Hard limit for error (squared distance), that is deemed
 unreliable as a match. The default is 25 ^ 2, which means the centroids
 estimated are allowed to be 25 pixels apart.}
+
+\item{id_reliability}{Minimum estimated reliability of the id source, if
+available.}
 
 \item{report}{Whether a small report should be printed to the console.}
 }

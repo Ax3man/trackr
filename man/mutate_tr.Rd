@@ -9,7 +9,8 @@
 \alias{angular_velocity}
 \title{Conveniently add common new variables to the \code{tr} table.}
 \usage{
-change(x, order_by = frame, frame_rate = tracks$params$frame_rate, n = 1)
+change(var, order_by = frame, frame_rate = tracks$params$frame_rate,
+  n = 1)
 
 speed(x = X, y = Y, order_by = frame,
   frame_rate = tracks$params$frame_rate)
@@ -23,7 +24,7 @@ angular_velocity(x = X, y = Y, order_by = frame,
   frame_rate = tracks$params$frame_rate)
 }
 \arguments{
-\item{x}{X-coordinate.}
+\item{var}{A variable for which to calculate the first order differential.}
 
 \item{order_by}{This parameter controls the ordering of \code{dplyr::lag} and
 \code{dplyr::lead} and it is strongly advised to leave it at it's default
@@ -34,6 +35,8 @@ based on seconds (not frames). By default this is read from the tracks
 object.}
 
 \item{n}{Offset for change. See \code{\link[dplyr]{lag}}.}
+
+\item{x}{X-coordinate.}
 
 \item{y}{Y-coordinate.}
 }

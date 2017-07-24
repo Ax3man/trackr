@@ -2,7 +2,7 @@
 % Please edit documentation in R/by_trial_operation.R
 \name{by_trial_operation}
 \alias{by_trial_operation}
-\title{Title}
+\title{Perform an arbitrary operation with a different constant for each trial.}
 \usage{
 by_trial_operation(tracks, tab, var, operation = `+`, trial = "trial")
 }
@@ -10,5 +10,5 @@ by_trial_operation(tracks, tab, var, operation = `+`, trial = "trial")
 \item{trial}{}
 }
 \description{
-Title
+Perform an arbitrary operation with a different constant for each trial.
 }

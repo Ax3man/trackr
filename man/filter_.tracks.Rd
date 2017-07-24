@@ -21,9 +21,6 @@ that can not be filtered (i.e. it does not contain the variable used to
 filter) will be dropped. Have to opt in, since aggregation may have been
 expensive.}
 
-\item{.dots}{Used to work around non-standard evaluation. See
-\code{vignette("nse")} for details.}
-
 \item{repartition}{If TRUE, will collect and reassign the \code{tr} and
 \code{soc} tables. Useful if worker nodes become empty or unbalanced.}
 }

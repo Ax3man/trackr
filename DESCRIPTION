@@ -34,4 +34,4 @@ Suggests:
     plotrix,
     shiny (>= 0.13.2)
 SystemRequirements: This package typically uses a lot of memory.
-RoxygenNote: 6.0.0
+RoxygenNote: 6.0.1.9000

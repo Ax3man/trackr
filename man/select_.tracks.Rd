@@ -13,9 +13,6 @@
 
 \item{...}{Comma seperated list of tables to select. Use \code{-table} to
 drop a table.}
-
-\item{.dots}{Use \code{select_()} to do standard evaluation. See
-\code{vignette("nse")} for details}
 }
 \value{
 A tracks object.
