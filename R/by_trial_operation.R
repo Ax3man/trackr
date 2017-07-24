@@ -44,7 +44,7 @@ set_start_frame <- function(tracks, value = NULL, tab = NULL, frame = 'frame',
   filter(tracks, frame > 0)
 }
 
-#' Title
+#' Perform an arbitrary operation with a different constant for each trial.
 #'
 #' @param tracks
 #' @param tab
@@ -62,33 +62,21 @@ by_trial_operation <- function(tracks, tab, var, operation = `+`,
   tab <- dplyr::select_(tab, var, trial)
   names(tab)[1] <- c('..to_use_var..')
 
-  # load required vars to cluster
-  call2 <- list(lazyeval::interp(~operation(a, ..to_use_var..),
-                                 a = as.name(var)))
-  names(call2) <- var
+  update_table <- function(d) {
+    d <- dplyr::left_join(d, tab, by = 'trial')
+    d <- dplyr::mutate_(d, .dots = call2)
+    dplyr::select_(d, ~-..to_use_var..)
+  }
   ### TR
-  # use a join to get the require varialbe on the cluster
-  call1 <- lazyeval::interp(quote(dplyr::left_join(a, tab, by = b)),
-                            a = tracks$tr, b = trial)
-  multidplyr::cluster_assign_expr(tracks$tr$cluster, tracks$tr$name, call1)
-  # evaluate the operation on the cluster
-  tracks$tr <- dplyr::mutate_(tracks$tr, .dots = call2)
-  tracks$tr <- dplyr::select_(tracks$tr, ~-..to_use_var..)
+  tracks$tr <- update_table(tracks$tr)
 
   ### SOC
   if (!is.null(tracks$soc)) {
-    # use a join to get the require varialbe on the cluster
-    call1 <- lazyeval::interp(quote(dplyr::left_join(a, tab, by = b)),
-                              a = tracks$soc, b = trial)
-    # evaluate the operation on the cluster
-    tracks$soc <- dplyr::mutate_(tracks$soc, .dots = call2)
-    tracks$soc <- dplyr::select_(tracks$soc, ~-..to_use_var..)
+    tracks$soc <- update_table(tracks$soc)
   }
   ### GROUP
   if (!is.null(tracks$group)) {
-    tracks$group <- dplyr::left_join(tracks$group, tab, by = 'trial')
-    tracks$group <- dplyr::mutate_(tracks$group, .dots = call2)
-    tracks$group <- dplyr::select_(tracks$group, ~-..to_use_var..)
+    tracks$group <- update_table(tracks$group)
   }
   return(tracks)
 }
