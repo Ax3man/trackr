@@ -308,7 +308,6 @@ collapse_identities <- function(tracks, n = 1) {
     stop('Only n = 1 supported for now.', call. = FALSE)
   }
   r <- dplyr::summarize_(tracks$tr, start = ~min(frame), end = ~max(frame))
-  r <- dplyr::collect(r)
   r <- dplyr::arrange_(r, ~trial, ~start)
   r <- invisible(dplyr::mutate_(r,
                       end_overlap = ~end - dplyr::lead(start) > 0,
@@ -321,26 +320,10 @@ collapse_identities <- function(tracks, n = 1) {
                                                 dplyr::lead(start), end)))
   r <- dplyr::select_(r, ~-start, ~-end, ~-end_overlap, ~-r)
   r <- dplyr::filter_(r, ~start_new < end_new)
-  multidplyr::cluster_assign_value(tracks$tr$cluster, 'r', r)
 
-  multidplyr::cluster_eval_(
-    tracks$tr$cluster,
-    lazyeval::interp(quote(
-      assign(x, dplyr::left_join(x2, r))),
-      x = tracks$tr$name, x2 = as.name(tracks$tr$name)))
-  multidplyr::cluster_rm(tracks$tr$cluster, 'r')
-
-  multidplyr::cluster_eval_(
-    tracks$tr$cluster,
-    lazyeval::interp(quote(
-      assign(x, dplyr::filter_(x2, ~frame > start_new, ~frame < end_new))),
-      x = tracks$tr$name, x2 = as.name(tracks$tr$name)))
-
-  multidplyr::cluster_eval_(
-    tracks$tr$cluster,
-    lazyeval::interp(quote(
-      assign(x, dplyr::select_(x2, ~-start_new, ~-end_new))),
-      x = tracks$tr$name, x2 = as.name(tracks$tr$name)))
+  tracks$tr <- dplyr::left_join(tracks$tr, r)
+  tracks$tr <- dplyr::filter_(tracks$tr, ~frame > start_new, ~frame < end_new)
+  tracks$tr <- dplyr::select_(tracks$tr, ~-start_new, ~-end_new)
 
   tracks$tr <- dplyr::group_by(tracks$tr)
   tracks$tr <- dplyr::mutate_(tracks$tr, animal = ~factor(1))
