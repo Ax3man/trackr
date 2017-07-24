@@ -317,7 +317,8 @@ collapse_identities <- function(tracks, n = 1) {
                       start_new = ~dplyr::if_else(r == 1, start,
                                                   start_new),
                       end_new = ~dplyr::if_else(end_overlap,
-                                                dplyr::lead(start), end)))
+                                                dplyr::lead(start), end),
+                      end_new = ~if_else(r == n(), end, end_new)))
   r <- dplyr::select_(r, ~-start, ~-end, ~-end_overlap, ~-r)
   r <- dplyr::filter_(r, ~start_new < end_new)
 
