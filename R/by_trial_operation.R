@@ -66,7 +66,7 @@ by_trial_operation <- function(tracks, tab, var, operation = `+`,
     d <- dplyr::left_join(d, tab, by = 'trial')
     d <- dplyr::mutate_(
       d,
-      .dots = setNames(lazyeval::interp(~operation(a, ..to_use_var..), a = as.name(var)), var)
+      .dots = setNames(list(lazyeval::interp(~operation(a, ..to_use_var..), a = as.name(var))), var)
     )
     dplyr::select_(d, ~-..to_use_var..)
   }
