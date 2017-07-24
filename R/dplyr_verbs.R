@@ -157,13 +157,13 @@ summarise_.tracks <- function(.data,
     .target <- default_summarize_targets(tables)
   }
   for (i in seq_along(.target)) {
-    d <- summarise_(tracks[[tables[[i]], FALSE]], .dots = conds[i])
-    if ('party_df' %in% class(tracks[[tables[[i]], FALSE]])) {
-      grps <- as.character(tracks[[tables[[i]], FALSE]]$groups)
+    d <- summarise_(tracks[[tables[[i]]]], .dots = conds[i])
+    if ('party_df' %in% class(tracks[[tables[[i]]]])) {
+      grps <- as.character(tracks[[tables[[i]]]]$groups)
     } else {
-      grps <- as.character(attributes(tracks[[tables[[i]], FALSE]])$vars)
+      grps <- as.character(attributes(tracks[[tables[[i]]]])$vars)
     }
-    if (is.null(tracks[[.target[[i]], FALSE]])) {
+    if (is.null(tracks[[.target[[i]]]])) {
       tracks <- expand_tracks2(tracks, .target[[i]])
     }
     # Drop any variables from the target that have the same name of a cond
