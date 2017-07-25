@@ -301,7 +301,7 @@ summarise_sections_ <- function(sections, ..., .dots) {
 #'
 #' @return A \code{tracks} object.
 #' @export
-collapse_identities_fixed <- function(tracks, n = 1)
+collapse_identities <- function(tracks, n = 1)
 {
   tracks <- tracks[c("tr", "meta_data", "params", "pr")]
   class(tracks) <- "tracks"
