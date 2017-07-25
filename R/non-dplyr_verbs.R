@@ -301,34 +301,32 @@ summarise_sections_ <- function(sections, ..., .dots) {
 #'
 #' @return A \code{tracks} object.
 #' @export
-collapse_identities <- function(tracks, n = 1) {
-  tracks <- tracks[c('tr', 'meta_data', 'params', 'pr')]
-  class(tracks) <- 'tracks'
+collapse_identities_fixed <- function(tracks, n = 1)
+{
+  tracks <- tracks[c("tr", "meta_data", "params", "pr")]
+  class(tracks) <- "tracks"
   if (n != 1) {
-    stop('Only n = 1 supported for now.', call. = FALSE)
+    stop("Only n = 1 supported for now.", call. = FALSE)
   }
   r <- dplyr::summarize_(tracks$tr, start = ~min(frame), end = ~max(frame))
   r <- dplyr::arrange_(r, ~trial, ~start)
-  r <- invisible(dplyr::mutate_(r,
-                      end_overlap = ~end - dplyr::lead(start) > 0,
-                      start_new = ~dplyr::if_else(dplyr::lag(end_overlap),
-                                                  dplyr::lag(end), start),
-                      r = ~row_number(),
-                      start_new = ~dplyr::if_else(r == 1, start,
-                                                  start_new),
-                      end_new = ~dplyr::if_else(end_overlap,
-                                                dplyr::lead(start), end),
-                      end_new = ~if_else(r == n(), end, end_new)))
-  r <- dplyr::select_(r, ~-start, ~-end, ~-end_overlap, ~-r)
-  r <- dplyr::filter_(r, ~start_new < end_new)
 
-  tracks$tr <- dplyr::left_join(tracks$tr, r)
-  tracks$tr <- dplyr::filter_(tracks$tr, ~frame > start_new, ~frame < end_new)
-  tracks$tr <- dplyr::select_(tracks$tr, ~-start_new, ~-end_new)
+  # this object can be large
+  r <- dplyr::mutate_(r, frame = ~purrr::map2(start, end, `:`))
+  r <- dplyr::summarise_(
+    r,
+    frame = ~list(purrr::reduce(frame, ~c(setdiff(.x, .y), setdiff(.y, .x))))
+  )
+
+  r <- tidyr::unnest(r)
+
+  # This operation is the slowest.
+  tracks$tr <- dplyr::inner_join(tracks$tr, r, by = c("trial", "frame"))
 
   tracks$tr <- dplyr::ungroup(tracks$tr)
   tracks$tr <- dplyr::mutate_(tracks$tr, animal = ~factor(1))
   tracks$tr <- dplyr::group_by_(tracks$tr, ~trial, ~animal)
-
   return(tracks)
 }
+
+
