@@ -246,6 +246,14 @@ read_Ctrax_mat <- function(file, animals) {
   # Read file ------------------------------------------------------------------
   d <- lapply(file, R.matlab::readMat)
 
+  # Delete files with no data, with a message
+  missing <- mapply(function(x, y) {
+    bool <- nrow(x$x) == 0
+    if (bool) message(paste(y, 'has no data and was removed.'))
+    bool
+  }, d, file)
+  d <- d[!missing]
+
   # We have to check wheter it's a 'fixed' file or not, those have different
   # structures for some reason.
 
