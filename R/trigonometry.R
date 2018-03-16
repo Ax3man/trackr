@@ -31,6 +31,13 @@ mean_angle <- function(x) {
   atan2(sum(sin(x), na.rm = T), sum(cos(x), na.rm = T))
 }
 
+#' @rdname trig
+#' @export
+rotate <- function(x, y, angle) {
+  c(x = x * cos(angle) - y * sin(angle),
+    y = x * sin(angle) + y * cos(angle))
+}
+
 res_vec <- function(angles, lengths = NULL) {
   if (all(is.na(angles))) {
     return(NA)

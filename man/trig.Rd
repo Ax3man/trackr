@@ -5,6 +5,7 @@
 \alias{angle}
 \alias{angle_diff}
 \alias{mean_angle}
+\alias{rotate}
 \title{Common functions to deal with angles.}
 \usage{
 angle(x1, y1, x2, y2)
@@ -12,6 +13,8 @@ angle(x1, y1, x2, y2)
 angle_diff(a1, a2)
 
 mean_angle(x)
+
+rotate(x, y, angle)
 }
 \arguments{
 \item{x1}{X-coordinate for poinr 1.}
