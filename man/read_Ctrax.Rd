@@ -39,3 +39,4 @@ This function always filters out (0, 0) coordinates, as they are a Ctrax bug.
 \seealso{
 Other trackr read functions: \code{\link{read_idTracker}}
 }
+\concept{trackr read functions}

@@ -4,7 +4,6 @@
 \name{reexports}
 \alias{reexports}
 \alias{collect}
-\alias{reexports}
 \alias{\%>\%}
 \title{Objects exported from other packages}
 \keyword{internal}
