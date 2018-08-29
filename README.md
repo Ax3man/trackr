@@ -8,11 +8,10 @@ There are many tracking solutions available (both proprietary and free software)
 `R` currently offers some of the best statistics and visualization packages out there, and `trackr` output easily works with them. `R` is also the main (and often only) language that many end users (biologists) already know, making it a logical choice in many cases.
 
 ### Installation
-You can install this package from within your R session using `devtools`. You currently also need my fork of `multidplyr` for it to work, as there are currently some bugs (the fork is up-to-date and compatible with the main `multidplyr` repository).
+You can install this package from within your R session using `devtools`. 
 ````{r}
 # Install devtools if necessary
 # install.packages('devtools')
-devtools::install_github('Ax3man/multidplyr')
 devtools::install_github('Ax3man/trackr')
 ````
 
@@ -25,7 +24,7 @@ Support for other trackers can be added. Please file an [issue](https://github.c
 
 ### Performance
 
-`R` is not typically known for lightning fast performance. However, `trackr` makes use of several packages in the [*Hadleyverse*](http://adolfoalvarez.cl/the-hitchhikers-guide-to-the-hadleyverse/) that greatly speed things up. Specifically, it uses `readr` to read in large data files and `dplyr` for data manipulation. On top of that, the two largest tables in the tracks object (see `?as_tracks`) are kept on worker nodes so all calculations are in parallel. Keeping the tables on the workers minimizes data copying (reducing the added cost of parallel computations).
+`R` is not typically known for lightning fast performance. However, `trackr` makes use of several packages that  speed things up, and make code writing easier. Specifically, it uses `data.table` to read in large data files and `dplyr` for data manipulation.
 
 ### Example code
 As a quick example, let's read in some data of male guppy pairs.
