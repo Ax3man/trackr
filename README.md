@@ -1,6 +1,6 @@
 ### _Note_
 
-This package is getting more outdated every day and has never quite reached a stable or finished state. I currently don't have time to further develop it, as I don't work much on behavior right now. However, it can still be useful for various functions and has been used in published papers, so I am leaving it here available for now.
+This package is getting more outdated every day and has never quite reached a stable or finished state. I currently don't have time to further develop it, as I don't work much on behavior right now. However, it can still be useful for various functions and has been used in published papers, so I am leaving it here available for now. Use at own risk.
 
 
 # trackr
@@ -78,7 +78,7 @@ Ok, so we have our trajectories, and most of it seems quite ok. Let's calculate 
 tr <- mutate(tr,
              speed = speed(),
              acc = acceleration(),
-             turn = turn())
+             turn = angular_velocity())
 ````
 Summmary statistics also work very similar to `dplyr`.
 ````{r}
